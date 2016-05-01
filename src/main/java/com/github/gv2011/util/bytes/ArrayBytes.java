@@ -4,6 +4,8 @@ import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.run;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.util.Arrays;
@@ -67,5 +69,12 @@ class ArrayBytes extends AbstractBytes{
   public String utf8ToString() throws TooBigException {
     return new String(bytes, UTF_8);
   }
+
+  @Override
+  public InputStream openStream() {
+    return new ByteArrayInputStream(bytes);
+  }
+
+
 
 }

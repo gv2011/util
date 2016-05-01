@@ -10,7 +10,8 @@ class Hash256Imp extends ArrayBytes implements Hash256{
 
   Hash256Imp(final byte[] byteArray) {
     super(byteArray);
-    assert size()==16;
+    if(size()!=Hash256.SIZE) throw new IllegalArgumentException(""+size());
   }
+
 
 }

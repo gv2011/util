@@ -23,4 +23,25 @@ public class ByteUtilsTest {
     assertThat(b.hash(), is(expected));
   }
 
+  @Test
+  public void testToInt() {
+    final int[] examples = new int[]{0,1, Integer.MAX_VALUE, -1, Integer.MIN_VALUE};
+    final Bytes[] expected = new Bytes[]{
+      ByteUtils.parseHex("00 00 00 00"),
+      ByteUtils.parseHex("00 00 00 01"),
+      ByteUtils.parseHex("7F FF FF FF"),
+      ByteUtils.parseHex("FF FF FF FF"),
+      ByteUtils.parseHex("80 00 00 00")
+    };
+    for(int j=0; j<examples.length; j++) {
+      final int intg = examples[j];
+      final Bytes bytes = ByteUtils.asBytes(intg);
+      assertThat(bytes, is(expected[j]));
+      assertThat(Integer.toHexString(intg), bytes.toInt(), is(intg));
+    }
+    assertThat(ByteUtils.empty().toInt(), is(0));
+    assertThat(ByteUtils.parseHex("FF").toInt(), is(-1));
+  }
+
+
 }

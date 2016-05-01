@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -16,16 +17,34 @@ import org.junit.Test;
 
 public class FileBytesPtest {
 
-  private Bytes bytes;
+  private byte[] array;
   private Path file;
   private FileBytes fileBytes;
+  private Bytes bytes;
 
   @Before
   public void setup(){
-    bytes = ByteUtils.newRandomBytes(100000);
+    final long size = 100000;
+    array = new byte[(int)size];
+    new SecureRandom().nextBytes(array);
+    bytes = ByteUtils.newBytes(array);
+    assertThat(bytes.longSize(), is((long)size));
+    for(int i=0; i<size; i++){
+      assertThat(bytes.get((long)i), is(array[i]));
+    }
+
     file = FileSystems.getDefault().getPath("test.bin");
     bytes.write(file);
     fileBytes = ByteUtils.newFileBytes(file);
+
+
+    assertThat(fileBytes, is(bytes));
+    assertThat(fileBytes.longSize(), is(size));
+    assertThat(fileBytes.hash(), is(bytes.hash()));
+    assertThat(fileBytes.hashCode(), is(bytes.hashCode()));
+    for(long i=0; i<size; i++){
+      assertThat(fileBytes.get(i), is(bytes.get(i)));
+    }
   }
 
   @After

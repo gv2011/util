@@ -8,12 +8,16 @@ import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.AbstractList;
+import java.util.Base64;
 import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
 import com.github.gv2011.util.Constant;
@@ -110,19 +114,90 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
   }
 
 
+
+
+  @Override
+  public boolean equals(final Object o) {
+    boolean result;
+    if(o==this) result = true;
+    else if(!(o instanceof Bytes)) result = listEquals(o);
+    else{
+      final Bytes other = (Bytes)o;
+      final long size = longSize();
+      if(size!=other.longSize()) result = false;
+      else if(size<=Hash256.SIZE) result = listEquals(o);
+      else result = hash().equals(other.hash());
+    }
+    return result;
+  }
+
+  protected final boolean listEquals(final Object o) {
+    boolean result;
+    if(o==this) result = true;
+    else if(!(o instanceof List)) result = false;
+    else{
+      final List<?> other = (List<?>)o;
+      final long size = longSize();
+      if(size!=other.size()) result = false;
+      else result = super.equals(o);
+    }
+    return result;
+  }
+
   protected Hash256 hashImp() {
-    final MessageDigest md = call(()->MessageDigest.getInstance("SHA-256"));
+    final MessageDigest md = call(()->MessageDigest.getInstance(Hash256.ALGORITHM));
     for(final byte b:this) md.update(b);
     return new Hash256Imp(md);
   }
 
+
+
   @Override
-  public Iterator<Byte> iterator() {
-    return new It();
+  public int toInt() {
+    final int size = size();
+    if(size>4) throw new IllegalStateException();
+    final boolean negative = size==0?false:getByte(0)<0;
+    int result = negative?-1:0;
+    for(final byte b: this){
+      result = ((result<<8) & -0x100) | (b & 0xFF);
+    }
+    return result;
   }
 
-  private final class It implements Iterator<Byte> {
-    private long index=0;
+
+
+  @Override
+  public CloseableBytes toBase64() {
+    try(final BytesBuilder builder = ByteUtils.newBytesBuilder()){
+      final OutputStream stream = Base64.getEncoder().wrap(builder);
+      write(stream);
+      run(stream::close);
+      return builder.build();
+      }
+  }
+
+  @Override
+  public CloseableBytes decodeBase64() {
+    try(final InputStream stream = Base64.getDecoder().wrap(openStream())){
+      return ByteUtils.fromStream(stream);
+    } catch (final IOException e) {throw wrap(e);}
+  }
+
+  @Override
+  public Iterator<Byte> iterator() {
+    return new It(0);
+  }
+
+  @Override
+  public ListIterator<Byte> listIterator(final int index) {
+    return new It(index);
+  }
+
+  private final class It implements ListIterator<Byte> {
+    private long index;
+    private It(final long index) {
+      this.index = index;
+    }
     @Override
     public boolean hasNext() {
       return index<longSize();
@@ -134,6 +209,40 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
         throw new NoSuchElementException();
       }
     }
+    @Override
+    public boolean hasPrevious() {
+      return index>0;
+    }
+    @Override
+    public Byte previous() {
+      if(index==0)throw new NoSuchElementException();
+      return get(--index);
+    }
+    @Override
+    public int nextIndex() {
+      final long next = index+1;
+      if(next>Integer.MAX_VALUE) throw new TooBigException();
+      return (int)next;
+    }
+    @Override
+    public int previousIndex() {
+      final long previous = index-1;
+      if(previous>Integer.MAX_VALUE) throw new TooBigException();
+      return (int)previous;
+    }
+    @Override
+    public void remove() {
+      throw new UnsupportedOperationException("Read-only");
+    }
+    @Override
+    public void set(final Byte e) {
+      throw new UnsupportedOperationException("Read-only");
+    }
+    @Override
+    public void add(final Byte e) {
+      throw new UnsupportedOperationException("Read-only");
+    }
+
 }
 
 

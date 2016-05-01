@@ -1,5 +1,6 @@
 package com.github.gv2011.util.bytes;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.List;
@@ -20,6 +21,12 @@ public interface Bytes extends List<Byte>{
 
   String utf8ToString() throws TooBigException;
 
+  CloseableBytes toBase64();
+
+  CloseableBytes decodeBase64();
+
+  InputStream openStream();
+
   void write(final OutputStream stream);
 
   void write(final Path file);
@@ -31,7 +38,10 @@ public interface Bytes extends List<Byte>{
 
   Hash256 hash();
 
+  int toInt();
 
   public static final class TooBigException extends IllegalStateException {}
+
+
 
 }

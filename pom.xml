@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>util</artifactId>
-	
+
 	<name>Vinz Util</name>
 	<description>General purpose utilities.</description>
 	<url>https://github.com/gv2011/util</url>
@@ -35,5 +35,13 @@
 		<url>https://github.com/gv2011/util</url>
 		<tag>HEAD</tag>
 	</scm>
+
+	<dependencies>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
 </project>
