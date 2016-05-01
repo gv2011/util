@@ -1,0 +1,39 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.github.gv2011</groupId>
+		<artifactId>parent</artifactId>
+		<version>0.0.3-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>util</artifactId>
+	
+	<name>Vinz Util</name>
+	<description>General purpose utilities.</description>
+	<url>https://github.com/gv2011/util</url>
+
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>https://opensource.org/licenses/MIT</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>gv2011</id>
+			<name>Vinz</name>
+			<url>https://github.com/gv2011</url>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git@github.com:gv2011/util.git</connection>
+		<developerConnection>scm:git:git@github.com:gv2011/util.git</developerConnection>
+		<url>https://github.com/gv2011/util</url>
+		<tag>HEAD</tag>
+	</scm>
+
+</project>

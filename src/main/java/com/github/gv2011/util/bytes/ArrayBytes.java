@@ -1,0 +1,71 @@
+package com.github.gv2011.util.bytes;
+
+import static com.github.gv2011.util.ex.Exceptions.call;
+import static com.github.gv2011.util.ex.Exceptions.run;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import java.io.OutputStream;
+import java.security.MessageDigest;
+import java.util.Arrays;
+
+import net.jcip.annotations.Immutable;
+
+@Immutable
+class ArrayBytes extends AbstractBytes{
+
+  private final byte[] bytes;
+
+  protected ArrayBytes(final byte[] bytes) {
+    this.bytes = bytes;
+  }
+
+  @Override
+  protected Hash256 hashImp() {
+    final MessageDigest md = call(()->MessageDigest.getInstance("SHA-256"));
+    md.update(bytes);
+    return new Hash256Imp(md);
+  }
+
+
+  @Override
+  public byte[] toByteArray(){
+    return Arrays.copyOf(bytes, bytes.length);
+  }
+
+  @Override
+  public void write(final OutputStream stream){
+    run(()->stream.write(bytes));
+  }
+
+  @Override
+  public long longSize() {
+    return bytes.length;
+  }
+
+  @Override
+  public byte get(final long index) {
+    if(index>Integer.MAX_VALUE) throw new IndexOutOfBoundsException();
+    return bytes[(int)index];
+  }
+
+  @Override
+  public byte getByte(final int index) {
+    return bytes[(int)index];
+  }
+
+  @Override
+  public Bytes subList(final long fromIndex, final long toIndex) {
+    final long size = longSize();
+    checkIndices(fromIndex, toIndex, size);
+    if(fromIndex==0 && toIndex==size) return this;
+    else{
+      return new ArrayBytes(Arrays.copyOfRange(bytes, (int)fromIndex, (int)toIndex));
+    }
+  }
+
+  @Override
+  public String utf8ToString() throws TooBigException {
+    return new String(bytes, UTF_8);
+  }
+
+}
