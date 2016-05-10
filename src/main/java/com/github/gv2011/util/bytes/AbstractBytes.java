@@ -1,6 +1,7 @@
 package com.github.gv2011.util.bytes;
 
 import static com.github.gv2011.util.ex.Exceptions.call;
+import static com.github.gv2011.util.ex.Exceptions.notYetImplementedException;
 import static com.github.gv2011.util.ex.Exceptions.run;
 import static com.github.gv2011.util.ex.Exceptions.wrap;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -254,6 +255,11 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
       toIndex < 0
     ) throw new IndexOutOfBoundsException();
     if(fromIndex>toIndex) throw new IllegalArgumentException();
+  }
+
+  @Override
+  public Bytes toHexMultiline() {
+    throw notYetImplementedException();
   }
 
 

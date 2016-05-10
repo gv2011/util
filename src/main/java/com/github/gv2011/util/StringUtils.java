@@ -6,4 +6,11 @@ public final class StringUtils {
     return s.replaceAll("\\s+", "");
   }
 
+  public static String multiply(final CharSequence str, final int factor) {
+    if(factor<0)throw new IllegalArgumentException();
+    final StringBuilder sb = new StringBuilder();
+    for(int i=0; i<factor; i++) sb.append(str);
+    return sb.toString();
+  }
+
 }

@@ -10,6 +10,10 @@ public final class Exceptions {
     return new NotYetImplementedException();
   }
 
+  public static RuntimeException notYetImplementedException(final String msg){
+    return new NotYetImplementedException(msg);
+  }
+
   public static RuntimeException bug(){
     return new Bug();
   }

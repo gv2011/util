@@ -42,6 +42,8 @@ public interface Bytes extends List<Byte>{
 
   public static final class TooBigException extends IllegalStateException {}
 
+  Bytes toHexMultiline();
+
 
 
 }
