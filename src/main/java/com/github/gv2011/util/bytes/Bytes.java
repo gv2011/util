@@ -44,6 +44,8 @@ public interface Bytes extends List<Byte>{
 
   Bytes toHexMultiline();
 
+  Bytes append(Bytes hashBytes);
+
 
 
 }

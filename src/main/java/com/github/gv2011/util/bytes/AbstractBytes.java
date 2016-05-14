@@ -262,5 +262,11 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
     throw notYetImplementedException();
   }
 
+  @Override
+  public Bytes append(final Bytes hashBytes) {
+    // TODO Auto-generated method stub
+    throw notYetImplementedException();
+  }
+
 
 }
