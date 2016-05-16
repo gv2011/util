@@ -12,5 +12,15 @@ public final class StringUtils {
     for(int i=0; i<factor; i++) sb.append(str);
     return sb.toString();
   }
+  
+  public static String alignRight(final CharSequence str, int size, char fill) {
+	char[] chars = new char[size];
+	int fillSize = size-str.length();
+	if(fillSize<0) throw new IllegalArgumentException("Does not fit.");
+	for(int i=0; i<fillSize; i++) chars[i]=fill;
+	for(int i=0; i<str.length(); i++) chars[fillSize+i]=str.charAt(i);
+	return String.copyValueOf(chars);
+  }
+
 
 }
