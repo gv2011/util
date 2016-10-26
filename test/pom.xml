@@ -10,7 +10,6 @@
 
 	<artifactId>util-test</artifactId>
 
-	<name>Vinz Test Utilities</name>
 	<description>General purpose test utilities.</description>
 
 	<licenses>
