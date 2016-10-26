@@ -8,10 +8,11 @@
 		<version>0.0.3-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>util</artifactId>
+	<artifactId>util-parent</artifactId>
+	<packaging>pom</packaging>
 
-	<name>Vinz Util</name>
-	<description>General purpose utilities.</description>
+	<name>Vinz Util Parent</name>
+	<description>General purpose utilities - parent.</description>
 	<url>https://github.com/gv2011/util</url>
 
 	<licenses>
@@ -36,12 +37,9 @@
 		<tag>HEAD</tag>
 	</scm>
 
-	<dependencies>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+	<modules>
+    <module>core</module>
+    <module>logback</module>
+	</modules>
 
 </project>
