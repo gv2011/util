@@ -11,7 +11,6 @@
 	<artifactId>util-parent</artifactId>
 	<packaging>pom</packaging>
 
-	<name>Vinz Util Parent</name>
 	<description>General purpose utilities - parent.</description>
 	<url>https://github.com/gv2011/util</url>
 
@@ -40,6 +39,7 @@
 	<modules>
     <module>core</module>
     <module>logback</module>
+    <module>test</module>
 	</modules>
 
 </project>
