@@ -8,7 +8,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
 
 public final class StringUtils {
 
@@ -19,6 +18,13 @@ public final class StringUtils {
   public static String removeTail(final String s, final String tail) {
     if(!s.endsWith(tail)) throw new IllegalArgumentException(format("{} does not end with {}.", s, tail));
     return s.substring(0, s.length()-tail.length());
+  }
+
+  public static String removePrefix(final String s, final String prefix) {
+    if(!s.startsWith(prefix)) throw new IllegalArgumentException(
+      format("{} does not start with {}.", s, prefix)
+    );
+    return s.substring(prefix.length());
   }
 
   public static String tryRemoveTail(final String s, final String tail) {
