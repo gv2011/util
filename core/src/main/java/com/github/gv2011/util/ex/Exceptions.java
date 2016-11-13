@@ -6,6 +6,7 @@ import java.io.InterruptedIOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.helpers.MessageFormatter;
@@ -30,8 +31,16 @@ public final class Exceptions {
     return new NotYetImplementedException(msg);
   }
 
+  public static <T> T notYetImplemented(){
+    throw notYetImplementedException();
+  }
+
   public static RuntimeException bug(){
     return new Bug();
+  }
+
+  public static RuntimeException bug(final Supplier<String> message){
+    return new Bug(message.get());
   }
 
   public static RuntimeException wrap(final Throwable e){

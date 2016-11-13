@@ -4,6 +4,7 @@ import static com.github.gv2011.util.ex.Exceptions.format;
 
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 public final class Verify {
 
@@ -25,6 +26,10 @@ public final class Verify {
 
   public static void verify(final boolean expr, final String pattern, final Object... params) {
     verify(expr, ()->format(pattern, params));
+  }
+
+  public static <T> UnaryOperator<T> verify(final Predicate<T> predicate) {
+    return e->{return verify(e, predicate);};
   }
 
   public static <T> T notNull(final T arg){

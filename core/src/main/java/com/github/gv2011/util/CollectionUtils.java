@@ -41,28 +41,39 @@ public class CollectionUtils {
   private CollectionUtils(){staticClass();}
 
   public static final <T extends Comparable<? super T>> Collector<T, ?, SortedSet<T>> toSortedSet(){
-    return new Collector<T, SortedSet<T>, SortedSet<T>>(){
-      @Override
-      public Supplier<SortedSet<T>> supplier() {
-        return TreeSet::new;
-      }
-      @Override
-      public BiConsumer<SortedSet<T>, T> accumulator() {
-        return (s,e)->s.add(e);
-      }
-      @Override
-      public BinaryOperator<SortedSet<T>> combiner() {
-        return (s1,s2)->{s1.addAll(s2);return s1;};
-      }
+    return new SortedSetCollector<>();
+  }
+
+  public static final <T extends Comparable<? super T>> Collector<T, ?, SortedSet<T>> toISortedSet(){
+    return new SortedSetCollector<T>(){
       @Override
       public Function<SortedSet<T>, SortedSet<T>> finisher() {
-        return Function.identity();
-      }
-      @Override
-      public Set<Characteristics> characteristics() {
-        return EnumSet.of(Characteristics.UNORDERED, Characteristics.IDENTITY_FINISH);
+        return Collections::unmodifiableSortedSet;
       }
     };
+  }
+
+  private static class SortedSetCollector<T> implements Collector<T, SortedSet<T>, SortedSet<T>>{
+    @Override
+    public Supplier<SortedSet<T>> supplier() {
+      return TreeSet::new;
+    }
+    @Override
+    public BiConsumer<SortedSet<T>, T> accumulator() {
+      return (s,e)->s.add(e);
+    }
+    @Override
+    public BinaryOperator<SortedSet<T>> combiner() {
+      return (s1,s2)->{s1.addAll(s2);return s1;};
+    }
+    @Override
+    public Function<SortedSet<T>, SortedSet<T>> finisher() {
+      return Function.identity();
+    }
+    @Override
+    public Set<Characteristics> characteristics() {
+      return EnumSet.of(Characteristics.UNORDERED, Characteristics.IDENTITY_FINISH);
+    }
   }
 
   public static <T> Iterable<T> asIterable(final Supplier<Iterator<T>> iteratorSuppplier){
@@ -152,7 +163,7 @@ public class CollectionUtils {
   public static <T> List<T> asList(final Optional<? extends T> optional){
     return optional
       .map(e->{
-        final ArrayList<T> result = new ArrayList<T>(1);
+        final ArrayList<T> result = new ArrayList<>(1);
         result.add(e);
         return result;
       })
@@ -177,34 +188,6 @@ public class CollectionUtils {
       @Override
       public Function<Set<T>, Set<T>> finisher() {
         return Collections::unmodifiableSet;
-      }
-      @Override
-      public Set<Characteristics> characteristics() {
-        return EnumSet.of(Characteristics.UNORDERED);
-      }
-    };
-  }
-
-
-  public static <T extends Comparable<?>> Collector<T,?,SortedSet<T>>
-    toISortedSet()
-  {
-    return new Collector<T,SortedSet<T>, SortedSet<T>>(){
-      @Override
-      public Supplier<SortedSet<T>> supplier() {
-        return TreeSet::new;
-      }
-      @Override
-      public BiConsumer<SortedSet<T>, T> accumulator() {
-         return (b,e)->b.add(e);
-      }
-      @Override
-      public BinaryOperator<SortedSet<T>> combiner() {
-        return (b1,b2)->{b1.addAll(b2); return b1;};
-      }
-      @Override
-      public Function<SortedSet<T>, SortedSet<T>> finisher() {
-        return Collections::unmodifiableSortedSet;
       }
       @Override
       public Set<Characteristics> characteristics() {
@@ -256,7 +239,7 @@ public class CollectionUtils {
     return  new Collector<T,SortedMap<K,V>, SortedMap<K,V>>(){
       @Override
       public Supplier<SortedMap<K, V>> supplier() {
-        return ()->new TreeMap<K,V>(comparator);
+        return ()->new TreeMap<>(comparator);
       }
       @Override
       public BiConsumer<SortedMap<K, V>, T> accumulator() {
