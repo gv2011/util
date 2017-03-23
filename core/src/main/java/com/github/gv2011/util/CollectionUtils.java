@@ -1,31 +1,32 @@
 package com.github.gv2011.util;
 
+import static com.github.gv2011.util.ServiceLoaderUtils.lazyServiceLoader;
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.format;
+import static com.github.gv2011.util.ex.Exceptions.notYetImplemented;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 import static java.util.stream.Collectors.toList;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -36,45 +37,63 @@ import java.util.stream.Collector;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.github.gv2011.util.icol.ICollectionFactory;
+import com.github.gv2011.util.icol.IList;
+import com.github.gv2011.util.icol.IMap;
+import com.github.gv2011.util.icol.ISet;
+import com.github.gv2011.util.icol.ISortedMap;
+import com.github.gv2011.util.icol.ISortedSet;
+
 public class CollectionUtils {
 
   private CollectionUtils(){staticClass();}
 
-  public static final <T extends Comparable<? super T>> Collector<T, ?, SortedSet<T>> toSortedSet(){
-    return new SortedSetCollector<>();
-  }
+  private static final Constant<ICollectionFactory> ICOLF = lazyServiceLoader(ICollectionFactory.class);
 
-  public static final <T extends Comparable<? super T>> Collector<T, ?, SortedSet<T>> toISortedSet(){
-    return new SortedSetCollector<T>(){
+  public static final ICollectionFactory iCollections(){return ICOLF.get();}
+
+  public static final <E> IList.Builder<E> listBuilder(){return iCollections().listBuilder();};
+  public static final <E> ISet.Builder<E>  setBuilder() {return iCollections().setBuilder();};
+  public static final <E extends Comparable<? super E>> ISortedSet.Builder<E> sortedSetBuilder(){
+    return iCollections().sortedSetBuilder();
+    };
+  public static final <K,V> IMap.Builder<K,V> mapBuilder(){return iCollections().mapBuilder();};
+  public static final <K extends Comparable<? super K>,V> ISortedMap.Builder<K,V> sortedMapBuilder(){
+    return iCollections().sortedMapBuilder();
+    };
+
+  public static final <T extends Comparable<? super T>> Collector<T, ?, NavigableSet<T>> toSortedSet(){
+    return new SortedSetCollector<T,NavigableSet<T>>(){
       @Override
-      public Function<SortedSet<T>, SortedSet<T>> finisher() {
-        return Collections::unmodifiableSortedSet;
+      public Function<NavigableSet<T>, NavigableSet<T>> finisher() {
+        return Function.identity();
       }
     };
   }
 
-  private static class SortedSetCollector<T> implements Collector<T, SortedSet<T>, SortedSet<T>>{
+  public static final <T extends Comparable<? super T>> Collector<T, ?, ISortedSet<T>> toISortedSet(){
+    return iCollections().sortedSetCollector();
+  }
+
+  public static abstract class SortedSetCollector<T,R> implements Collector<T, NavigableSet<T>, R>{
     @Override
-    public Supplier<SortedSet<T>> supplier() {
+    public final Supplier<NavigableSet<T>> supplier() {
       return TreeSet::new;
     }
     @Override
-    public BiConsumer<SortedSet<T>, T> accumulator() {
+    public final BiConsumer<NavigableSet<T>, T> accumulator() {
       return (s,e)->s.add(e);
     }
     @Override
-    public BinaryOperator<SortedSet<T>> combiner() {
+    public final BinaryOperator<NavigableSet<T>> combiner() {
       return (s1,s2)->{s1.addAll(s2);return s1;};
     }
     @Override
-    public Function<SortedSet<T>, SortedSet<T>> finisher() {
-      return Function.identity();
-    }
-    @Override
     public Set<Characteristics> characteristics() {
-      return EnumSet.of(Characteristics.UNORDERED, Characteristics.IDENTITY_FINISH);
+      return EnumSet.of(Characteristics.UNORDERED);
     }
   }
+
 
   public static <T> Iterable<T> asIterable(final Supplier<Iterator<T>> iteratorSuppplier){
     return () -> iteratorSuppplier.get();
@@ -82,6 +101,10 @@ public class CollectionUtils {
 
   public static <T> T single(final Iterable<? extends T> collection){
     return single(collection, (n)->n==0?"No element.":"Multiple elements.");
+  }
+
+  public static <T> T single(final Iterator<? extends T> it){
+    return single(it, i->i==0?"No element.":"Multiple elements.");
   }
 
   @SafeVarargs
@@ -102,12 +125,24 @@ public class CollectionUtils {
     return result;
   }
 
+  public static <V> Optional<V> tryGet(final Map<?,? extends V> map, final Object key){
+    return Optional.ofNullable(map.get(key));
+  }
+
   public static <S,T> Function<S,Stream<T>> ifPresent(final Function<S,Optional<T>> optFunction){
     return s->stream(optFunction.apply(s));
   }
 
+  public static <K,V> Pair<K,V> pair(final K key, final V value){
+    return new Pair<>(key, value);
+  }
+
   public static <T> Stream<T> stream(final Optional<? extends T> optional){
     return optional.isPresent() ? Stream.of(optional.get()) : Stream.empty();
+  }
+
+  public static <T> Stream<T> stream(final T[] array){
+    return Arrays.stream(array);
   }
 
   public static <T> Stream<T> stream(final Iterator<? extends T> iterator){
@@ -143,7 +178,10 @@ public class CollectionUtils {
 
 
   public static <T> T single(final Iterable<? extends T> collection, final Function<Integer,String> message){
-    final Iterator<? extends T> iterator = collection.iterator();
+    return single(collection.iterator(), message);
+  }
+
+  public static <T> T single(final Iterator<? extends T> iterator, final Function<Integer,String> message){
     verify(iterator.hasNext(), ()->message.apply(0));
     final T result = notNull(iterator.next(), ()->message.apply(0));
     verify(!iterator.hasNext(), ()->message.apply(2));
@@ -160,78 +198,51 @@ public class CollectionUtils {
     }
   }
 
-  public static <T> List<T> asList(final Optional<? extends T> optional){
-    return optional
-      .map(e->{
-        final ArrayList<T> result = new ArrayList<>(1);
-        result.add(e);
-        return result;
-      })
-      .orElse(new ArrayList<T>(0))
-    ;
+  public static <T> IList<T> asList(final Optional<? extends T> optional){
+    return notYetImplemented();
+//    return optional
+//      .map(e->{
+//        final ArrayList<T> result = new ArrayList<>(1);
+//        result.add(e);
+//        return result;
+//      })
+//      .orElse(new ArrayList<T>(0))
+//    ;
   }
 
-  public static <T> Collector<T,?,Set<T>> toISet(){
-    return new Collector<T,Set<T>, Set<T>>(){
-      @Override
-      public Supplier<Set<T>> supplier() {
-        return HashSet::new;
-      }
-      @Override
-      public BiConsumer<Set<T>, T> accumulator() {
-         return (b,e)->b.add(e);
-      }
-      @Override
-      public BinaryOperator<Set<T>> combiner() {
-        return (b1,b2)->{b1.addAll(b2); return b1;};
-      }
-      @Override
-      public Function<Set<T>, Set<T>> finisher() {
-        return Collections::unmodifiableSet;
-      }
-      @Override
-      public Set<Characteristics> characteristics() {
-        return EnumSet.of(Characteristics.UNORDERED);
-      }
-    };
+  public static <T> Collector<T,?,ISet<T>>
+  toISet(){
+    return iCollections().setCollector();
   }
 
-
-  public static <T> Collector<T,?,List<T>> toIList(){
-    return new Collector<T,List<T>, List<T>>(){
-      @Override
-      public Supplier<List<T>> supplier() {
-        return ArrayList::new;
-      }
-      @Override
-      public BiConsumer<List<T>, T> accumulator() {
-         return (b,e)->b.add(e);
-      }
-      @Override
-      public BinaryOperator<List<T>> combiner() {
-        return (b1,b2)->{b1.addAll(b2); return b1;};
-      }
-      @Override
-      public Function<List<T>, List<T>> finisher() {
-        return Collections::unmodifiableList;
-      }
-      @Override
-      public Set<Characteristics> characteristics() {
-        return EnumSet.noneOf(Characteristics.class);
-      }
-    };
+  public static <T> Collector<T,?,IList<T>>
+  toIList(){
+    return iCollections().listCollector();
   }
 
-  public static <T, K extends Comparable<? super K>, V>
-    Collector<T, ?, SortedMap<K,V>> toISortedMap(
+  public static <T, K, V> Collector<T, ?, IMap<K,V>>
+  toIMap(
     final Function<? super T, ? extends K> keyMapper,
     final Function<? super T, ? extends V> valueMapper
   ) {
-    return toISortedMap(keyMapper, valueMapper, Comparator.<K>naturalOrder());
+    return iCollections().mapCollector(keyMapper, valueMapper);
   }
 
-  public static <T, K, V>
-    Collector<T, ?, SortedMap<K,V>> toISortedMap(
+  public static <E extends Entry<? extends K, ? extends V>, K, V> Collector<E, ?, IMap<K,V>>
+  toIMap() {
+    return iCollections().mapCollector();
+  }
+
+  public static <T, K extends Comparable<? super K>, V> Collector<T, ?, ISortedMap<K,V>>
+  toISortedMap(
+    final Function<? super T, ? extends K> keyMapper,
+    final Function<? super T, ? extends V> valueMapper
+  ) {
+    return iCollections().sortedMapCollector(keyMapper, valueMapper);
+  }
+
+  public static <T, K, V> Collector<T, ?, SortedMap<K,V>>
+  toISortedMap(
     final Function<? super T, ? extends K> keyMapper,
     final Function<? super T, ? extends V> valueMapper,
     final Comparator<K> comparator
@@ -266,47 +277,47 @@ public class CollectionUtils {
     };
   }
 
-  public static <T, K, V>
-    Collector<T, ?, Map<K,V>> toMapOpt(
+  public static <T, K, V> Collector<T, ?, Map<K,V>>
+  toMapOpt(
     final Function<? super T, ? extends K> keyMapper,
     final Function<? super T, Optional<? extends V>> valueMapper
   ) {
-  return  new Collector<T,Map<K,V>, Map<K,V>>(){
-    @Override
-    public Supplier<Map<K, V>> supplier() {
-      return HashMap::new;
-    }
-    @Override
-    public BiConsumer<Map<K, V>, T> accumulator() {
-       return (b,t)->{
-         final Optional<? extends V> optValue = valueMapper.apply(
-           notNull(t, ()->"Null element found in the stream.")
-         );
-         if(optValue.isPresent()){
-           b.put(
-             keyMapper.apply(t),
-             optValue.get()
+    return  new Collector<T,Map<K,V>, Map<K,V>>(){
+      @Override
+      public Supplier<Map<K, V>> supplier() {
+        return HashMap::new;
+      }
+      @Override
+      public BiConsumer<Map<K, V>, T> accumulator() {
+         return (b,t)->{
+           final Optional<? extends V> optValue = valueMapper.apply(
+             notNull(t, ()->"Null element found in the stream.")
            );
-         }
-       };
-    }
-    @Override
-    public BinaryOperator<Map<K, V>> combiner() {
-      return (b1,b2)->{
-        b1.putAll(b2);
-        return b1;
-      };
-    }
-    @Override
-    public Function<Map<K, V>, Map<K, V>> finisher() {
-      return Collections::unmodifiableMap;
-    }
-    @Override
-    public Set<Characteristics> characteristics() {
-      return EnumSet.of(Characteristics.UNORDERED);
-    }
-  };
-}
+           if(optValue.isPresent()){
+             b.put(
+               keyMapper.apply(t),
+               optValue.get()
+             );
+           }
+         };
+      }
+      @Override
+      public BinaryOperator<Map<K, V>> combiner() {
+        return (b1,b2)->{
+          b1.putAll(b2);
+          return b1;
+        };
+      }
+      @Override
+      public Function<Map<K, V>, Map<K, V>> finisher() {
+        return Collections::unmodifiableMap;
+      }
+      @Override
+      public Set<Characteristics> characteristics() {
+        return EnumSet.of(Characteristics.UNORDERED);
+      }
+    };
+  }
 
   @SafeVarargs
   public static <T> Stream<T> concat(final Stream<? extends T>... more){
@@ -387,4 +398,35 @@ public class CollectionUtils {
     }
   }
 
+  @SafeVarargs
+  public static <T> ISet<T> setOf(final T... elements) {
+    final ISet.Builder<T> builder = iCollections().setBuilder();
+    for(final T e: elements) builder.add(e);
+    return builder.build();
+  }
+
+
+  @SafeVarargs
+  public static <T extends Comparable<? super T>> ISortedSet<T> sortedSetOf(final T... elements) {
+    final ISortedSet.Builder<T> builder = iCollections().sortedSetBuilder();
+    for(final T e: elements) builder.add(e);
+    return builder.build();
+  }
+
+  public static <S,T> Iterable<T> mapIterable(
+    final Iterable<? extends S> delegate, final Function<? super S, ? extends T> mapping
+  ){
+    return () -> mapIterator(delegate.iterator(), mapping);
+  }
+
+  public static <S,T> Iterator<T> mapIterator(
+    final Iterator<? extends S> delegate, final Function<? super S, ? extends T> mapping
+  ){
+    return new Iterator<T>(){
+      @Override
+      public boolean hasNext() {return delegate.hasNext();}
+      @Override
+      public T next() {return mapping.apply(delegate.next());}
+    };
+  }
 }

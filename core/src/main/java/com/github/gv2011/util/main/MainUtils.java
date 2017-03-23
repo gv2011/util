@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.gv2011.util.AutoCloseableNt;
 import com.github.gv2011.util.JmxUtils;
-import com.github.gv2011.util.ServiceUtils;
+import com.github.gv2011.util.ServiceLoaderUtils;
 import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.log.LogAdapter;
 
@@ -42,7 +42,7 @@ public class MainUtils implements MainUtilsMBean{
   private volatile @Nullable AutoCloseableNt jmxHandle;
 
 	public MainUtils() {
-	  logAdapter = ServiceUtils.getService(LogAdapter.class);
+	  logAdapter = ServiceLoaderUtils.loadService(LogAdapter.class);
 	  logAdapter.configureLogging();
 		LOG = LoggerFactory.getLogger(MainUtils.class);
 		pidFile = FileSystems.getDefault().getPath("log/pid").toAbsolutePath();
@@ -56,7 +56,7 @@ public class MainUtils implements MainUtilsMBean{
 	public void runMain(final String[] mainArgs, final ServiceBuilder<?> serviceBuilder){
 		if(started.getAndSet(true)) throw new IllegalStateException("Started before.");
 		final String[] args = mainArgs.clone();
-		this.serverFactory = serviceBuilder;
+		serverFactory = serviceBuilder;
 		//Log all uncaught exceptions:
 		Thread.setDefaultUncaughtExceptionHandler(
 			(final Thread t, final Throwable e) -> {

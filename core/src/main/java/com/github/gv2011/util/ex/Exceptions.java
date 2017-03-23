@@ -129,4 +129,17 @@ public final class Exceptions {
   }
 
 
+
+  public static <C extends AutoCloseable,R> R callWithCloseable(
+    final ThrowingSupplier<C> supplier, final ThrowingFunction<C,R> function
+  ){
+    try{
+      try(C closeable = supplier.get()){
+        return function.apply(closeable);
+      }
+    }
+    catch(final Exception ex){throw wrap(ex);}
+  }
+
+
 }

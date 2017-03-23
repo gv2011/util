@@ -2,14 +2,22 @@ package com.github.gv2011.util;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Comparator;
+import java.util.Map.Entry;
+
+import com.github.gv2011.util.icol.IList;
 
 public final class Pair<K,V> extends SimpleEntry<K,V>{
 
-  public Pair(final java.util.Map.Entry<? extends K, ? extends V> entry) {
+  public static final <K,V> PairListBuilder<K,V> pairListBuilder(){
+    return new PairListBuilder<>();
+  }
+
+  @Deprecated //TODO
+  public Pair(final Entry<? extends K, ? extends V> entry) {
     super(entry);
   }
 
-  public Pair(final K key, final V value) {
+  Pair(final K key, final V value) {
     super(key, value);
   }
 
@@ -22,7 +30,7 @@ public final class Pair<K,V> extends SimpleEntry<K,V>{
     return comparator(order,order);
   }
 
-  public static final <T extends Comparable<T>> Comparator<Pair<T,T>> comparator(){
+  public static final <T extends Comparable<T>> Comparator<Pair<T,T>> naturalOrder(){
     return comparator(Comparator.naturalOrder());
   }
 
@@ -34,5 +42,21 @@ public final class Pair<K,V> extends SimpleEntry<K,V>{
       return c1!=0? c1 : valueOrder.compare(p1.getValue(), p2.getValue());
     };
   }
+
+
+  public static final class PairListBuilder<K,V> implements Builder<IList<Pair<K,V>>>{
+    private PairListBuilder(){}
+    private final IList.Builder<Pair<K,V>> builder = CollectionUtils.iCollections().listBuilder();
+    public PairListBuilder<K,V> add(final K key, final V value){
+      builder.add(new Pair<>(key,value));
+      return this;
+    }
+    @Override
+    public IList<Pair<K, V>> build() {
+      return builder.build();
+    }
+  }
+
+
 
 }

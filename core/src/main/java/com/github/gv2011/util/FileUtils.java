@@ -19,6 +19,8 @@ import com.github.gv2011.util.bytes.CloseableBytes;
 
 public final class FileUtils {
 
+  public static final Path WORK_DIR = call(()->FileSystems.getDefault().getPath(".").toRealPath());
+
   public static Path getPath(final String first, final String... more){
     return FileSystems.getDefault().getPath(first, more);
   }

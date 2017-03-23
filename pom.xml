@@ -38,6 +38,7 @@
 
 	<modules>
     <module>core</module>
+    <module>gcol</module>
     <module>logback</module>
     <module>test</module>
 	</modules>

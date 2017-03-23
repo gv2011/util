@@ -5,6 +5,7 @@ import static com.github.gv2011.util.FileUtils.getPath;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.ex.Exceptions.run;
+import static com.github.gv2011.util.ex.Exceptions.staticClass;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.nio.file.Files;
@@ -14,6 +15,8 @@ import java.util.SortedSet;
 import java.util.regex.Pattern;
 
 public final class StringUtils {
+
+  private StringUtils(){staticClass();}
 
   public static String removeWhitespace(final String s) {
     return s.replaceAll("\\s+", "");

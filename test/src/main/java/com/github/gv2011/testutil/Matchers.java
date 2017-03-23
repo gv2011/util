@@ -8,6 +8,7 @@ import static com.github.gv2011.util.Equal.equal;
 import static com.github.gv2011.util.ex.Exceptions.format;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.xml.namespace.NamespaceContext;
@@ -36,7 +37,7 @@ public final class Matchers {
    * For example:
    * <pre>assertThat("myValue", allOf(startsWith("my"), containsString("Val")))</pre>
    */
-  public static <T> Matcher<T> allOf(final java.lang.Iterable<Matcher<? super T>> matchers) {
+  public static <T> Matcher<T> allOf(final Iterable<Matcher<? super T>> matchers) {
     return org.hamcrest.core.AllOf.<T>allOf(matchers);
   }
 
@@ -107,7 +108,7 @@ public final class Matchers {
    * For example:
    * <pre>assertThat("myValue", anyOf(startsWith("foo"), containsString("Val")))</pre>
    */
-  public static <T> org.hamcrest.core.AnyOf<T> anyOf(final java.lang.Iterable<Matcher<? super T>> matchers) {
+  public static <T> org.hamcrest.core.AnyOf<T> anyOf(final Iterable<Matcher<? super T>> matchers) {
     return org.hamcrest.core.AnyOf.<T>anyOf(matchers);
   }
 
@@ -221,7 +222,7 @@ public final class Matchers {
    * @param itemMatcher
    *     the matcher to apply to every item provided by the examined {@link Iterable}
    */
-  public static <U> Matcher<java.lang.Iterable<U>> everyItem(final Matcher<U> itemMatcher) {
+  public static <U> Matcher<Iterable<U>> everyItem(final Matcher<U> itemMatcher) {
     return org.hamcrest.core.Every.<U>everyItem(itemMatcher);
   }
 
@@ -320,7 +321,7 @@ public final class Matchers {
    * @param item
    *     the item to compare against the items provided by the examined {@link Iterable}
    */
-  public static <T> Matcher<java.lang.Iterable<? super T>> hasItem(final T item) {
+  public static <T> Matcher<Iterable<? super T>> hasItem(final T item) {
     return org.hamcrest.core.IsCollectionContaining.<T>hasItem(item);
   }
 
@@ -336,7 +337,7 @@ public final class Matchers {
    * @param itemMatcher
    *     the matcher to apply to items provided by the examined {@link Iterable}
    */
-  public static <T> Matcher<java.lang.Iterable<? super T>> hasItem(final Matcher<? super T> itemMatcher) {
+  public static <T> Matcher<Iterable<? super T>> hasItem(final Matcher<? super T> itemMatcher) {
     return org.hamcrest.core.IsCollectionContaining.<T>hasItem(itemMatcher);
   }
 
@@ -353,7 +354,7 @@ public final class Matchers {
    *     the items to compare against the items provided by the examined {@link Iterable}
    */
   @SafeVarargs
-  public static <T> Matcher<java.lang.Iterable<T>> hasItems(final T... items) {
+  public static <T> Matcher<Iterable<T>> hasItems(final T... items) {
     return org.hamcrest.core.IsCollectionContaining.<T>hasItems(items);
   }
 
@@ -370,7 +371,7 @@ public final class Matchers {
    *     the matchers to apply to items provided by the examined {@link Iterable}
    */
   @SafeVarargs
-  public static <T> Matcher<java.lang.Iterable<T>> hasItems(final Matcher<? super T>... itemMatchers) {
+  public static <T> Matcher<Iterable<T>> hasItems(final Matcher<? super T>... itemMatchers) {
     return org.hamcrest.core.IsCollectionContaining.<T>hasItems(itemMatchers);
   }
 
@@ -726,7 +727,7 @@ public final class Matchers {
    * @param itemMatchers
    *     a list of matchers, each of which must be satisfied by an item provided by an examined array
    */
-  public static <E> Matcher<E[]> arrayContainingInAnyOrder(final java.util.Collection<Matcher<? super E>> itemMatchers) {
+  public static <E> Matcher<E[]> arrayContainingInAnyOrder(final Collection<Matcher<? super E>> itemMatchers) {
     return org.hamcrest.collection.IsArrayContainingInAnyOrder.<E>arrayContainingInAnyOrder(itemMatchers);
   }
 
@@ -770,46 +771,50 @@ public final class Matchers {
   }
 
   /**
-   * Creates a matcher for {@link java.util.Collection}s that matches when the <code>size()</code> method returns
+   * Creates a matcher for {@link Collection}s that matches when the <code>size()</code> method returns
    * a value that satisfies the specified matcher.
    * <p/>
    * For example:
    * <pre>assertThat(Arrays.asList("foo", "bar"), hasSize(equalTo(2)))</pre>
    *
    * @param sizeMatcher
-   *     a matcher for the size of an examined {@link java.util.Collection}
+   *     a matcher for the size of an examined {@link Collection}
    */
-  public static <E> Matcher<java.util.Collection<? extends E>> hasSize(final Matcher<? super java.lang.Integer> sizeMatcher) {
+  public static <E> Matcher<Collection<? extends E>> hasSize(final Matcher<? super java.lang.Integer> sizeMatcher) {
     return org.hamcrest.collection.IsCollectionWithSize.<E>hasSize(sizeMatcher);
   }
 
   /**
-   * Creates a matcher for {@link java.util.Collection}s that matches when the <code>size()</code> method returns
+   * Creates a matcher for {@link Collection}s that matches when the <code>size()</code> method returns
    * a value equal to the specified <code>size</code>.
    * <p/>
    * For example:
    * <pre>assertThat(Arrays.asList("foo", "bar"), hasSize(2))</pre>
    *
    * @param size
-   *     the expected size of an examined {@link java.util.Collection}
+   *     the expected size of an examined {@link Collection}
    */
-  public static <E> Matcher<java.util.Collection<? extends E>> hasSize(final int size) {
+  public static <E> Matcher<Collection<? extends E>> hasSize(final int size) {
     return org.hamcrest.collection.IsCollectionWithSize.<E>hasSize(size);
   }
 
+  public static <K,V> Matcher<Map<? extends K, ? extends V>> mapWithSize(final int size) {
+    return IsMapWithSize.<K,V>hasSize(size);
+  }
+
   /**
-   * Creates a matcher for {@link java.util.Collection}s matching examined collections whose <code>isEmpty</code>
+   * Creates a matcher for {@link Collection}s matching examined collections whose <code>isEmpty</code>
    * method returns <code>true</code>.
    * <p/>
    * For example:
    * <pre>assertThat(new ArrayList&lt;String&gt;(), is(empty()))</pre>
    */
-  public static <E> Matcher<java.util.Collection<? extends E>> empty() {
+  public static <E> Matcher<Collection<? extends E>> empty() {
     return org.hamcrest.collection.IsEmptyCollection.<E>empty();
   }
 
   /**
-   * Creates a matcher for {@link java.util.Collection}s matching examined collections whose <code>isEmpty</code>
+   * Creates a matcher for {@link Collection}s matching examined collections whose <code>isEmpty</code>
    * method returns <code>true</code>.
    * <p/>
    * For example:
@@ -818,7 +823,7 @@ public final class Matchers {
    * @param type
    *     the type of the collection's content
    */
-  public static <E> Matcher<java.util.Collection<E>> emptyCollectionOf(final java.lang.Class<E> type) {
+  public static <E> Matcher<Collection<E>> emptyCollectionOf(final java.lang.Class<E> type) {
     return org.hamcrest.collection.IsEmptyCollection.<E>emptyCollectionOf(type);
   }
 
@@ -828,7 +833,7 @@ public final class Matchers {
    * For example:
    * <pre>assertThat(new ArrayList&lt;String&gt;(), is(emptyIterable()))</pre>
    */
-  public static <E> Matcher<java.lang.Iterable<? extends E>> emptyIterable() {
+  public static <E> Matcher<Iterable<? extends E>> emptyIterable() {
     return org.hamcrest.collection.IsEmptyIterable.<E>emptyIterable();
   }
 
@@ -841,7 +846,7 @@ public final class Matchers {
    * @param type
    *     the type of the iterable's content
    */
-  public static <E> Matcher<java.lang.Iterable<E>> emptyIterableOf(final java.lang.Class<E> type) {
+  public static <E> Matcher<Iterable<E>> emptyIterableOf(final java.lang.Class<E> type) {
     return org.hamcrest.collection.IsEmptyIterable.<E>emptyIterableOf(type);
   }
 
@@ -858,7 +863,7 @@ public final class Matchers {
    *     the matchers that must be satisfied by the items provided by an examined {@link Iterable}
    */
   @SafeVarargs
-  public static <E> Matcher<java.lang.Iterable<? extends E>> contains(final Matcher<? super E>... itemMatchers) {
+  public static <E> Matcher<Iterable<? extends E>> contains(final Matcher<? super E>... itemMatchers) {
     return org.hamcrest.collection.IsIterableContainingInOrder.<E>contains(itemMatchers);
   }
 
@@ -875,7 +880,7 @@ public final class Matchers {
    *     the items that must equal the items provided by an examined {@link Iterable}
    */
   @SafeVarargs
-  public static <E> Matcher<java.lang.Iterable<? extends E>> contains(final E... items) {
+  public static <E> Matcher<Iterable<? extends E>> contains(final E... items) {
     return org.hamcrest.collection.IsIterableContainingInOrder.<E>contains(items);
   }
 
@@ -891,7 +896,7 @@ public final class Matchers {
    *     the matcher that must be satisfied by the single item provided by an
    *     examined {@link Iterable}
    */
-  public static <E> Matcher<java.lang.Iterable<? extends E>> contains(final Matcher<? super E> itemMatcher) {
+  public static <E> Matcher<Iterable<? extends E>> contains(final Matcher<? super E> itemMatcher) {
     return org.hamcrest.collection.IsIterableContainingInOrder.<E>contains(itemMatcher);
   }
 
@@ -908,7 +913,7 @@ public final class Matchers {
    *     a list of matchers, each of which must be satisfied by the corresponding item provided by
    *     an examined {@link Iterable}
    */
-  public static <E> Matcher<java.lang.Iterable<? extends E>> contains(final java.util.List<Matcher<? super E>> itemMatchers) {
+  public static <E> Matcher<Iterable<? extends E>> contains(final java.util.List<Matcher<? super E>> itemMatchers) {
     return org.hamcrest.collection.IsIterableContainingInOrder.<E>contains(itemMatchers);
   }
 
@@ -929,7 +934,7 @@ public final class Matchers {
    *     the items that must equal the items provided by an examined {@link Iterable} in any order
    */
   @SafeVarargs
-  public static <T> Matcher<java.lang.Iterable<? extends T>> containsInAnyOrder(final T... items) {
+  public static <T> Matcher<Iterable<? extends T>> containsInAnyOrder(final T... items) {
     return org.hamcrest.collection.IsIterableContainingInAnyOrder.<T>containsInAnyOrder(items);
   }
 
@@ -949,7 +954,7 @@ public final class Matchers {
    * @param itemMatchers
    *     a list of matchers, each of which must be satisfied by an item provided by an examined {@link Iterable}
    */
-  public static <T> Matcher<java.lang.Iterable<? extends T>> containsInAnyOrder(final Collection<Matcher<? super T>> itemMatchers) {
+  public static <T> Matcher<Iterable<? extends T>> containsInAnyOrder(final Collection<Matcher<? super T>> itemMatchers) {
     return org.hamcrest.collection.IsIterableContainingInAnyOrder.<T>containsInAnyOrder(itemMatchers);
   }
 
@@ -970,7 +975,7 @@ public final class Matchers {
    *     a list of matchers, each of which must be satisfied by an item provided by an examined {@link Iterable}
    */
   @SafeVarargs
-  public static <T> Matcher<java.lang.Iterable<? extends T>> containsInAnyOrder(final Matcher<? super T>... itemMatchers) {
+  public static <T> Matcher<Iterable<? extends T>> containsInAnyOrder(final Matcher<? super T>... itemMatchers) {
     return org.hamcrest.collection.IsIterableContainingInAnyOrder.<T>containsInAnyOrder(itemMatchers);
   }
 
@@ -988,7 +993,7 @@ public final class Matchers {
    *     examined {@link Iterable}
    */
   @Deprecated
-  public static <E> Matcher<java.lang.Iterable<? extends E>> containsInAnyOrder(final Matcher<? super E> itemMatcher) {
+  public static <E> Matcher<Iterable<? extends E>> containsInAnyOrder(final Matcher<? super E> itemMatcher) {
     return org.hamcrest.collection.IsIterableContainingInAnyOrder.<E>containsInAnyOrder(itemMatcher);
   }
 
@@ -1003,7 +1008,7 @@ public final class Matchers {
    * @param sizeMatcher
    *     a matcher for the number of items that should be yielded by an examined {@link Iterable}
    */
-  public static <E> Matcher<java.lang.Iterable<E>> iterableWithSize(final Matcher<? super java.lang.Integer> sizeMatcher) {
+  public static <E> Matcher<Iterable<E>> iterableWithSize(final Matcher<? super java.lang.Integer> sizeMatcher) {
     return org.hamcrest.collection.IsIterableWithSize.<E>iterableWithSize(sizeMatcher);
   }
 
@@ -1018,7 +1023,7 @@ public final class Matchers {
    * @param size
    *     the number of items that should be yielded by an examined {@link Iterable}
    */
-  public static <E> Matcher<java.lang.Iterable<E>> iterableWithSize(final int size) {
+  public static <E> Matcher<Iterable<E>> iterableWithSize(final int size) {
     return org.hamcrest.collection.IsIterableWithSize.<E>iterableWithSize(size);
   }
 
@@ -1122,7 +1127,7 @@ public final class Matchers {
    * @param collection
    *     the collection in which matching items must be found
    */
-  public static <T> Matcher<T> isIn(final java.util.Collection<T> collection) {
+  public static <T> Matcher<T> isIn(final Collection<T> collection) {
     return org.hamcrest.collection.IsIn.<T>isIn(collection);
   }
 
@@ -1321,7 +1326,7 @@ public final class Matchers {
    * @param substrings
    *     the substrings that must be contained within matching strings
    */
-  public static Matcher<java.lang.String> stringContainsInOrder(final java.lang.Iterable<java.lang.String> substrings) {
+  public static Matcher<java.lang.String> stringContainsInOrder(final Iterable<java.lang.String> substrings) {
     return org.hamcrest.text.StringContainsInOrder.stringContainsInOrder(substrings);
   }
 

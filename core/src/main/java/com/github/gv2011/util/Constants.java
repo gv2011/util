@@ -1,6 +1,7 @@
 package com.github.gv2011.util;
 
 import java.lang.ref.SoftReference;
+import java.util.function.Supplier;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -17,7 +18,7 @@ public final class Constants{
       }
       @Override
       protected void setIntern(final T value) {
-        ref = new SoftReference<T>(value);
+        ref = new SoftReference<>(value);
       }
       @Override
       protected T retrieveValue() {
@@ -36,7 +37,25 @@ public final class Constants{
   }
 
   public static final <T> LazyConstant<T> newLazyConstant(){
-    return new LazyConstantImp<T>();
+    return new LazyConstantImp<>();
+  }
+
+  public static final <T> Constant<T> newLazyCachedConstant(final Supplier<T> supplier){
+    return new Constant<T>(){
+      private final Object lock = new Object();
+      private T value;
+      @Override
+      public T get() {
+        if(value==null){
+          synchronized(lock){
+            if(value==null){
+              value = supplier.get();
+            }
+          }
+        }
+        return value;
+      }
+    };
   }
 
 

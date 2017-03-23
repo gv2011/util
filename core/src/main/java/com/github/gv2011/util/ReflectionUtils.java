@@ -1,19 +1,31 @@
 package com.github.gv2011.util;
 
+import static com.github.gv2011.util.CollectionUtils.iCollections;
+import static com.github.gv2011.util.CollectionUtils.setBuilder;
+import static com.github.gv2011.util.CollectionUtils.stream;
+import static com.github.gv2011.util.CollectionUtils.toISet;
+import static com.github.gv2011.util.CollectionUtils.toISortedSet;
+import static com.github.gv2011.util.Verify.notNull;
+import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toSet;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
-import java.sql.Struct;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.github.gv2011.util.icol.ISet;
+import com.github.gv2011.util.icol.ISortedSet;
 
 public final class ReflectionUtils {
 
@@ -21,17 +33,31 @@ public final class ReflectionUtils {
   public static final Method HASH_CODE = call(()->Object.class.getMethod("hashCode"));
   public static final Method TO_STRING = call(()->Object.class.getMethod("toString"));
 
-  public static final Set<Method> OBJECT_METHODS = objectMethods();
+  public static final ISet<Method> OBJECT_METHODS = iCollections().setOf(EQUALS,HASH_CODE,TO_STRING);
 
   public static <T> Method method(final Class<T> intf, final Function<T,?> methodFunction){
-    final AtomicReference<Method> result = new AtomicReference<>();
-    final InvocationHandler ih = (proxy, method, args) -> {
-      result.set(method);
-      return null;
-    };
-    final T proxy = createProxy(intf, ih);
-    methodFunction.apply(proxy);
-    return result.get();
+    return methodLookup(intf).method(methodFunction);
+  }
+
+  public static final class Lookup<T>{
+    private final T proxy;
+    private final ThreadLocal<Method> method = new ThreadLocal<>();
+    private Lookup(final Class<T> interfaze){
+      final InvocationHandler ih = (proxy, method, args) -> {
+        this.method.set(method);
+        return null;
+      };
+      proxy = createProxy(interfaze, ih);
+    }
+    public Method method(final Function<T,?> methodFunction){
+      methodFunction.apply(proxy);
+      final Method result = notNull(method.get());
+      return result;
+    }
+  }
+
+  public static <T> Lookup<T> methodLookup(final Class<T> intf){
+    return new Lookup<>(intf);
   }
 
   public static <T> T createProxy(final Class<T> intf, final InvocationHandler ih) {
@@ -49,7 +75,6 @@ public final class ReflectionUtils {
   }
 
   public static <T> Method attributeMethod(final Class<T> intf, final Function<T,?> methodFunction){
-    checkIsStruct(intf);
     final Method method = method(intf, methodFunction);
     final Object error = checkIsAttributeMethod(method);
     if(error!=null) throw new RuntimeException(error.toString());
@@ -61,32 +86,80 @@ public final class ReflectionUtils {
     return null;
   }
 
-  public static void checkIsStruct(final Class<?> intf){
-    if(!intf.isInterface()) throw new IllegalArgumentException();
-    final Class<?>[] interfaces = intf.getInterfaces();
-    if(interfaces.length!=1) throw new IllegalArgumentException();
-    if(interfaces[0]!=Struct.class) throw new IllegalArgumentException();
-    final java.lang.reflect.Type pStruct1 = intf.getGenericInterfaces()[0];
-    if(!(pStruct1 instanceof ParameterizedType)) throw new IllegalArgumentException();
-    final ParameterizedType pStruct = (ParameterizedType) pStruct1;
-    final java.lang.reflect.Type[] args = pStruct.getActualTypeArguments();
-    if(args.length!=1) throw new IllegalArgumentException();
-    if(!args[0].equals(intf)) throw new IllegalArgumentException();
-  }
-
-  public static Set<Class<?>> getAllSuperInterfaces(final Class<?> clazz){
-    return Arrays.stream(clazz.getInterfaces())
-      .flatMap(i->getAllSuperInterfaces(i).stream())
-      .collect(Collectors.toSet())
+  public static Set<Class<?>> getAllInterfaces(final Class<?> clazz){
+    final Set<Type> types = new HashSet<>();
+    collectAllInterfaces(types, clazz);
+    return types.stream()
+      .flatMap(t->{
+        if(t instanceof Class) return Stream.of((Class<?>)t);
+        else if(t instanceof ParameterizedType) return Stream.of((Class<?>)((ParameterizedType)t).getRawType());
+        else return Stream.<Class<?>>empty();
+      })
+      .collect(toISet())
     ;
   }
 
-  private static Set<Method> objectMethods() {
-    final Set<Method> result = new HashSet<>();
-    result.add(EQUALS);
-    result.add(HASH_CODE);
-    result.add(TO_STRING);
+  public static Set<Type> getAllPInterfaces(final Class<?> clazz){
+    final Set<Type> result = new HashSet<>();
+    collectAllInterfaces(result, clazz);
     return Collections.unmodifiableSet(result);
+  }
+
+  private static void collectAllInterfaces(final Set<Type> result, final Type type){
+    Optional<Class<?>> clazz;
+    if(type instanceof ParameterizedType){
+      clazz = Optional.of((Class<?>)((ParameterizedType)type).getRawType());
+    }
+    else if(type instanceof Class){
+      clazz = Optional.of((Class<?>)type);
+    }
+    else clazz = Optional.empty();
+    if(clazz.isPresent()){
+      final Type superclass = clazz.get().getGenericSuperclass();
+      if(superclass!=null){
+        collectAllInterfaces(result, superclass);
+      }
+      final Set<Type> superInterfaces = Arrays.stream(clazz.get().getGenericInterfaces())
+        .collect(toSet())
+      ;
+      for(final Type i: superInterfaces){
+        final boolean added = result.add(i);
+        if(added) collectAllInterfaces(result, i);
+      }
+    }
+  }
+
+  public static ISortedSet<String> toStrings(final ISet<Method> methods){
+    final ISet.Builder<Class<?>> classes = setBuilder();
+    for(final Method m: methods){
+      classes.tryAdd(m.getDeclaringClass());
+      classes.tryAdd(m.getReturnType());
+      for(final Class<?> c: m.getParameterTypes()) classes.tryAdd(c);
+    }
+    final Function<Class<?>, String> nameShortener = nameShortener(classes.build());
+    final ISortedSet<String> result = methods.stream()
+      .map(m->
+        m.getName() +
+        stream(m.getParameterTypes()).map(nameShortener).collect(joining(",","(",")")) +
+        ":"+nameShortener.apply(m.getDeclaringClass())+"->"+nameShortener.apply(m.getReturnType())
+      )
+      .collect(toISortedSet())
+    ;
+    verify(result.size()==methods.size());
+    return result;
+  }
+
+  public static Function<Class<?>,String> nameShortener(final ISet<Class<?>> classes){
+    final ISet<Class<?>> notUnique;
+    {
+      final Set<String> simpleNames = new HashSet<>();
+      final ISet.Builder<Class<?>> notUniqueB = setBuilder();
+      for(final Class<?> c: classes){
+        if(!simpleNames.add(c.getSimpleName())) notUniqueB.add(c);
+      }
+      notUnique = notUniqueB.build();
+    }
+    return c->notUnique.contains(c)?c.getName():c.getSimpleName();
   }
 
 }

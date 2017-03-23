@@ -1,5 +1,6 @@
 package com.github.gv2011.util;
 
+import static com.github.gv2011.util.Constants.newLazyCachedConstant;
 import static com.github.gv2011.util.ex.Exceptions.format;
 
 import java.util.Iterator;
@@ -14,6 +15,10 @@ public final class ServiceLoaderUtils {
       format("Multiple implementations for {} found.", service.getName())
     );
     return result;
+  }
+
+  public static <T> Constant<T> lazyServiceLoader(final Class<T> service){
+    return newLazyCachedConstant(()->loadService(service));
   }
 
 }
