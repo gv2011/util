@@ -13,6 +13,8 @@ import org.slf4j.helpers.MessageFormatter;
 
 public final class Exceptions {
 
+  private Exceptions(){staticClass();}
+
   public static final boolean ASSERTIONS_ON;
 
   private final static Logger LOG = getLogger(Exceptions.class);
@@ -131,15 +133,26 @@ public final class Exceptions {
 
 
   public static <C extends AutoCloseable,R> R callWithCloseable(
-    final ThrowingSupplier<C> supplier, final ThrowingFunction<C,R> function
-  ){
-    try{
-      try(C closeable = supplier.get()){
-        return function.apply(closeable);
+      final ThrowingSupplier<C> supplier, final ThrowingFunction<C,R> function
+    ){
+      try{
+        try(C closeable = supplier.get()){
+          return function.apply(closeable);
+        }
       }
+      catch(final Exception ex){throw wrap(ex);}
     }
-    catch(final Exception ex){throw wrap(ex);}
-  }
+
+  public static <C extends AutoCloseable> void doWithCloseable(
+      final ThrowingSupplier<C> supplier, final ThrowingConsumer<C> consumer
+    ){
+      try{
+        try(C closeable = supplier.get()){
+          consumer.accept(closeable);
+        }
+      }
+      catch(final Exception ex){throw wrap(ex);}
+    }
 
 
 }

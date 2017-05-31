@@ -56,5 +56,21 @@
 			<artifactId>logback-classic</artifactId>
 			<scope>compile</scope>
 		</dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>jsoncore-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>jsoncore-imp</artifactId>
+      <optional>true</optional>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>gcol</artifactId>
+      <optional>true</optional>
+      <scope>runtime</scope>
+    </dependency>
 	</dependencies>
 </project>

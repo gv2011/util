@@ -1,24 +1,29 @@
 package com.github.gv2011.util;
 
 import static com.github.gv2011.util.ex.Exceptions.format;
+import static com.github.gv2011.util.ex.Exceptions.staticClass;
 
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 public final class Verify {
 
+  private Verify(){staticClass();}
+
   public static void verify(final boolean expr) {
     if(!expr) throw new IllegalStateException();
   }
   public static <T> T verify(final T arg, final Predicate<? super T> predicate) {
-    return verify(arg, predicate, ()->"");
+    return verify(arg, predicate, a->format("Unexpected: {}", a));
   }
 
-  public static <T> T verify(final T arg, final Predicate<? super T> predicate, final Supplier<String> msg) {
+  public static <T> T verify(final T arg, final Predicate<? super T> predicate, final Function<T,String> msg) {
     if(!predicate.test(arg)){
-      throw new IllegalStateException(msg.get());
+      throw new IllegalStateException(msg.apply(arg));
     }
     return arg;
   }
@@ -32,12 +37,12 @@ public final class Verify {
   }
 
   public static <T> T verifyEqual(final T actual, final T expected) {
-    return verifyEqual(actual, expected, ()->format("Expected: {}, actual: {}.", expected, actual));
+    return verifyEqual(actual, expected, (e,a)->format("Expected: {}, actual: {}.", e, a));
   }
 
-  public static <T> T verifyEqual(final T actual, final T expected, final Supplier<String> msg) {
+  public static <T> T verifyEqual(final T actual, final T expected, final BiFunction<T,T,String> msg) {
     if(!actual.equals(expected)){
-      throw new IllegalStateException(msg.get());
+      throw new IllegalStateException(msg.apply(expected, actual));
     }
     return actual;
   }
@@ -51,11 +56,16 @@ public final class Verify {
   }
 
   public static <T> T notNull(final T arg, final Supplier<String> msg){
-    return verify(arg, a->a!=null, msg);
+    return verify(arg, a->a!=null, a->msg.get());
   }
 
   public static <T> Optional<T> nothing(){return Optional.empty();}
 
   public static Runnable noop(){return ()->{};}
+
+  public static <T> Optional<T> tryCast(final Object obj, final Class<? extends T> clazz){
+    if(clazz.isInstance(obj)) return Optional.of((T)clazz.cast(obj));
+    else return Optional.empty();
+  }
 
 }

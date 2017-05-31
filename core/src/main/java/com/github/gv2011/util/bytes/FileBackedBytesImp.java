@@ -47,4 +47,10 @@ class FileBackedBytesImp extends FileBytes implements CloseableBytes{
     if(deleted) LOG.debug("File {} deleted.", file.toAbsolutePath());
   }
 
+
+  @Override
+  public Bytes loadInMemory() {
+    return new ArrayBytes(toByteArray());
+  }
+
 }

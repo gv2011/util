@@ -1,8 +1,12 @@
 package com.github.gv2011.util;
 
+import static com.github.gv2011.util.ex.Exceptions.staticClass;
+
 import java.util.function.Function;
 
 public final class Equal {
+
+  private Equal(){staticClass();}
 
   public static final boolean equal(final Object o1, final Object o2){
     boolean result;

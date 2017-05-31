@@ -91,7 +91,7 @@ final class ISortedSetWrapper<E> extends ISetWrapper<E,NavigableSet<E>> implemen
   }
 
   @Override
-  public Optional<E> tryGetlower(final E e) {
+  public Optional<E> tryGetLower(final E e) {
     return Optional.ofNullable(delegate.lower(e));
   }
 

@@ -30,9 +30,9 @@ import net.jcip.annotations.Immutable;
 abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
 
   private static String HEX_CHARS = "0123456789ABCDEF";
-  private final Constant<Integer> hashCodeCache = Constants.newConstant(super::hashCode);
-  private final Constant<String> toStringCache = Constants.newCachedConstant(this::toStringImp);
-  private final Constant<Hash256> hashCache = Constants.newConstant(this::hashImp);
+  private final Constant<Integer> hashCodeCache = Constants.cachedConstant(super::hashCode);
+  private final Constant<String> toStringCache = Constants.softRefConstant(this::toStringImp);
+  private final Constant<Hash256> hashCache = Constants.cachedConstant(this::hashImp);
 
 
   @Override
@@ -272,6 +272,41 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
     // TODO Auto-generated method stub
     throw notYetImplementedException();
   }
+
+  @Override
+  public boolean startsWith(final Bytes prefix) {
+    return startsWith(prefix, 0);
+  }
+
+  private boolean startsWith(final Bytes prefix, final long offset) {
+    if(prefix.isEmpty()) return true;
+    else if(prefix.longSize()>longSize()-offset) return false;
+    else{
+      boolean result = true;
+      long i=0;
+      while(result && i<prefix.longSize()){
+        if(get(offset+i)!=prefix.get(i)) result = false;
+        i++;
+      }
+      return result;
+    }
+  }
+
+  @Override
+  public long indexOfOther(final Bytes other) {
+    long result = 0;
+    boolean done = false;
+    while(!done){
+      if(longSize()-result<other.longSize()){
+        result = -1;
+        done = true;
+      }
+      else if(startsWith(other, result)) done = true;
+      else result++;
+    }
+    return result;
+  }
+
 
 
 }

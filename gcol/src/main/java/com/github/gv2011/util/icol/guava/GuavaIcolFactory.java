@@ -40,6 +40,12 @@ public final class GuavaIcolFactory implements ICollectionFactory{
 
   @SuppressWarnings("unchecked")
   @Override
+  public <T extends Comparable<? super T>> ISortedSet<T> emptySortedSet() {
+    return EMPTY_SET;
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
   public <K, V> IMap<K, V> emptyMap() {
     return EMPTY_MAP;
   }

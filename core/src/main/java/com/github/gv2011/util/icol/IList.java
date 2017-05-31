@@ -1,5 +1,7 @@
 package com.github.gv2011.util.icol;
 
+import static com.github.gv2011.util.CollectionUtils.iCollections;
+
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -87,9 +89,16 @@ public interface IList<E> extends List<E>, ICollection<E>{
   }
 
   @Override
-  @Deprecated
   default <T> T[] toArray(final T[] a) {
     throw new UnsupportedOperationException();
+  }
+
+  default IList<E> tail(){
+    return subList(1, size());
+  }
+
+  default IList<E> append(final E element){
+    return iCollections().<E>listBuilder().addAll(this).add(element).build();
   }
 
 }

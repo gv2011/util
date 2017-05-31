@@ -1,6 +1,7 @@
 package com.github.gv2011.util;
 
 
+import static com.github.gv2011.util.ex.Exceptions.staticClass;
 import static com.github.gv2011.util.ex.Exceptions.tolerate;
 
 import java.lang.management.ManagementFactory;
@@ -20,6 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class JmxUtils {
+
+  private JmxUtils(){staticClass();}
 
 	private static final Logger LOG = LoggerFactory.getLogger(JmxUtils.class);
 

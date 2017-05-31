@@ -17,4 +17,17 @@ public final class LegacyCollections {
       public T next() {return en.nextElement();}
     };
   }
+
+  public static <T> Enumeration<T> asEnumeration(final Iterator<? extends T> it){
+    return new Enumeration<T>(){
+      @Override
+      public boolean hasMoreElements() {
+        return it.hasNext();
+      }
+      @Override
+      public T nextElement() {
+        return it.next();
+      }
+    };
+  }
 }

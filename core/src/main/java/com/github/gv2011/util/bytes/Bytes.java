@@ -48,6 +48,8 @@ public interface Bytes extends List<Byte>{
 
   Bytes append(Bytes hashBytes);
 
+  boolean startsWith(Bytes prefix);
 
+  long indexOfOther(Bytes other);
 
 }

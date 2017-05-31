@@ -10,6 +10,8 @@ import static com.github.gv2011.util.ex.Exceptions.format;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import javax.xml.namespace.NamespaceContext;
 
@@ -1519,6 +1521,10 @@ public final class Matchers {
         description.appendText(format("An object of {}.", clazz));
       }
       @Override
+      protected void describeMismatchSafely(final Object item, final Description mismatchDescription) {
+        mismatchDescription.appendText(format("an object of {}", item.getClass()));
+      }
+      @Override
       protected boolean matchesSafely(final Object obj) {
         return obj.getClass()==clazz;
       }
@@ -1549,6 +1555,26 @@ public final class Matchers {
       @Override
       protected boolean matchesSafely(final Bytes bytes) {
         return bytes.equals(expected);
+      }
+    };
+  }
+
+  public static <T> Matcher<T> meets(final Predicate<? super T> predicate) {
+    return meets(predicate, Object::toString);
+  }
+
+  public static <T> Matcher<T> meets(final Predicate<? super T> predicate, final Function<? super T, String> message) {
+    return new TypeSafeMatcher<T>(){
+      @Override
+      protected boolean matchesSafely(final T item) {
+        return predicate.test(item);
+      }
+      @Override
+      public void describeTo(final Description description) {
+      }
+      @Override
+      protected void describeMismatchSafely(final T item, final Description mismatchDescription) {
+        mismatchDescription.appendText(message.apply(item));
       }
     };
   }

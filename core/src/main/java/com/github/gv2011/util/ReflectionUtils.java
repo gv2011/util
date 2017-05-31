@@ -8,6 +8,7 @@ import static com.github.gv2011.util.CollectionUtils.toISortedSet;
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
+import static com.github.gv2011.util.ex.Exceptions.staticClass;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 
@@ -28,6 +29,8 @@ import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.ISortedSet;
 
 public final class ReflectionUtils {
+
+  private ReflectionUtils(){staticClass();}
 
   public static final Method EQUALS = call(()->Object.class.getMethod("equals", Object.class));
   public static final Method HASH_CODE = call(()->Object.class.getMethod("hashCode"));

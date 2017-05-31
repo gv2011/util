@@ -1,5 +1,6 @@
 package com.github.gv2011.util.bytes;
 
+import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.run;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -11,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
@@ -21,7 +23,7 @@ import com.github.gv2011.util.Builder;
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
-class BytesBuilder extends FilterOutputStream implements Builder<CloseableBytes>, AutoCloseableNt{
+public class BytesBuilder extends FilterOutputStream implements Builder<CloseableBytes>, AutoCloseableNt{
 
   private final Logger LOG = getLogger(BytesBuilder.class);
 
@@ -124,6 +126,55 @@ class BytesBuilder extends FilterOutputStream implements Builder<CloseableBytes>
     }
     @Override
     public void close() {}
+
+    @Override
+    public Bytes loadInMemory() {
+      return this;
+    }
+  }
+
+
+  public Optional<Bytes> remove(final Bytes marker) {
+    final byte[] bytes = bos.toByteArray();
+    bos.reset();
+    if(marker.isEmpty()){
+      if(bytes.length==0) return Optional.empty();
+      else return Optional.of(ByteUtils.newBytes(bytes));
+    }else{
+      final int markerStart = indexOf(bytes, marker);
+      if(markerStart==-1)  return Optional.empty();
+      else{
+        final int markerEnd = markerStart+marker.size();
+        bos.write(bytes, markerEnd, bytes.length-markerEnd); //Put the part after the marker back to
+        return Optional.of(ByteUtils.newBytes(bytes, 0, markerStart));
+      }
+    }
+  }
+
+
+
+  /**
+   * First index of marker sequence in bytes or -1 if not there.
+   */
+  private int indexOf(final byte[] bytes, final Bytes marker) {
+    verify(!marker.isEmpty());
+    boolean done = false;
+    int i=0;
+    int result=-1;
+    while(!done){
+      if(bytes.length-i<marker.size()) done=true;
+      else{
+        boolean same = bytes[i]==marker.get(0);
+        int j=1;
+        while(same && j<marker.size()){
+          same = bytes[i+j]==marker.get(j);
+          j++;
+        }
+        if(same) {done=true; result = i;}
+        else i++;
+      }
+    }
+    return result;
   }
 
 }

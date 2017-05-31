@@ -1,7 +1,7 @@
 package com.github.gv2011.util;
 
 import static com.github.gv2011.util.CollectionUtils.toSortedSet;
-import static com.github.gv2011.util.FileUtils.getPath;
+import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.ex.Exceptions.run;
@@ -12,7 +12,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.SortedSet;
+import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public final class StringUtils {
 
@@ -34,6 +36,18 @@ public final class StringUtils {
     return s.substring(prefix.length());
   }
 
+  public static String tryRemovePrefix(final String s, final String prefix) {
+    if(!s.startsWith(prefix)) throw new IllegalArgumentException(
+      format("{} does not start with {}.", s, prefix)
+    );
+    return s.substring(prefix.length());
+  }
+
+  public static Function<String,Stream<String>> tryRemovePrefix(final String prefix) {
+    final int length = prefix.length();
+    return s->s.startsWith(prefix) ? Stream.of(s.substring(length)) : Stream.empty();
+  }
+
   public static String tryRemoveTail(final String s, final String tail) {
     if(s.endsWith(tail)) return s.substring(0, s.length()-tail.length());
     else return s;
@@ -43,12 +57,37 @@ public final class StringUtils {
     final StringBuilder result = new StringBuilder();
     for(int i=0; i<s.length(); i++){
       final char c = s.charAt(i);
-      if(c=='\\') result.append("\\\\");
-      else if(c>=' ' && c<='~') result.append(c);
-      else{
-        result.append("\\"+Integer.toHexString(c)+";");
+      if(c<' ' || c>'~' || c=='[' || c=='\\' || c=='"'){
+        result.append('[').append(Integer.toHexString(c)).append(']');
         if(c=='\n') result.append('\n');
       }
+      else result.append(c);
+    }
+    return result.toString();
+  }
+
+  public static String fromSpecial(final String s) {
+    final StringBuilder result = new StringBuilder();
+    int i=0;
+    while(i<s.length()){
+      char c = s.charAt(i);
+      if(c=='['){
+        final StringBuilder hex = new StringBuilder();
+        c = s.charAt(++i);
+        while(c!=']'){
+          hex.append(c);
+          i++;
+          verify(i<s.length());
+          c = s.charAt(i);
+        }
+        final int decoded = Integer.parseInt(hex.toString(), 16);
+        verify(decoded>=Character.MIN_VALUE && decoded<=Character.MAX_VALUE);
+        result.append((char)decoded);
+      }
+      else if(c!='\n'){
+        result.append(c);
+      }
+      i++;
     }
     return result.toString();
   }
@@ -85,13 +124,13 @@ public final class StringUtils {
   }
 
   @Deprecated//Moved to FileUtils
-  public static String readFile(final String path, final String... morePathElements) {
-    return call(()->new String(Files.readAllBytes(getPath(path, morePathElements)), UTF_8));
+  public static String readText(final String path, final String... morePathElements) {
+    return call(()->new String(Files.readAllBytes(FileUtils.path(path, morePathElements)), UTF_8));
   }
 
-  @Deprecated//Moved to FileUtils
+  @Deprecated//Moved to com.github.gv2011.util.FileUtils.writeText(String, String, String...)
   public static void writeFile(final String text, final String path, final String... morePathElements) {
-    writeFile(text, getPath(path, morePathElements));
+    writeFile(text, FileUtils.path(path, morePathElements));
   }
 
   @Deprecated//Moved to FileUtils

@@ -72,13 +72,13 @@ public interface ISortedSet<E> extends ISet<E>, NavigableSet<E>{
 
   @Override
   default E lower(final E e) {
-    return tryGetlower(e).get();
+    return tryGetLower(e).get();
   }
 
   /**
    * Returns the greatest element in this set strictly less than the given element.
    */
-  Optional<E> tryGetlower(E e);
+  Optional<E> tryGetLower(E e);
 
   @Override
   default E floor(final E e) {
@@ -120,6 +120,25 @@ public interface ISortedSet<E> extends ISet<E>, NavigableSet<E>{
   @Override
   default E pollLast() {
     throw new UnsupportedOperationException();
+  }
+
+  default E get(final int index){
+    //TODO more efficient implementation
+    final Iterator<E> it = iterator();
+    for(int i=0; i<index; i++) it.next();
+    return it.next();
+  }
+
+  default int indexOf(final Object child){
+    //TODO more efficient implementation
+    final Iterator<E> it = this.iterator();
+    int result = -1;
+    int i=0;
+    while(result==-1 && it.hasNext()){
+      if(it.next().equals(child)) result=i;
+      i++;
+    }
+    return result;
   }
 
 }

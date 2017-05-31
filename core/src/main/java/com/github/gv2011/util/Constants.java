@@ -1,128 +1,166 @@
 package com.github.gv2011.util;
 
+import static com.github.gv2011.util.Verify.verifyEqual;
+import static com.github.gv2011.util.ex.Exceptions.call;
+import static com.github.gv2011.util.ex.Exceptions.run;
+import static com.github.gv2011.util.ex.Exceptions.staticClass;
+
 import java.lang.ref.SoftReference;
-import java.util.function.Supplier;
+
+import com.github.gv2011.util.ex.ThrowingConsumer;
+import com.github.gv2011.util.ex.ThrowingSupplier;
 
 import net.jcip.annotations.ThreadSafe;
 
 @ThreadSafe
 public final class Constants{
 
-  public static final <T> Constant<T> newCachedConstant(final Constant<? extends T> supplier){
-    return new CacheImpl<T>(){
-      private SoftReference<T> ref;
-      @Override
-      protected T getIntern() {
-        final SoftReference<T> ref = this.ref;
-        return ref==null?null:ref.get();
-      }
-      @Override
-      protected void setIntern(final T value) {
-        ref = new SoftReference<>(value);
-      }
-      @Override
-      protected T retrieveValue() {
-        return supplier.get();
-      }
-    };
+  private Constants(){staticClass();}
+
+  /**
+   * The value of the constant is lazily retrieved from the supplier. It is cached in a soft reference, so the
+   * supplier may be called multiple times. The supplier must guarantee to return always the same value.
+   */
+  public static final <T> CachedConstant<T> softRefConstant(final Constant<? extends T> supplier){
+    return new SoftRefConstant<>(supplier);
   }
 
-  public static final <T> Constant<T> newConstant(final Constant<? extends T> supplier){
-    return new ConstantImp<T>(){
-      @Override
-      protected T retrieveValue() {
-        return supplier.get();
-      }
-    };
+  /**
+   * The value of the constant must be set before it is retrieved.
+   */
+  public static final <T> CachedConstant<T> cachedConstant(){
+    return new CloseableConstantImp<>(()->{throw new IllegalStateException("Value has not been set.");}, t->{});
   }
 
-  public static final <T> LazyConstant<T> newLazyConstant(){
-    return new LazyConstantImp<>();
+  /**
+   * The value of the constant is lazily retrieved from the supplier. It is cached forever, so the
+   * supplier is called at most once.
+   */
+  public static final <T> CachedConstant<T> cachedConstant(final ThrowingSupplier<? extends T> supplier){
+    return new CloseableConstantImp<>(supplier, t->{});
   }
 
-  public static final <T> Constant<T> newLazyCachedConstant(final Supplier<T> supplier){
-    return new Constant<T>(){
-      private final Object lock = new Object();
-      private T value;
-      @Override
-      public T get() {
-        if(value==null){
-          synchronized(lock){
-            if(value==null){
-              value = supplier.get();
-            }
+  /**
+   * The value of the constant is lazily retrieved from the supplier. It is cached forever, so the
+   * supplier is called at most . The supplier must guarantee to return always the same value.
+   */
+  public static final <T extends AutoCloseable> CloseableCachedConstant<T> closeableCachedConstant(
+      final ThrowingSupplier<? extends T> supplier
+    ){
+      return closeableCachedConstant(supplier, AutoCloseable::close);
+    }
+
+  public static final <T> CloseableCachedConstant<T> closeableCachedConstant(
+      final ThrowingSupplier<? extends T> supplier, final ThrowingConsumer<? super T> closer
+    ){
+      return new CloseableConstantImp<>(supplier, closer);
+    }
+
+  /**
+   * Cache algorithm that makes use of the constant character by unsynchronized read access to a instance variable.
+   * (no "out-of-the-air values" implies: if the value is not null, it is correct.)
+   */
+  private static abstract class AbstractCachedConstant<E> implements CachedConstant<E>{
+
+    protected final Object lock = new Object();
+
+    @Override
+    public final E get() {
+      E result = getIntern();
+      if(result==null){
+        synchronized(lock){
+          result = getIntern();
+          if(result==null){
+            result = retrieveValue();
+            if(result==null) throw new NullPointerException("Retrieved null value.");
+            setIntern(result);
           }
         }
-        return value;
       }
-    };
-  }
+      return result;
+    }
 
 
-private Constants(){}
 
-private static abstract class CacheImpl<E> implements Constant<E>{
-
-  protected final Object lock = new Object();
-
-  @Override
-  public E get() {
-    E result = getIntern();
-    if(result==null){
+    @Override
+    public final void set(final E value) {
       synchronized(lock){
-        result = getIntern();
-        if(result==null){
-          result = retrieveValue();
-          if(result==null) throw new NullPointerException("Retrieved null value.");
-          setIntern(result);
+        final E current = getIntern();
+        if(current==null){
+          setIntern(value);
+        }else{
+          verifyEqual(value, current);
         }
       }
     }
-    return result;
-    }
 
-  protected abstract E retrieveValue();
 
-  protected abstract E getIntern();
 
-  protected abstract void setIntern(E value);
+    protected abstract E retrieveValue();
+
+    protected abstract E getIntern();
+
+    protected abstract void setIntern(E value);
   }
 
-  private static abstract class ConstantImp<T> extends CacheImpl<T>{
-    protected T value;
+  private static class SoftRefConstant<T> extends AbstractCachedConstant<T>{
+    private final Constant<? extends T> supplier;
+    SoftReference<T> ref;
+    private SoftRefConstant(final Constant<? extends T> supplier) {
+      this.supplier = supplier;
+    }
     @Override
     protected T getIntern() {
-      return value;
+      final SoftReference<T> ref = this.ref;
+      return ref==null?null:ref.get();
+    }
+    @Override
+    protected void setIntern(final T value) {
+      ref = new SoftReference<>(value);
+    }
+    @Override
+    protected T retrieveValue() {
+      return supplier.get();
+    }
+  }
+
+  private static class CloseableConstantImp<T>
+  extends AbstractCachedConstant<T> implements CloseableCachedConstant<T>{
+    private T value;
+    private ThrowingSupplier<? extends T> supplier;
+    private boolean closed = false;
+    private final ThrowingConsumer<? super T> closer;
+    private CloseableConstantImp(
+      final ThrowingSupplier<? extends T> supplier, final ThrowingConsumer<? super T> closer
+    ){
+      this.supplier = supplier;
+      this.closer = closer;
     }
     @Override
     protected void setIntern(final T value) {
       assert this.value==null && value!=null;
       this.value = value;
     }
-  }
-
-  private static class LazyConstantImp<T> extends ConstantImp<T> implements LazyConstant<T>{
-
     @Override
-    protected T retrieveValue() {
-      if(value==null) throw new IllegalStateException("Value has not been set.");
+    protected T getIntern() {
+      if(closed) throw new IllegalStateException("Closed.");
       return value;
     }
-
     @Override
-    public void set(final T value) {
-      synchronized(lock){
-        if(this.value!=null){
-          //Tolerate if trying to set same value twice.
-          if(!value.equals(this.value)) throw new IllegalStateException("Value has already been set.");
-        }else{
-          this.value = value;
+    protected T retrieveValue() {
+      final T value = call(supplier::get);
+      supplier = null;
+      return value;
+    }
+    @Override
+    public void close() {
+      if(!closed){
+        synchronized(lock){
+          if(value!=null) run(()->closer.accept(value));
+          closed = true;
+          value = null;
         }
       }
-
     }
-
-
   }
-
 }

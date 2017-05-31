@@ -1,5 +1,6 @@
 package com.github.gv2011.util.icol;
 
+import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.SortedMap;
@@ -12,6 +13,8 @@ public interface ICollectionFactory {
   <T> IList<T> emptyList();
 
   <T> ISet<T> emptySet();
+
+  <T extends Comparable<? super T>> ISortedSet<T> emptySortedSet();
 
   <K,V> IMap<K,V> emptyMap();
 
@@ -97,6 +100,10 @@ public interface ICollectionFactory {
 
   default <K extends Comparable<? super K>, V> ISortedMap<K,V> copyOf(final SortedMap<K, V> map){
     return map.entrySet().stream().collect(sortedMapCollector());
+  }
+
+  default <E> ISet<E> setOf(final Collection<E> collection){
+    return this.<E>setBuilder().addAll(collection).build();
   }
 
 

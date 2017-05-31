@@ -21,10 +21,10 @@ import com.github.gv2011.util.ex.ThrowingSupplier;
 
 public class JarUtils {
 
+  private JarUtils(){staticClass();}
+
   private static final String M_PREFIX = "META-INF/maven/";
   private static final String M_SUFFIX = "/pom.properties";
-
-  private JarUtils(){staticClass();}
 
   public static final MvnJarId getMavenId(final ThrowingSupplier<InputStream> streamSource){
     return callWithCloseable(()->streamSource.get(), s->{

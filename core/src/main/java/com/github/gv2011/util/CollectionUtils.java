@@ -189,11 +189,22 @@ public class CollectionUtils {
   }
 
   public static <T> Optional<T> atMostOne(final Iterable<? extends T> collection){
-    final Iterator<? extends T> iterator = collection.iterator();
+    return atMostOne(collection, ()->"Collection has more than one element.");
+  }
+
+  public static <T> Optional<T> atMostOne(
+    final Iterable<? extends T> collection, final Supplier<String> moreThanOneMessage
+  ){
+    return atMostOne(collection.iterator(), moreThanOneMessage);
+  }
+
+  public static <T> Optional<T> atMostOne(
+    final Iterator<? extends T> iterator, final Supplier<String> moreThanOneMessage
+  ){
     if(!iterator.hasNext()) return Optional.empty();
     else{
       final Optional<T> result = Optional.of(iterator.next());
-      verify(!iterator.hasNext());
+      verify(!iterator.hasNext(), moreThanOneMessage);
       return result;
     }
   }

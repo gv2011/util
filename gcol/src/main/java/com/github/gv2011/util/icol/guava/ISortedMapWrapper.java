@@ -197,5 +197,10 @@ final class ISortedMapWrapper<K,V> extends IMapWrapper<K,V,NavigableMap<K,V>> im
     return Optional.ofNullable(delegate.lastEntry());
   }
 
+  @Override
+  public String toString() {
+    return delegate.toString();
+  }
+
 
 }
