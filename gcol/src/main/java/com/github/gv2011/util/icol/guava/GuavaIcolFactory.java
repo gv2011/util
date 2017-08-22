@@ -52,6 +52,12 @@ public final class GuavaIcolFactory implements ICollectionFactory{
 
   @SuppressWarnings("unchecked")
   @Override
+  public <K extends Comparable<? super K>,V> ISortedMap<K, V> emptySortedMap() {
+    return EMPTY_MAP;
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
   public <T> IList<T> listOf(final T element, final T... more) {
     return ((IList.Builder<T>)listBuilder()).add(element).addAll(more).build();
   }

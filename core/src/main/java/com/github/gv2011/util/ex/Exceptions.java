@@ -11,6 +11,8 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.helpers.MessageFormatter;
 
+import com.github.gv2011.util.OptCloseable;
+
 public final class Exceptions {
 
   private Exceptions(){staticClass();}
@@ -130,29 +132,54 @@ public final class Exceptions {
     throw new RuntimeException("This is a static class without instances.");
   }
 
-
+  public static <C extends OptCloseable,R> R callWithOptCloseable(
+      final ThrowingSupplier<C> supplier, final ThrowingFunction<C,R> function
+    ){
+      return callWithCloseable(supplier, function, OptCloseable::close);
+    }
 
   public static <C extends AutoCloseable,R> R callWithCloseable(
       final ThrowingSupplier<C> supplier, final ThrowingFunction<C,R> function
     ){
-      try{
-        try(C closeable = supplier.get()){
-          return function.apply(closeable);
-        }
-      }
-      catch(final Exception ex){throw wrap(ex);}
+      return callWithCloseable(supplier, function, AutoCloseable::close);
     }
 
-  public static <C extends AutoCloseable> void doWithCloseable(
-      final ThrowingSupplier<C> supplier, final ThrowingConsumer<C> consumer
-    ){
+  public static <C,R> R callWithCloseable(
+    final ThrowingSupplier<C> supplier, final ThrowingFunction<C,R> function, final ThrowingConsumer<? super C> closer
+  ){
+    try{
+      final C closeable = supplier.get();
       try{
-        try(C closeable = supplier.get()){
-          consumer.accept(closeable);
-        }
+        return function.apply(closeable);
+      }finally{
+        closer.accept(closeable);
       }
-      catch(final Exception ex){throw wrap(ex);}
     }
+    catch(final Exception ex){throw wrap(ex);}
+  }
+
+  public static <C extends OptCloseable> void doWithOptCloseable(
+    final ThrowingSupplier<C> supplier, final ThrowingConsumer<C> consumer
+  ){
+    doWithCloseable(supplier, consumer, OptCloseable::close);
+  }
+
+  public static <C extends AutoCloseable> void doWithCloseable(
+    final ThrowingSupplier<C> supplier, final ThrowingConsumer<C> consumer
+  ){
+    doWithCloseable(supplier, consumer, AutoCloseable::close);
+  }
+
+  public static <C> void doWithCloseable(
+    final ThrowingSupplier<C> supplier, final ThrowingConsumer<C> consumer, final ThrowingConsumer<? super C> closer
+  ){
+    try{
+      final C closeable = supplier.get();
+      try{consumer.accept(closeable);}
+      finally{closer.accept(closeable);}
+    }
+    catch(final Exception ex){throw wrap(ex);}
+  }
 
 
 }

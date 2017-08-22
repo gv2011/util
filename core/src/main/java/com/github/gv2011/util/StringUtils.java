@@ -11,6 +11,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -36,11 +37,9 @@ public final class StringUtils {
     return s.substring(prefix.length());
   }
 
-  public static String tryRemovePrefix(final String s, final String prefix) {
-    if(!s.startsWith(prefix)) throw new IllegalArgumentException(
-      format("{} does not start with {}.", s, prefix)
-    );
-    return s.substring(prefix.length());
+  public static Optional<String> tryRemovePrefix(final String s, final String prefix) {
+    if(!s.startsWith(prefix)) return Optional.empty();
+    else return Optional.of(s.substring(prefix.length()));
   }
 
   public static Function<String,Stream<String>> tryRemovePrefix(final String prefix) {

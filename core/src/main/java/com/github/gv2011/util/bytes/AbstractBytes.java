@@ -1,5 +1,6 @@
 package com.github.gv2011.util.bytes;
 
+import static com.github.gv2011.util.CollectionUtils.pair;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.notYetImplementedException;
 import static com.github.gv2011.util.ex.Exceptions.run;
@@ -11,6 +12,7 @@ import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -20,9 +22,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import com.github.gv2011.util.Constant;
 import com.github.gv2011.util.Constants;
+import com.github.gv2011.util.Pair;
 
 import net.jcip.annotations.Immutable;
 
@@ -38,6 +42,10 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
   @Override
   public String toString(){
     return toStringCache.get();
+  }
+
+  protected final void checkNotClosed() {
+    if(closed()) throw new IllegalStateException("Closed.");
   }
 
   protected String toStringImp(){
@@ -83,6 +91,22 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
   }
 
   @Override
+  public Pair<Bytes,Bytes> split(final long index){
+    final Bytes b1 = this.subList(0L, index);
+    final Bytes b2 = this.subList(index, longSize());
+    return pair(b1, b2);
+  }
+
+
+
+  @Override
+  public int write(final byte[] b, final int off, final int len) {
+    final int result = (int) Math.min(len, longSize());
+    for(int i=0; i<result; i++){b[off+i] = getByte(i);}
+    return result;
+  }
+
+  @Override
   public void write(final OutputStream stream){
     run(()->{
       for(final byte b: this) stream.write(b);
@@ -92,6 +116,7 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
 
   @Override
   public void write(final Path file) {
+    checkNotClosed();
     try(OutputStream stream = Files.newOutputStream(file, CREATE, TRUNCATE_EXISTING)) {
       write(stream);
     } catch (final IOException e) {throw wrap(e);}
@@ -107,6 +132,11 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
     return new String(toByteArray(), UTF_8);
   }
 
+
+  @Override
+  public String toString(final Charset charset) {
+    return new String(toByteArray(), charset);
+  }
 
 
   @Override
@@ -146,6 +176,7 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
   }
 
   protected Hash256 hashImp() {
+    checkNotClosed();
     final MessageDigest md = call(()->MessageDigest.getInstance(Hash256.ALGORITHM));
     for(final byte b:this) md.update(b);
     return new Hash256Imp(md);
@@ -173,7 +204,8 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
 
 
   @Override
-  public CloseableBytes toBase64() {
+  public Bytes toBase64() {
+    checkNotClosed();
     try(final BytesBuilder builder = ByteUtils.newBytesBuilder()){
       final OutputStream stream = Base64.getEncoder().wrap(builder);
       write(stream);
@@ -183,7 +215,7 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
   }
 
   @Override
-  public CloseableBytes decodeBase64() {
+  public Bytes decodeBase64() {
     try(final InputStream stream = Base64.getDecoder().wrap(openStream())){
       return ByteUtils.fromStream(stream);
     } catch (final IOException e) {throw wrap(e);}
@@ -191,13 +223,76 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
 
   @Override
   public Iterator<Byte> iterator() {
+    checkNotClosed();
     return new It(0);
   }
 
   @Override
   public ListIterator<Byte> listIterator(final int index) {
+    checkNotClosed();
     return new It(index);
   }
+
+  protected final static void checkIndices(final long fromIndex, final long toIndex, final long size) {
+    if(
+      fromIndex>size ||
+      toIndex>size   ||
+      fromIndex < 0  ||
+      toIndex < 0
+    ) throw new IndexOutOfBoundsException();
+    if(fromIndex>toIndex) throw new IllegalArgumentException();
+  }
+
+  @Override
+  public Bytes toHexMultiline() {
+    throw notYetImplementedException();
+  }
+
+  @Override
+  public Bytes append(final Bytes hashBytes) {
+    // TODO Auto-generated method stub
+    throw notYetImplementedException();
+  }
+
+  @Override
+  public boolean startsWith(final Bytes prefix) {
+    return startsWith(prefix, 0);
+  }
+
+  private boolean startsWith(final Bytes prefix, final long offset) {
+    checkNotClosed();
+    if(prefix.isEmpty()) return true;
+    else if(prefix.longSize()>longSize()-offset) return false;
+    else{
+      boolean result = true;
+      long i=0;
+      while(result && i<prefix.longSize()){
+        if(get(offset+i)!=prefix.get(i)) result = false;
+        i++;
+      }
+      return result;
+    }
+  }
+
+  @Override
+  public Optional<Long> indexOfOther(final Bytes other) {
+    checkNotClosed();
+    Optional<Long> result = Optional.empty();
+    boolean done = false;
+    long searchIndex = 0;
+    long remainingSize = longSize();
+    final long otherSize = other.longSize();
+    while(!done){
+      if(remainingSize<otherSize){done = true;}
+      else if(startsWith(other, searchIndex)){
+        result = Optional.of(searchIndex);
+        done = true;
+      }
+      else {searchIndex++; remainingSize--;}
+    }
+    return result;
+  }
+
 
   private final class It implements ListIterator<Byte> {
     private long index;
@@ -248,63 +343,6 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
     public void add(final Byte e) {
       throw new UnsupportedOperationException("Read-only");
     }
-
-}
-
-
-  protected final static void checkIndices(final long fromIndex, final long toIndex, final long size) {
-    if(
-      fromIndex>size ||
-      toIndex>size   ||
-      fromIndex < 0  ||
-      toIndex < 0
-    ) throw new IndexOutOfBoundsException();
-    if(fromIndex>toIndex) throw new IllegalArgumentException();
-  }
-
-  @Override
-  public Bytes toHexMultiline() {
-    throw notYetImplementedException();
-  }
-
-  @Override
-  public Bytes append(final Bytes hashBytes) {
-    // TODO Auto-generated method stub
-    throw notYetImplementedException();
-  }
-
-  @Override
-  public boolean startsWith(final Bytes prefix) {
-    return startsWith(prefix, 0);
-  }
-
-  private boolean startsWith(final Bytes prefix, final long offset) {
-    if(prefix.isEmpty()) return true;
-    else if(prefix.longSize()>longSize()-offset) return false;
-    else{
-      boolean result = true;
-      long i=0;
-      while(result && i<prefix.longSize()){
-        if(get(offset+i)!=prefix.get(i)) result = false;
-        i++;
-      }
-      return result;
-    }
-  }
-
-  @Override
-  public long indexOfOther(final Bytes other) {
-    long result = 0;
-    boolean done = false;
-    while(!done){
-      if(longSize()-result<other.longSize()){
-        result = -1;
-        done = true;
-      }
-      else if(startsWith(other, result)) done = true;
-      else result++;
-    }
-    return result;
   }
 
 

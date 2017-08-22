@@ -410,6 +410,13 @@ public class CollectionUtils {
   }
 
   @SafeVarargs
+  public static <T> IList<T> listOf(final T... elements) {
+    final IList.Builder<T> builder = iCollections().listBuilder();
+    for(final T e: elements) builder.add(e);
+    return builder.build();
+  }
+
+  @SafeVarargs
   public static <T> ISet<T> setOf(final T... elements) {
     final ISet.Builder<T> builder = iCollections().setBuilder();
     for(final T e: elements) builder.add(e);
@@ -439,5 +446,13 @@ public class CollectionUtils {
       @Override
       public T next() {return mapping.apply(delegate.next());}
     };
+  }
+
+  public static final <A,B> Either<A,B> newThis(final A a){
+    return EitherImp.newThis(a);
+  }
+
+  public static final <A,B> Either<A,B> newThat(final B b){
+    return EitherImp.newThat(b);
   }
 }

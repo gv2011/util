@@ -1,13 +1,16 @@
 package com.github.gv2011.util;
 
 import static com.github.gv2011.util.Verify.verify;
+import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.run;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.Writer;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -17,7 +20,7 @@ import java.nio.file.attribute.BasicFileAttributeView;
 import java.util.Optional;
 
 import com.github.gv2011.util.bytes.ByteUtils;
-import com.github.gv2011.util.bytes.CloseableBytes;
+import com.github.gv2011.util.bytes.Bytes;
 import com.github.gv2011.util.ex.ThrowingFunction;
 
 public final class FileUtils {
@@ -39,6 +42,19 @@ public final class FileUtils {
     return call(()->Files.newBufferedReader(path(first, more), UTF_8));
   }
 
+  public static Writer getWriter(final String first, final String... more){
+    return call(()->Files.newBufferedWriter(path(first, more), UTF_8));
+  }
+
+  public static Reader getReaderRemoveBom(final String first, final String... more){
+    return call(()->{
+      final BufferedReader reader = Files.newBufferedReader(path(first, more), UTF_8);
+      final int bom = reader.read();
+      verifyEqual(bom, 0xFEFF);
+      return reader;
+    });
+  }
+
   public static InputStream getStream(final String first, final String... more){
     return call(()->Files.newInputStream(path(first, more)));
   }
@@ -58,9 +74,8 @@ public final class FileUtils {
   public static Optional<String> tryReadText(final Path path){
     return call(()->{
       try(InputStream in = Files.newInputStream(path)){
-        try(CloseableBytes bytes = ByteUtils.fromStream(in)){
-          return Optional.of(bytes.utf8ToString());
-        }
+        final Bytes bytes = ByteUtils.fromStream(in);
+        return Optional.of(bytes.utf8ToString());
       }catch(final NoSuchFileException e){return Optional.empty();}
     });
   }
@@ -94,7 +109,14 @@ public final class FileUtils {
     else deleteFile(file);
   }
 
+  /**
+   * Deletes a file if it exists. Cannot be used with directories.
+   *
+   * @return  {@code true} if the file was deleted by this method;
+   *          {@code false} if the file could not be deleted because it did not exist.
+   */
   public static boolean deleteFile(final Path file) {
+    verify(!Files.isDirectory(file));
     final boolean result = call(()->Files.deleteIfExists(file));
     verify(!Files.exists(file));
     return result;

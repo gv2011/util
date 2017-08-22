@@ -19,7 +19,7 @@ public class FileBytesTest {
   private byte[] array;
   private Bytes bytes;
   private Path file;
-  private FileBytes fileBytes;
+  private Bytes fileBytes;
 
   @Before
   public void setup(){

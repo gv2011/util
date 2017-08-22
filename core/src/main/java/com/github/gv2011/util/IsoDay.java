@@ -8,6 +8,10 @@ public class IsoDay implements Comparable<IsoDay>{
   private static final Pattern PATTERN = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
   private static final Pattern DD_MM_YYYY = Pattern.compile("(\\d{2})\\.(\\d{2})\\.(\\d{4})");
 
+  public static IsoDay parse(final String yyyyMmDd) {
+    return new IsoDay(yyyyMmDd);
+  };
+
   public static final IsoDay fromDdMmYyyy(final String ddMmYyyy){
     final Matcher m = DD_MM_YYYY.matcher(ddMmYyyy);
     if(!m.matches()) throw new IllegalArgumentException();
@@ -16,6 +20,7 @@ public class IsoDay implements Comparable<IsoDay>{
 
   private final String isoDay;
 
+  @Deprecated
   public IsoDay(final String isoDay) {
     if(!PATTERN.matcher(isoDay).matches()) throw new IllegalArgumentException(isoDay);
     this.isoDay = isoDay;
@@ -57,6 +62,7 @@ public class IsoDay implements Comparable<IsoDay>{
   @Override
   public int compareTo(final IsoDay o) {
     return isoDay.compareTo(o.toString());
-  };
+  }
+
 
 }

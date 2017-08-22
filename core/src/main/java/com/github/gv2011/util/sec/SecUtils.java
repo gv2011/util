@@ -147,7 +147,7 @@ public final class SecUtils {
     Bytes result;
     try(BytesBuilder builder = ByteUtils.newBytesBuilder()){
       run(()->keystore.store(builder, JKS_DEFAULT_PASSWORD.toCharArray()));
-      result = builder.build().loadInMemory();
+      result = builder.build();
     }
     return result;
   }

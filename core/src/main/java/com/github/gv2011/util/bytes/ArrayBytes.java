@@ -80,5 +80,4 @@ class ArrayBytes extends AbstractBytes{
     return new Hash256Imp(bytes);
   }
 
-
 }

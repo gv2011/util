@@ -162,5 +162,9 @@ public final class Constants{
         }
       }
     }
+    @Override
+    public boolean closed() {
+      return closed;
+    }
   }
 }

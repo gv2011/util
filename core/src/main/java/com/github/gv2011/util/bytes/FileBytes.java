@@ -14,7 +14,7 @@ import java.util.Iterator;
 
 class FileBytes extends AbstractBytes{
 
-  protected final Path file;
+  private final Path file;
   private final long offset;
   private final long size;
 
@@ -24,17 +24,24 @@ class FileBytes extends AbstractBytes{
     this.size = size;
   }
 
+  protected final Path file(){
+    if(closed()) throw new IllegalStateException("Closed.");
+    return file;
+  }
+
   FileBytes(final Path file) {
     this(file,0, call(()->Files.readAttributes(file, BasicFileAttributes.class).size()));
   }
 
   @Override
   public long longSize() {
+    checkNotClosed();
     return size;
   }
 
   @Override
   public byte get(final long index) {
+    checkNotClosed();
     if(index>=size) throw new IndexOutOfBoundsException(format("{} is greater or equal size {}.", index, size));
     try(InputStream stream = openStream()){
       stream.skip(index);
@@ -57,6 +64,7 @@ class FileBytes extends AbstractBytes{
 
   @Override
   public Iterator<Byte> iterator() {
+    checkNotClosed();
     return call(()->new StreamIterator(openStream()));
   }
 
@@ -66,13 +74,14 @@ class FileBytes extends AbstractBytes{
     checkIndices(fromIndex, toIndex, size);
     if(fromIndex==0 && toIndex==size) return this;
     else{
-      return new FileBytes(file, fromIndex, toIndex-fromIndex);
+      return new FileBytes(file(), fromIndex, toIndex-fromIndex);
     }
   }
 
   @Override
   public InputStream openStream() {
-    return new TruncatedStream(call(()->Files.newInputStream(file)), offset, size);
+    checkNotClosed();
+    return new TruncatedStream(call(()->Files.newInputStream(file())), offset, size);
   }
 
 }

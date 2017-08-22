@@ -12,7 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
@@ -23,16 +22,16 @@ import com.github.gv2011.util.Builder;
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
-public class BytesBuilder extends FilterOutputStream implements Builder<CloseableBytes>, AutoCloseableNt{
+public class BytesBuilder extends FilterOutputStream implements Builder<Bytes>, AutoCloseableNt{
 
   private final Logger LOG = getLogger(BytesBuilder.class);
 
   private long count=0;
   private int hashCode = 1;
-  private final int limit=8192;
+  private final int limit = 16384;
   private Path tmpFile;
   private final AtomicBoolean closed = new AtomicBoolean(false);
-  private CloseableBytes result;
+  private Bytes result;
 
   private ByteArrayOutputStream bos;
 
@@ -72,7 +71,7 @@ public class BytesBuilder extends FilterOutputStream implements Builder<Closeabl
 
 
   private void checkSize(final int len) {
-    if(closed.get()) throw new IllegalStateException("Closed.");
+    if(closed()) throw new IllegalStateException("Closed.");
     if(tmpFile==null){
       if(count+len>limit){
         run(()->{
@@ -101,13 +100,13 @@ public class BytesBuilder extends FilterOutputStream implements Builder<Closeabl
 
 
   @Override
-  public CloseableBytes build() {
+  public Bytes build() {
     if(closed.getAndSet(true)==false){
       run(out::close);
       if(tmpFile!=null){
         result = new FileBackedBytesImp(tmpFile, count, hashCode, new Hash256Imp(digest.getMessageDigest()));
       }else{
-        result = new CloseableArrayBytes(bos.toByteArray());
+        result = new ArrayBytes(bos.toByteArray());
         bos = null;
       }
     }
@@ -120,42 +119,38 @@ public class BytesBuilder extends FilterOutputStream implements Builder<Closeabl
   }
 
 
-  private static final class CloseableArrayBytes extends ArrayBytes implements CloseableBytes {
-    private CloseableArrayBytes(final byte[] bytes) {
-      super(bytes);
-    }
-    @Override
-    public void close() {}
+//  public Optional<Bytes> remove(final Bytes marker) {
+//    final byte[] bytes = bos.toByteArray();
+//    bos.reset();
+//    if(marker.isEmpty()){
+//      if(bytes.length==0) return Optional.empty();
+//      else return Optional.of(ByteUtils.newBytes(bytes));
+//    }else{
+//      final int markerStart = indexOf(bytes, marker);
+//      if(markerStart==-1)  return Optional.empty();
+//      else{
+//        final int markerEnd = markerStart+marker.size();
+//        bos.write(bytes, markerEnd, bytes.length-markerEnd); //Put the part after the marker back to
+//        return Optional.of(ByteUtils.newBytes(bytes, 0, markerStart));
+//      }
+//    }
+//  }
 
-    @Override
-    public Bytes loadInMemory() {
-      return this;
-    }
+
+
+  @Override
+  public boolean closed() {
+    return closed.get();
   }
 
 
-  public Optional<Bytes> remove(final Bytes marker) {
-    final byte[] bytes = bos.toByteArray();
-    bos.reset();
-    if(marker.isEmpty()){
-      if(bytes.length==0) return Optional.empty();
-      else return Optional.of(ByteUtils.newBytes(bytes));
-    }else{
-      final int markerStart = indexOf(bytes, marker);
-      if(markerStart==-1)  return Optional.empty();
-      else{
-        final int markerEnd = markerStart+marker.size();
-        bos.write(bytes, markerEnd, bytes.length-markerEnd); //Put the part after the marker back to
-        return Optional.of(ByteUtils.newBytes(bytes, 0, markerStart));
-      }
-    }
-  }
 
 
 
   /**
    * First index of marker sequence in bytes or -1 if not there.
    */
+  @SuppressWarnings("unused")
   private int indexOf(final byte[] bytes, final Bytes marker) {
     verify(!marker.isEmpty());
     boolean done = false;
@@ -175,6 +170,16 @@ public class BytesBuilder extends FilterOutputStream implements Builder<Closeabl
       }
     }
     return result;
+  }
+
+
+
+  public long size() {
+    return count;
+  }
+
+  public boolean isEmpty(){
+    return count==0L;
   }
 
 }

@@ -2,13 +2,18 @@ package com.github.gv2011.util.bytes;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
+
+import com.github.gv2011.util.OptCloseable;
+import com.github.gv2011.util.Pair;
 
 import net.jcip.annotations.Immutable;
 
 @Immutable
-public interface Bytes extends List<Byte>{
+public interface Bytes extends List<Byte>, OptCloseable{
 
   @Override
   int size() throws TooBigException;
@@ -21,9 +26,9 @@ public interface Bytes extends List<Byte>{
 
   String utf8ToString() throws TooBigException;
 
-  CloseableBytes toBase64();
+  Bytes toBase64();
 
-  CloseableBytes decodeBase64();
+  Bytes decodeBase64();
 
   InputStream openStream();
 
@@ -50,6 +55,14 @@ public interface Bytes extends List<Byte>{
 
   boolean startsWith(Bytes prefix);
 
-  long indexOfOther(Bytes other);
+  Optional<Long> indexOfOther(Bytes other);
+
+  Pair<Bytes,Bytes> split(long index);
+
+  int write(byte[] b, int off, int len);
+
+  String toString(Charset charset);
+
+
 
 }

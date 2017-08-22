@@ -27,9 +27,13 @@ public abstract class TypedString<T extends TypedString<T>> implements Comparabl
   public final int compareTo(final TypedString<?> o) {
     int result = clazz().getName().compareTo(o.clazz().getName());
     if(result==0){
-      result = toString().compareTo(o.toString());
+      result = compareWithOtherOfSameType(clazz().cast(o));
     }
     return result;
+  }
+
+  protected int compareWithOtherOfSameType(final T o) {
+    return toString().compareTo(o.toString());
   }
 
 

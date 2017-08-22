@@ -78,7 +78,7 @@ public class ByteUtils {
     );
   }
 
-  public static CloseableBytes newRandomBytes(final long size){
+  public static Bytes newRandomBytes(final long size){
     final byte[] bytes = new byte[(int)min(1024,size)];
     final Random random = new SecureRandom();
     long remaining = size;
@@ -93,7 +93,7 @@ public class ByteUtils {
     }
   }
 
-  public static CloseableBytes fromStream(final InputStream in){
+  public static Bytes fromStream(final InputStream in){
     final byte[] bytes = new byte[1024];
     int count = call(()->in.read(bytes));
     try(BytesBuilder builder = newBytesBuilder()){
@@ -148,7 +148,7 @@ public class ByteUtils {
     return Files.exists(file) ? Optional.of(newFileBytes(file)) : Optional.empty();
   }
 
-  public static FileBytes newFileBytes(final Path file) {
+  public static Bytes newFileBytes(final Path file) {
     return new FileBytes(file);
   }
 

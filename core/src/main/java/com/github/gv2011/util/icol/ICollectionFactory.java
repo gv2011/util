@@ -18,6 +18,8 @@ public interface ICollectionFactory {
 
   <K,V> IMap<K,V> emptyMap();
 
+  <K extends Comparable<? super K>,V> ISortedMap<K,V> emptySortedMap();
+
   <T> IList<T> listOf(final T element);
 
   @SuppressWarnings("unchecked")
@@ -105,8 +107,5 @@ public interface ICollectionFactory {
   default <E> ISet<E> setOf(final Collection<E> collection){
     return this.<E>setBuilder().addAll(collection).build();
   }
-
-
-
 
 }
