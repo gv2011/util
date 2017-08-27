@@ -1,13 +1,18 @@
 package com.github.gv2011.util;
 
+import static com.github.gv2011.util.ex.Exceptions.staticClass;
+
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
 
-public class Comparison {
+public final class Comparison {
 
+  private Comparison(){staticClass();}
+  
   public static <C extends Comparable<C>> C min(final C c1, final C c2){
     final int diff = c1.compareTo(c2);
     assert (diff==0)==(c1.equals(c2));
@@ -20,8 +25,13 @@ public class Comparison {
     return diff>=0?c1:c2;
   }
 
-  public static <T extends Iterable<? extends E>, E extends Comparable<? super E>>
-  Comparator<T> listComparator(){
+  public static <C extends Iterable<? extends E>, E extends Comparable<? super E>> Comparator<C>
+  listComparator(){
+    return listComparator(Comparator.naturalOrder());
+  }
+
+  public static <C extends Iterable<? extends E>, E> Comparator<C>
+  listComparator(final Comparator<? super E> comparator){
     return (c1,c2)->{
       final Iterator<? extends E> it1 = c1.iterator();
       final Iterator<? extends E> it2 = c2.iterator();
@@ -34,7 +44,7 @@ public class Comparison {
         }else{
           final E next1 = it1.next();
           final E next2 = it2.next();
-          final int diff = next1.compareTo(next2);
+          final int diff = comparator.compare(next1, next2);
           if(diff!=0) result = diff;
         }
       }
@@ -82,6 +92,10 @@ public class Comparison {
         else return e1.compareTo(e2);
       }
     };
+  }
+
+  public static <E,F extends Comparable<? super F>> Comparator<E> compareByAttribute(final Function<E,F> attribute){
+    return (o1,o2)->attribute.apply(o1).compareTo(attribute.apply(o2));
   }
 
 

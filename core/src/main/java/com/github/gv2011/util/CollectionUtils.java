@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NavigableSet;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -26,7 +27,6 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -454,5 +454,9 @@ public class CollectionUtils {
 
   public static final <A,B> Either<A,B> newThat(final B b){
     return EitherImp.newThat(b);
+  }
+  
+  public static final boolean optIs(final Optional<?> optional, final Object obj) {
+    return optional.map(v->v.equals(obj)).orElse(false);
   }
 }

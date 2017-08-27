@@ -42,6 +42,14 @@ public final class ReflectionUtils {
     return methodLookup(intf).method(methodFunction);
   }
 
+  public static <T> MethodSignature signature(final Class<T> intf, final Function<T,?> methodFunction){
+    return new MethodSignature(method(intf, methodFunction));
+  }
+
+  public static <T> String methodName(final Class<T> intf, final Function<T,?> methodFunction){
+    return method(intf, methodFunction).getName();
+  }
+
   public static final class Lookup<T>{
     private final T proxy;
     private final ThreadLocal<Method> method = new ThreadLocal<>();

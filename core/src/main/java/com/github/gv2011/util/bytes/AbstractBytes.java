@@ -78,6 +78,11 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
   }
 
   @Override
+  public int getUnsigned(final long index) {
+    return Byte.toUnsignedInt(get(index));
+  }
+
+  @Override
   public byte[] toByteArray(){
     final byte[] result = new byte[size()];
     int i=0;
@@ -291,6 +296,22 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
       else {searchIndex++; remainingSize--;}
     }
     return result;
+  }
+
+
+  @Override
+  public int compareTo(final Bytes o) {
+    if(equals(o)) return 0;
+    else {
+      int result = 0;
+      final long i = 0;
+      while(result==0 && i<longSize() && i<o.longSize()) {
+        result = getUnsigned(i)-o.getUnsigned(i);
+      }
+      if(result==0) result = Long.signum(longSize()-o.longSize());
+      assert result!=0;
+      return result;      
+    }
   }
 
 

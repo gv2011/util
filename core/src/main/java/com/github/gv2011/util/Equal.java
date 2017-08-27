@@ -25,6 +25,12 @@ public final class Equal {
     else return eq.apply(clazz.cast(o2));
   }
 
+  public static <T extends Comparable<? super T>> boolean equal(final T o1, final Object o2, final Class<T> clazz){
+    if(o1==o2) return true;
+    else if(!clazz.isInstance(o2)) return false;
+    else return o1.compareTo(clazz.cast(o2))==0;
+  }
+
   public static int hashCode(final Class<?> clazz, final Object att1, final Object... more){
     int hash = (clazz.hashCode()*31)+att1.hashCode();
     for(final Object o: more) hash = hash*31 + o.hashCode();

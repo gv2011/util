@@ -13,55 +13,57 @@ import com.github.gv2011.util.Pair;
 import net.jcip.annotations.Immutable;
 
 @Immutable
-public interface Bytes extends List<Byte>, OptCloseable{
+public interface Bytes extends List<Byte>, Comparable<Bytes>, OptCloseable{
+
+  public static final class TooBigException extends IllegalStateException {}
+
+  Bytes append(Bytes hashBytes);
+
+  Hash256 asHash();
+
+  Bytes decodeBase64();
+
+  byte get(long index);
+
+  int getUnsigned(long index);
+
+  Hash256 hash();
+
+  Optional<Long> indexOfOther(Bytes other);
+
+  long longSize();
+
+  InputStream openStream();
 
   @Override
   int size() throws TooBigException;
 
-  long longSize();
+  Pair<Bytes,Bytes> split(long index);
 
-  byte get(long index);
-
-  byte[] toByteArray() throws TooBigException;
-
-  String utf8ToString() throws TooBigException;
-
-  Bytes toBase64();
-
-  Bytes decodeBase64();
-
-  InputStream openStream();
-
-  void write(final OutputStream stream);
-
-  void write(final Path file);
+  boolean startsWith(Bytes prefix);
 
   @Override
   Bytes subList(int fromIndex, int toIndex);
 
   Bytes subList(final long fromIndex, final long toIndex);
 
-  Hash256 hash();
+  Bytes toBase64();
 
-  Hash256 asHash();
-
-  int toInt();
-
-  public static final class TooBigException extends IllegalStateException {}
+  byte[] toByteArray() throws TooBigException;
 
   Bytes toHexMultiline();
 
-  Bytes append(Bytes hashBytes);
+  int toInt();
 
-  boolean startsWith(Bytes prefix);
+  String toString(Charset charset);
 
-  Optional<Long> indexOfOther(Bytes other);
-
-  Pair<Bytes,Bytes> split(long index);
+  String utf8ToString() throws TooBigException;
 
   int write(byte[] b, int off, int len);
 
-  String toString(Charset charset);
+  void write(final OutputStream stream);
+
+  void write(final Path file);
 
 
 
