@@ -4,6 +4,7 @@
  */
 package com.github.gv2011.testutil;
 
+import static com.github.gv2011.util.CollectionUtils.toISet;
 import static com.github.gv2011.util.Equal.equal;
 import static com.github.gv2011.util.ex.Exceptions.format;
 
@@ -21,6 +22,7 @@ import org.hamcrest.TypeSafeMatcher;
 
 import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.bytes.Bytes;
+import com.github.gv2011.util.icol.ISet;
 
 
 public final class Matchers {
@@ -1579,6 +1581,19 @@ public final class Matchers {
     };
   }
 
+  public static <C extends Collection<T>,T> Matcher<C> isUnique(final Function<? super T,?> f) {
+    return new TypeSafeMatcher<C>(){
+      @Override
+      public void describeTo(final Description description) {
+        description.appendText("A collection that mappes to unique values.");
+      }
 
+      @Override
+      protected boolean matchesSafely(final C collection) {
+        final ISet<?> mapped = collection.stream().map(f).collect(toISet());
+        return mapped.size()==collection.size();
+      }
+    };
+  }
 
 }

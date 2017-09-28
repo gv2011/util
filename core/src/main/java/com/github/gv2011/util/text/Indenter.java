@@ -4,7 +4,7 @@ import static com.github.gv2011.util.StringUtils.multiply;
 import static com.github.gv2011.util.Verify.verify;
 
 public class Indenter implements Appendable{
-  
+
   private final StringBuilder sb = new StringBuilder();
   private int indentLevel;
   private final String indent = "  ";
@@ -19,24 +19,26 @@ public class Indenter implements Appendable{
   public int getIndentLevel() {
     return indentLevel;
   }
-  
-  public void increaseIndention() {
+
+  public Indenter increaseIndention() {
     verify(indentLevel, l->l<maxIndentLevel);
     indentLevel++;
     prefix = multiply(indent, indentLevel);
+    return this;
   }
 
-  public void decreaseIndention() {
+  public Indenter decreaseIndention() {
     verify(indentLevel, l->l>0);
     indentLevel--;
     prefix = multiply(indent, indentLevel);
+    return this;
   }
 
-  
+
   private boolean onLastColumn() {
     return column==maxWidth -1;
   }
-  
+
   public Indenter addLine(final Object line) {
     finishLine();
     append(line.toString());
@@ -44,17 +46,17 @@ public class Indenter implements Appendable{
     return this;
   }
 
-  public Indenter finishLine() {    
+  public Indenter finishLine() {
     onContinuationLine = false;
-    if(inLine) finishLineInternal();   
+    if(inLine) finishLineInternal();
     else assert column==0;
     return this;
   }
 
-  private void finishLineInternal() {    
+  private void finishLineInternal() {
     sb.append('\n');
     column = 0;
-    inLine = false;      
+    inLine = false;
   }
 
   @Override

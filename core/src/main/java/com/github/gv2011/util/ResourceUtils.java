@@ -9,6 +9,9 @@ import static com.github.gv2011.util.ex.Exceptions.staticClass;
 import java.net.URL;
 import java.util.Optional;
 
+import com.github.gv2011.util.bytes.ByteUtils;
+import com.github.gv2011.util.bytes.Bytes;
+
 public class ResourceUtils {
 
   private ResourceUtils(){staticClass();}
@@ -57,6 +60,10 @@ public class ResourceUtils {
 
   public static final String getTextResource(final Class<?> refClass, final String relativeName){
     return StreamUtils.readText(getResourceUrl(refClass, relativeName)::openStream);
+  }
+
+  public static final Bytes getBinaryResource(final Class<?> refClass, final String relativeName){
+    return ByteUtils.copyFromStream(getResourceUrl(refClass, relativeName)::openStream);
   }
 
 

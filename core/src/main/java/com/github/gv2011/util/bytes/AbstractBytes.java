@@ -249,8 +249,26 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
   }
 
   @Override
-  public Bytes toHexMultiline() {
-    throw notYetImplementedException();
+  public String toHexMultiline() {
+    final StringBuilder sb = new StringBuilder();
+    int column = 0;
+    for(int i=0; i<size(); i++){
+      if(column>0){
+        if(column==32){
+          sb.append('\n');
+          column = 0;
+        }
+        else sb.append(' ');
+      }
+      sb.append(toHex(getUnsigned(i)));
+      column++;
+    }
+    return sb.toString();
+  }
+
+  private String toHex(final int b) {
+    if(b<0x10) return "0"+Integer.toHexString(b);
+    else return Integer.toHexString(b);
   }
 
   @Override
@@ -310,7 +328,7 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
       }
       if(result==0) result = Long.signum(longSize()-o.longSize());
       assert result!=0;
-      return result;      
+      return result;
     }
   }
 

@@ -9,6 +9,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.github.gv2011.util.bytes.ByteUtils;
+import com.github.gv2011.util.bytes.Bytes;
 import com.github.gv2011.util.ex.ThrowingSupplier;
 
 public final class StreamUtils {

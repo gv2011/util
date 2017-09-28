@@ -51,7 +51,7 @@ public interface Bytes extends List<Byte>, Comparable<Bytes>, OptCloseable{
 
   byte[] toByteArray() throws TooBigException;
 
-  Bytes toHexMultiline();
+  String toHexMultiline();
 
   int toInt();
 

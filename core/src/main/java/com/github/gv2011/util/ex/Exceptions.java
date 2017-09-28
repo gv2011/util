@@ -70,8 +70,12 @@ public final class Exceptions {
     try {
       return operation.call();
     }
-    catch (final RuntimeException e) {throw e;}
-    catch (final Exception e) {throw new WrappedException(e);}
+    catch (final RuntimeException e) {
+      throw e;
+      }
+    catch (final Exception e) {
+      throw new WrappedException(e);
+    }
   }
 
   public static void run(final ThrowingRunnable operation){
