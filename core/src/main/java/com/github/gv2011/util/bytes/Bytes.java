@@ -65,6 +65,10 @@ public interface Bytes extends List<Byte>, Comparable<Bytes>, OptCloseable{
 
   void write(final Path file);
 
+  byte getByte(int i);
+
+  Bytes subList(int fromIndex);
+
 
 
 }

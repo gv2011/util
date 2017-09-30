@@ -17,7 +17,7 @@ class ArrayBytes extends AbstractBytes{
 
   private final byte[] bytes;
 
-  protected ArrayBytes(final byte[] bytes) {
+  ArrayBytes(final byte[] bytes) {
     this.bytes = bytes;
   }
 

@@ -73,6 +73,7 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
     return getByte(index);
   }
 
+  @Override
   public byte getByte(final int index){
     return get((long)index);
   }
@@ -88,6 +89,11 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
     int i=0;
     for(final byte b: this) result[i++]=b;
     return result;
+  }
+
+  @Override
+  public Bytes subList(final int fromIndex){
+    return subList(fromIndex, longSize());
   }
 
   @Override

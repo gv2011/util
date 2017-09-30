@@ -10,6 +10,7 @@ import static java.lang.Math.min;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -26,7 +27,7 @@ public class ByteUtils {
 
   private static final Bytes EMPTY = newBytes(new byte[0]);
 
-  public static Bytes newBytes(final byte[] bytes){
+  public static Bytes newBytes(final byte... bytes){
     return newBytes(bytes, 0, bytes.length);
   }
 
@@ -156,12 +157,20 @@ public class ByteUtils {
     return new BytesBuilder();
   }
 
+  public static BytesBuilder newBytesBuilder(final int initialBufferSize) {
+    return new BytesBuilder(initialBufferSize);
+  }
+
   public static Hash256 parseHash(final String hexString){
     return new Hash256Imp(hexToByteArray(hexString));
   }
 
   public static Bytes emptyBytes() {
     return EMPTY;
+  }
+
+  public static Bytes fromBigInteger(final BigInteger i) {
+    return new ArrayBytes(i.toByteArray());
   }
 
 

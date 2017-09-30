@@ -43,6 +43,12 @@ public class BytesBuilder extends FilterOutputStream implements Builder<Bytes>, 
     setOut(bos);
   }
 
+  BytesBuilder(final int initialBufferSize){
+    super(null);
+    bos = new ByteArrayOutputStream(initialBufferSize);
+    setOut(bos);
+  }
+
 
 
   private void setOut(final OutputStream stream) {
