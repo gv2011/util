@@ -43,7 +43,8 @@ class IMapWrapper<K,V,M extends Map<K,V>> implements IMap<K,V>{
   @Override
   public final V get(final Object key) {
     final V value = delegate.get(key);
-    if(value==null) throw new NoSuchElementException(format("Map has no value for key {}.", key));
+    if(value==null)
+      throw new NoSuchElementException(format("Map has no value for key {}.", key));
     return value;
   }
 

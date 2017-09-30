@@ -322,9 +322,10 @@ abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
     if(equals(o)) return 0;
     else {
       int result = 0;
-      final long i = 0;
+      long i = 0;
       while(result==0 && i<longSize() && i<o.longSize()) {
         result = getUnsigned(i)-o.getUnsigned(i);
+        i++;
       }
       if(result==0) result = Long.signum(longSize()-o.longSize());
       assert result!=0;
