@@ -1,9 +1,9 @@
 package com.github.gv2011.util.icol;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
@@ -22,6 +22,8 @@ public interface ICollectionFactory {
 
   <T> IList<T> listOf(final T element);
 
+  <T> IList<T> listFrom(final Collection<? extends T> collection);
+
   @SuppressWarnings("unchecked")
   <T> IList<T> listOf(final T element, final T... more);
 
@@ -34,6 +36,8 @@ public interface ICollectionFactory {
 
   @SuppressWarnings("unchecked")
   <T> ISortedSet<T> sortedSetOf(final T element, final T... more);
+
+  <T> ISortedSet<T> sortedSetFrom(Collection<? extends T> elements);
 
   <T> IList<T> asList(T[] elements);
   <T> ISet<T> asSet(T[] elements);
@@ -100,7 +104,7 @@ public interface ICollectionFactory {
     return sortedMapCollector(Entry::getKey, Entry::getValue);
   }
 
-  default <K extends Comparable<? super K>, V> ISortedMap<K,V> copyOf(final SortedMap<K, V> map){
+  default <K extends Comparable<? super K>, V> ISortedMap<K,V> copyOf(final Map<K, V> map){
     return map.entrySet().stream().collect(sortedMapCollector());
   }
 
