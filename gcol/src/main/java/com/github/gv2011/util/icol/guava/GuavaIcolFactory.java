@@ -1,5 +1,6 @@
 package com.github.gv2011.util.icol.guava;
 
+import java.util.Collection;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
@@ -61,6 +62,13 @@ public final class GuavaIcolFactory implements ICollectionFactory{
   public <T> IList<T> listOf(final T element, final T... more) {
     return ((IList.Builder<T>)listBuilder()).add(element).addAll(more).build();
   }
+  
+  @SuppressWarnings("unchecked")
+  @Override
+  public <T> IList<T> listFrom(final Collection<? extends T> collection) {
+    if(collection instanceof IList) return (IList<T>) collection;
+    else return this.<T>listBuilder().addAll(collection).build();
+  }
 
   @SuppressWarnings("unchecked")
   @Override
@@ -72,6 +80,12 @@ public final class GuavaIcolFactory implements ICollectionFactory{
   @Override
   public <T> ISortedSet<T> sortedSetOf(final T element, final T... more) {
     return ((ISortedSet.Builder<T>)sortedSetBuilder()).add(element).addAll(more).build();
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public <T> ISortedSet<T> sortedSetFrom(final Collection<? extends T> elements) {
+    return ((ISortedSet.Builder<T>)sortedSetBuilder()).addAll(elements).build();
   }
 
   @Override
