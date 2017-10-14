@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.helpers.MessageFormatter;
 
 import com.github.gv2011.util.OptCloseable;
+import com.github.gv2011.util.ann.Nullable;
 
 public final class Exceptions {
 
@@ -62,7 +63,7 @@ public final class Exceptions {
     else return new WrappedException(e, msg);
   }
 
-  public static String format(final String pattern, final Object... arguments) {
+  public static String format(final String pattern, final @Nullable Object... arguments) {
     return MessageFormatter.arrayFormat(pattern, arguments).getMessage();
   }
 

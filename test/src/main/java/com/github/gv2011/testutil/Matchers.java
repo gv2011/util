@@ -35,6 +35,10 @@ public final class Matchers {
     return OptionalMatchers.isEmpty();
   }
 
+  public static <T> Matcher<Optional<T>> isOpt(final T value){
+    return OptionalMatchers.isOpt(value);
+  }
+
   /**
    * Creates a matcher that matches if the examined object matches <b>ALL</b> of the specified matchers.
    * <p/>

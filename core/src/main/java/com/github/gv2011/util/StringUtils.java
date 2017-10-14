@@ -29,6 +29,15 @@ public final class StringUtils {
     if(!s.endsWith(tail)) throw new IllegalArgumentException(format("{} does not end with {}.", s, tail));
     return s.substring(0, s.length()-tail.length());
   }
+  
+  public static String lastPart(final String s) {
+    return lastPart(s, '.');
+  }
+
+  public static String lastPart(final String s, final char c) {
+    final int i = s.lastIndexOf(c);
+    return i==-1?s:s.substring(i+1);
+  }
 
   public static String removePrefix(final String s, final String prefix) {
     if(!s.startsWith(prefix)) throw new IllegalArgumentException(

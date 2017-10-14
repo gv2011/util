@@ -3,12 +3,15 @@ package com.github.gv2011.util;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+
+import com.github.gv2011.util.ann.Nullable;
 
 public final class Verify {
 
@@ -36,8 +39,11 @@ public final class Verify {
     verify(expr, ()->format(pattern, params));
   }
 
-  public static <T> T verifyEqual(final T actual, final T expected) {
-    return verifyEqual(actual, expected, (e,a)->format("Expected: {}, actual: {}.", e, a));
+  public static <T> T verifyEqual(final @Nullable T actual, final @Nullable T expected) {
+    if(!Objects.equals(actual, expected)){
+      throw new IllegalStateException(format("Expected: {}, actual: {}.", expected, actual));
+    }
+    return actual;
   }
 
   public static <T> T verifyEqual(final T actual, final T expected, final BiFunction<T,T,String> msg) {
