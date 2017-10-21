@@ -459,4 +459,8 @@ public class CollectionUtils {
   public static final boolean optIs(final Optional<?> optional, final Object obj) {
     return optional.map(v->v.equals(obj)).orElse(false);
   }
+  
+  public static final <K,V> IMap<V,K> revert(final Map<? extends K,? extends V> map){
+    return map.entrySet().stream().collect(toIMap(Entry::getValue,Entry::getKey));
+  }
 }

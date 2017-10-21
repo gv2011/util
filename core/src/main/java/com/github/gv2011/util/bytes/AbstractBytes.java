@@ -31,7 +31,7 @@ import com.github.gv2011.util.Pair;
 import net.jcip.annotations.Immutable;
 
 @Immutable
-abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
+public abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
 
   private static String HEX_CHARS = "0123456789ABCDEF";
   private final Constant<Integer> hashCodeCache = Constants.cachedConstant(super::hashCode);
