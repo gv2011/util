@@ -1,76 +1,79 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>com.github.gv2011</groupId>
-		<artifactId>util-parent</artifactId>
-		<version>0.0.3-SNAPSHOT</version>
-	</parent>
+  <parent>
+    <groupId>com.github.gv2011</groupId>
+    <artifactId>util-parent</artifactId>
+    <version>0.0.3-SNAPSHOT</version>
+  </parent>
 
-	<artifactId>util-test</artifactId>
+  <artifactId>util-test</artifactId>
 
-	<description>General purpose test utilities.</description>
+  <description>General purpose test utilities.</description>
 
-	<licenses>
-		<license>
-			<name>MIT License</name>
-			<url>https://opensource.org/licenses/MIT</url>
-		</license>
-	</licenses>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
+    </license>
+  </licenses>
 
-	<developers>
-		<developer>
-			<id>gv2011</id>
-			<name>Copyright (C) 2016 Vinz (https://github.com/gv2011)</name>
-			<url>https://github.com/gv2011</url>
-		</developer>
-	</developers>
+  <developers>
+    <developer>
+      <id>gv2011</id>
+      <name>Copyright (C) 2016 Vinz (https://github.com/gv2011)</name>
+      <url>https://github.com/gv2011</url>
+    </developer>
+  </developers>
 
-	<scm>
-		<connection>scm:git:git@github.com:gv2011/util.git</connection>
-		<developerConnection>scm:git:git@github.com:gv2011/testutil.git</developerConnection>
-		<url>https://github.com/gv2011/testutil</url>
-		<tag>HEAD</tag>
-	</scm>
+  <scm>
+    <connection>scm:git:git@github.com:gv2011/util.git</connection>
+    <developerConnection>scm:git:git@github.com:gv2011/testutil.git</developerConnection>
+    <url>https://github.com/gv2011/testutil</url>
+    <tag>HEAD</tag>
+  </scm>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.github.gv2011</groupId>
-			<artifactId>util</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.hamcrest</groupId>
-			<artifactId>hamcrest-library</artifactId>
-			<version>1.3</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.github.gv2011</groupId>
-			<artifactId>jsoncore-api</artifactId>
-		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>com.github.gv2011</groupId> -->
-<!-- 			<artifactId>jsoncore-imp</artifactId> -->
-<!-- 			<optional>true</optional> -->
-<!-- 			<scope>runtime</scope> -->
-<!-- 		</dependency> -->
-		<dependency>
-			<groupId>com.github.gv2011</groupId>
-			<artifactId>gcol</artifactId>
-			<optional>true</optional>
-			<scope>runtime</scope>
-		</dependency>
-	</dependencies>
+  <dependencies>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>util</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
+      <version>1.3</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>gcol</artifactId>
+      <optional>true</optional>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <configuration>
+          <descriptionTemplate>${basedir}/src/license/descriptionTemplate.ftl</descriptionTemplate>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
 </project>
