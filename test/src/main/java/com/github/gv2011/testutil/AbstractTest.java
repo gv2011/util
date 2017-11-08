@@ -1,6 +1,5 @@
 package com.github.gv2011.testutil;
 
-import static com.github.gv2011.util.ServiceLoaderUtils.loadService;
 import static com.github.gv2011.util.StreamUtils.readText;
 import static com.github.gv2011.util.bytes.ByteUtils.copyFromStream;
 import static com.github.gv2011.util.ex.Exceptions.format;
@@ -15,8 +14,6 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.Rule;
 import org.slf4j.Logger;
 
-import com.github.gv2011.jsoncore.JsonFactory;
-import com.github.gv2011.jsoncore.JsonNode;
 import com.github.gv2011.util.ResourceUtils;
 import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.bytes.Bytes;
@@ -49,10 +46,6 @@ public abstract class AbstractTest {
 
   protected final String getResourceAsString(final Class<?> base, final String extension){
     return readText(getResource(base, extension)::openStream);
-  }
-
-  protected final JsonNode getResourceAsJson(final String extension){
-    return loadService(JsonFactory.class).newJsonReader().parse(getResource(extension)::openStream);
   }
 
   protected final URL getResource(final String extension){
