@@ -40,7 +40,7 @@ public abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
 
 
   @Override
-  public String toString(){
+  public final String toString(){
     return toStringCache.get();
   }
 
