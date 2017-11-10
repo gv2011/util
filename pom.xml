@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -9,7 +8,7 @@
   </parent>
 
   <artifactId>util-parent</artifactId>
-  <version>0.0.3-SNAPSHOT</version>
+  <version>0.0.3</version>
   <packaging>pom</packaging>
 
   <description>General purpose utilities - parent.</description>
@@ -34,7 +33,7 @@
     <connection>scm:git:git@github.com:gv2011/util.git</connection>
     <developerConnection>scm:git:git@github.com:gv2011/util.git</developerConnection>
     <url>https://github.com/gv2011/util</url>
-    <tag>HEAD</tag>
+    <tag>util-parent-0.0.3</tag>
   </scm>
 
   <modules>
@@ -49,12 +48,12 @@
       <dependency>
         <groupId>com.github.gv2011</groupId>
         <artifactId>util</artifactId>
-        <version>0.0.3-SNAPSHOT</version>
+        <version>0.0.3</version>
       </dependency>
       <dependency>
         <groupId>com.github.gv2011</groupId>
         <artifactId>gcol</artifactId>
-        <version>0.0.3-SNAPSHOT</version>
+        <version>0.0.3</version>
         <optional>true</optional>
         <scope>runtime</scope>
       </dependency>
