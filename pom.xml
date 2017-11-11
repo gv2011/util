@@ -1,33 +1,41 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<!--
+  The MIT License (MIT)
+
+  Copyright (c) 2016 - 2017, Vinz (https://github.com/gv2011)
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>com.github.gv2011</groupId>
-    <artifactId>parent</artifactId>
-    <version>0.0.4</version>
+    <artifactId>parent-gv</artifactId>
+    <version>0.0.5-SNAPSHOT</version>
   </parent>
 
   <artifactId>util-parent</artifactId>
-  <version>0.0.5-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <description>General purpose utilities - parent.</description>
   <url>https://github.com/gv2011/util</url>
-
-  <licenses>
-    <license>
-      <name>MIT License</name>
-      <url>https://opensource.org/licenses/MIT</url>
-    </license>
-  </licenses>
-
-  <developers>
-    <developer>
-      <id>gv2011</id>
-      <name>Copyright (C) 2016 Vinz (https://github.com/gv2011)</name>
-      <url>https://github.com/gv2011</url>
-    </developer>
-  </developers>
 
   <scm>
     <connection>scm:git:git@github.com:gv2011/util.git</connection>
@@ -66,37 +74,8 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>license-maven-plugin</artifactId>
         <configuration>
-          <licenseName>mit</licenseName>
-          <organizationName>Vinz (https://github.com/gv2011)</organizationName>
           <inceptionYear>2016</inceptionYear>
-          <addSvnKeyWords>false</addSvnKeyWords>
-          <processStartTag>%---license-start---</processStartTag>
-          <processEndTag>%---license-end---</processEndTag>
-          <sectionDelimiter>%</sectionDelimiter>
-          <excludes>
-            <exclude>**/*.json</exclude>
-            <exclude>**/descriptionTemplate.ftl</exclude>
-            <exclude>**/package-info.java</exclude>
-          </excludes>
         </configuration>
-        <executions>
-          <execution>
-            <id>license-update</id>
-            <goals>
-              <goal>update-project-license</goal>
-              <goal>update-file-header</goal>
-            </goals>
-            <phase>process-sources</phase>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
