@@ -32,6 +32,7 @@
   </parent>
 
   <artifactId>util-parent</artifactId>
+  <version>0.0.5-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <description>General purpose utilities - parent.</description>
