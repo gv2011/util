@@ -54,7 +54,7 @@
   </modules>
   
   <properties>
-    <utils.version>0.2.0-SNAPSHOT</utils.version>
+    <utils.version>${project.version}</utils.version>
   </properties>
 
   <build>
