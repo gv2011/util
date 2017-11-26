@@ -12,10 +12,10 @@ package com.github.gv2011.jsong;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,6 +33,7 @@ import static com.github.gv2011.util.CollectionUtils.upcast;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import com.github.gv2011.util.icol.AbstractISortedMap;
 import com.github.gv2011.util.icol.ISortedMap;
@@ -74,6 +75,26 @@ final class JsonObjectImp extends AbstractISortedMap<String,JsonNode> implements
       e.getValue().write(out);
     }
     out.endObject();
+  }
+
+  @Override
+  public JsonNode filter(final String attribute) {
+    return entries.tryGet(attribute).orElse(f.jsonNull);
+    //    return entries.entrySet().stream()
+    //      .filter(e->e.getKey().equals(attribute))
+    //      .map(e->pair(e.getKey(), e.getValue().filter(attribute)))
+    //      .collect(f.toJsonObject(Pair::getKey, Pair::getValue))
+    //    ;
+  }
+
+  @Override
+  public Stream<JsonNode> stream() {
+    return entries.entrySet().stream().map(e->{
+      final ISortedMap.Builder<String, JsongNode> b = f.iCollections().sortedMapBuilder();
+      b.put("key", (JsongNode)f.primitive(e.getKey()));
+      b.put("value", e.getValue());
+      return new JsonObjectImp(f, b.build());
+    });
   }
 
 }

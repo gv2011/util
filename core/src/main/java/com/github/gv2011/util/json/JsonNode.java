@@ -1,5 +1,7 @@
 package com.github.gv2011.util.json;
 
+import java.util.stream.Stream;
+
 /*-
  * #%L
  * jsoncore-api
@@ -28,5 +30,9 @@ package com.github.gv2011.util.json;
 public interface JsonNode {
 
   String serialize();
+
+  JsonNode filter(String attribute);
+
+  Stream<JsonNode> stream();
 
 }

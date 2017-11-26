@@ -12,10 +12,10 @@ package com.github.gv2011.jsong;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,7 +32,9 @@ import static com.github.gv2011.util.ex.Exceptions.notYetImplemented;
 import static com.github.gv2011.util.ex.Exceptions.notYetImplementedException;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
+import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonPrimitive;
 import com.google.gson.stream.JsonWriter;
 
@@ -88,6 +90,16 @@ final class JsonPrimitiveImp<P> implements JsongNode, JsonPrimitive<P> {
     else if (value instanceof Boolean) out.value(((Boolean)value).booleanValue());
     else if (value instanceof String)  out.value((String)value);
     else notYetImplemented();
+  }
+
+  @Override
+  public JsonPrimitive<P> filter(final String attribute) {
+    return this;
+  }
+
+  @Override
+  public Stream<JsonNode> stream() {
+    return Stream.of(this);
   }
 
 }

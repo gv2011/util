@@ -1,4 +1,4 @@
-package com.github.gv2011.util.json;
+package com.github.gv2011.util.http;
 
 /*-
  * #%L
@@ -25,8 +25,27 @@ package com.github.gv2011.util.json;
  * THE SOFTWARE.
  * #L%
  */
-import com.github.gv2011.util.icol.IMap;
+import static com.github.gv2011.util.ServiceLoaderUtils.lazyServiceLoader;
+import static com.github.gv2011.util.ex.Exceptions.staticClass;
 
-public interface JsonObject extends JsonNode, IMap<String,JsonNode>{
+import java.net.URI;
+
+import com.github.gv2011.util.Constant;
+import com.github.gv2011.util.json.JsonNode;
+
+public class RestUtils {
+
+  private RestUtils(){staticClass();}
+
+  private static final Constant<HttpFactory> FACTORY = lazyServiceLoader(HttpFactory.class);
+
+  public static final HttpFactory httpFactory(){return FACTORY.get();}
+
+  public static JsonNode read(final URI url) {
+    try(RestClient client = httpFactory().createRestClient()){
+      return client.read(url);
+    }
+  }
+
 
 }

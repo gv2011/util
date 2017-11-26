@@ -47,6 +47,7 @@
   <modules>
     <module>core</module>
     <module>gcol</module>
+    <module>http</module>
     <module>jsong</module>
     <module>logback</module>
     <module>test</module>
