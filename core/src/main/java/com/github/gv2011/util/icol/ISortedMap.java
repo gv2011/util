@@ -12,10 +12,10 @@ package com.github.gv2011.util.icol;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,14 +33,15 @@ import java.util.Comparator;
 import java.util.NavigableMap;
 import java.util.Optional;
 
-public interface ISortedMap<K,V> extends IMap<K,V>, NavigableMap<K,V>{
+public interface ISortedMap<K extends Comparable<? super K>,V> extends IMap<K,V>, NavigableMap<K,V>{
 
-  public static interface Builder<K,V> extends MapBuilder<ISortedMap<K,V>,K,V,Builder<K,V>>{}
+  public static interface Builder<K extends Comparable<? super K>,V>
+  extends MapBuilder<ISortedMap<K,V>,K,V,Builder<K,V>>{}
 
   @Deprecated
   @Override
   default Comparator<? super K> comparator() {
-    throw new UnsupportedOperationException();
+    return Comparator.naturalOrder();
   }
 
   @Override

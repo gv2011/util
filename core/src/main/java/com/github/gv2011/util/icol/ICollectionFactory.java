@@ -12,10 +12,10 @@ package com.github.gv2011.util.icol;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -61,12 +61,12 @@ public interface ICollectionFactory {
   @SuppressWarnings("unchecked")
   <T> ISet<T> setOf(final T element, final T... more);
 
-  <T> ISortedSet<T> sortedSetOf(final T element);
+  <T extends Comparable<? super T>> ISortedSet<T> sortedSetOf(final T element);
 
   @SuppressWarnings("unchecked")
-  <T> ISortedSet<T> sortedSetOf(final T element, final T... more);
+  <T extends Comparable<? super T>> ISortedSet<T> sortedSetOf(final T element, final T... more);
 
-  <T> ISortedSet<T> sortedSetFrom(Collection<? extends T> elements);
+  <T extends Comparable<? super T>> ISortedSet<T> sortedSetFrom(Collection<? extends T> elements);
 
   <T> IList<T> asList(T[] elements);
   <T> ISet<T> asSet(T[] elements);
@@ -89,25 +89,9 @@ public interface ICollectionFactory {
 
   <K extends Comparable<? super K>,V> ISortedMap.Builder<K,V> sortedMapBuilder();
 
-
-  @SuppressWarnings("unchecked")
-  default <E> IList<E> upcast(final IList<? extends E> list){return (IList<E>) list;}
-
-  @SuppressWarnings("unchecked")
-  default <E> ISet<E> upcast(final ISet<? extends E> set){return (ISet<E>) set;}
-
-  @SuppressWarnings("unchecked")
-  default <E> ISortedSet<E> upcast(final ISortedSet<? extends E> set){return (ISortedSet<E>) set;}
-
-  @SuppressWarnings("unchecked")
-  default <K,V> IMap<K,V> upcast(final IMap<? extends K,? extends V> map){return (IMap<K,V>) map;}
-
-  @SuppressWarnings("unchecked")
-  default <K,V> ISortedMap<K,V> upcast(final ISortedMap<? extends K,? extends V> map){return (ISortedMap<K,V>) map;}
-
   <T> Collector<T, ?, ISet<T>> setCollector();
 
-  <T extends Comparable<?>> Collector<T, ?, ISortedSet<T>> sortedSetCollector();
+  <T extends Comparable<? super T>> Collector<T, ?, ISortedSet<T>> sortedSetCollector();
 
   <T> Collector<T, ?, IList<T>> listCollector();
 

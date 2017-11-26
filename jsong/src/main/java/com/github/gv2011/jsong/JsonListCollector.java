@@ -1,10 +1,10 @@
-package com.github.gv2011.util.icol.guava;
+package com.github.gv2011.jsong;
 
 /*-
  * #%L
- * The MIT License (MIT)
+ * jsong
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2017 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -12,10 +12,10 @@ package com.github.gv2011.util.icol.guava;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,31 +26,51 @@ package com.github.gv2011.util.icol.guava;
  * #L%
  */
 
-import java.util.Set;
+
+
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collector;
 
-import com.github.gv2011.util.icol.AbstractCollectionCollector;
+import com.github.gv2011.util.icol.IList;
+import com.github.gv2011.util.icol.IList.Builder;
 import com.github.gv2011.util.icol.ISet;
-import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.json.JsonList;
+import com.github.gv2011.util.json.JsonNode;
 
-final class ISortedSetCollector<T extends Comparable<? super T>>
-extends AbstractCollectionCollector<ISortedSet<T>, T, ISortedSet.Builder<T>>{
+final class JsonListCollector implements Collector<JsonNode, IList.Builder<JsongNode>, JsonList> {
 
-  private static final ISet<Characteristics> CHARACTERISTICS =
-    new ISetBuilder<Characteristics>().add(Characteristics.CONCURRENT).add(Characteristics.UNORDERED).build()
-  ;
+  private final JsonFactoryImp f;
 
-  ISortedSetCollector() {super(TRY_ADD);}
-
-  @Override
-  public Set<Characteristics> characteristics() {
-    return CHARACTERISTICS;
+  JsonListCollector(final JsonFactoryImp f) {
+    this.f = f;
   }
 
   @Override
-  public Supplier<ISortedSet.Builder<T>> supplier() {
-    return ISortedSetBuilder::new;
+  public BiConsumer<Builder<JsongNode>, JsonNode> accumulator() {
+    return (b,e)->b.add((JsongNode)e);
   }
 
+  @Override
+  public ISet<Characteristics> characteristics() {
+    return f.listCharacteristics;
+  }
+
+  @Override
+  public BinaryOperator<Builder<JsongNode>> combiner() {
+    return (b1,b2)->b1.addAll(b2.build());
+  }
+
+  @Override
+  public Function<Builder<JsongNode>, JsonList> finisher() {
+    return b->new JsonListImp(f, b.build());
+  }
+
+  @Override
+  public Supplier<Builder<JsongNode>> supplier() {
+    return f.iCollections()::listBuilder;
+  }
 
 }

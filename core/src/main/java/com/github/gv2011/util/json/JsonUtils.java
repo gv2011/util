@@ -1,4 +1,4 @@
-package com.github.gv2011.util.icol.guava;
+package com.github.gv2011.util.json;
 
 /*-
  * #%L
@@ -12,10 +12,10 @@ package com.github.gv2011.util.icol.guava;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,32 +25,17 @@ package com.github.gv2011.util.icol.guava;
  * THE SOFTWARE.
  * #L%
  */
+import static com.github.gv2011.util.ServiceLoaderUtils.lazyServiceLoader;
+import static com.github.gv2011.util.ex.Exceptions.staticClass;
 
-import java.util.Set;
-import java.util.function.Supplier;
+import com.github.gv2011.util.Constant;
 
-import com.github.gv2011.util.icol.AbstractCollectionCollector;
-import com.github.gv2011.util.icol.ISet;
-import com.github.gv2011.util.icol.ISortedSet;
+public class JsonUtils {
 
-final class ISortedSetCollector<T extends Comparable<? super T>>
-extends AbstractCollectionCollector<ISortedSet<T>, T, ISortedSet.Builder<T>>{
+  private JsonUtils(){staticClass();}
 
-  private static final ISet<Characteristics> CHARACTERISTICS =
-    new ISetBuilder<Characteristics>().add(Characteristics.CONCURRENT).add(Characteristics.UNORDERED).build()
-  ;
+  private static final Constant<JsonFactory> FACTORY = lazyServiceLoader(JsonFactory.class);
 
-  ISortedSetCollector() {super(TRY_ADD);}
-
-  @Override
-  public Set<Characteristics> characteristics() {
-    return CHARACTERISTICS;
-  }
-
-  @Override
-  public Supplier<ISortedSet.Builder<T>> supplier() {
-    return ISortedSetBuilder::new;
-  }
-
+  public static final JsonFactory jsonFactory(){return FACTORY.get();}
 
 }

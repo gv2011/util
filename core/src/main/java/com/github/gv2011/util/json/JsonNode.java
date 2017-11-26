@@ -1,10 +1,10 @@
-package com.github.gv2011.util.icol.guava;
+package com.github.gv2011.util.json;
 
 /*-
  * #%L
- * The MIT License (MIT)
+ * jsoncore-api
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2017 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,32 +25,8 @@ package com.github.gv2011.util.icol.guava;
  * THE SOFTWARE.
  * #L%
  */
+public interface JsonNode {
 
-import java.util.Set;
-import java.util.function.Supplier;
-
-import com.github.gv2011.util.icol.AbstractCollectionCollector;
-import com.github.gv2011.util.icol.ISet;
-import com.github.gv2011.util.icol.ISortedSet;
-
-final class ISortedSetCollector<T extends Comparable<? super T>>
-extends AbstractCollectionCollector<ISortedSet<T>, T, ISortedSet.Builder<T>>{
-
-  private static final ISet<Characteristics> CHARACTERISTICS =
-    new ISetBuilder<Characteristics>().add(Characteristics.CONCURRENT).add(Characteristics.UNORDERED).build()
-  ;
-
-  ISortedSetCollector() {super(TRY_ADD);}
-
-  @Override
-  public Set<Characteristics> characteristics() {
-    return CHARACTERISTICS;
-  }
-
-  @Override
-  public Supplier<ISortedSet.Builder<T>> supplier() {
-    return ISortedSetBuilder::new;
-  }
-
+  String serialize();
 
 }

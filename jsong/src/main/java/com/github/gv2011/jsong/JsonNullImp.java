@@ -1,10 +1,10 @@
-package com.github.gv2011.util.icol.guava;
+package com.github.gv2011.jsong;
 
 /*-
  * #%L
- * The MIT License (MIT)
+ * jsong
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2017 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -12,10 +12,10 @@ package com.github.gv2011.util.icol.guava;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,31 +26,47 @@ package com.github.gv2011.util.icol.guava;
  * #L%
  */
 
-import java.util.Set;
-import java.util.function.Supplier;
 
-import com.github.gv2011.util.icol.AbstractCollectionCollector;
-import com.github.gv2011.util.icol.ISet;
-import com.github.gv2011.util.icol.ISortedSet;
 
-final class ISortedSetCollector<T extends Comparable<? super T>>
-extends AbstractCollectionCollector<ISortedSet<T>, T, ISortedSet.Builder<T>>{
+import static com.github.gv2011.util.ex.Exceptions.run;
 
-  private static final ISet<Characteristics> CHARACTERISTICS =
-    new ISetBuilder<Characteristics>().add(Characteristics.CONCURRENT).add(Characteristics.UNORDERED).build()
-  ;
+import com.github.gv2011.util.json.JsonNull;
+import com.google.gson.stream.JsonWriter;
 
-  ISortedSetCollector() {super(TRY_ADD);}
+final class JsonNullImp implements JsongNode, JsonNull{
 
-  @Override
-  public Set<Characteristics> characteristics() {
-    return CHARACTERISTICS;
+  private final JsonFactoryImp f;
+
+  JsonNullImp(final JsonFactoryImp f) {
+    this.f = f;
   }
 
   @Override
-  public Supplier<ISortedSet.Builder<T>> supplier() {
-    return ISortedSetBuilder::new;
+  public String serialize() {
+    return f.serialize(this);
   }
+
+  @Override
+  public boolean equals(final Object o) {
+    if(this==o) return true;
+    else return o instanceof JsonNull;
+  }
+
+  @Override
+  public int hashCode() {
+    return 0;
+  }
+
+  @Override
+  public String toString() {
+    return String.valueOf(null);
+  }
+
+  @Override
+  public void write(final JsonWriter out) {
+    run(out::nullValue);
+  }
+
 
 
 }

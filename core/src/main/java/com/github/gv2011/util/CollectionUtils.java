@@ -12,10 +12,10 @@ package com.github.gv2011.util;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -92,7 +92,7 @@ public class CollectionUtils {
     };
 
   public static final <T extends Comparable<? super T>> Collector<T, ?, NavigableSet<T>> toSortedSet(){
-    return new SortedSetCollector<T,NavigableSet<T>>(){
+    return new SortedSetCollector<>(){
       @Override
       public Function<NavigableSet<T>, NavigableSet<T>> finisher() {
         return Function.identity();
@@ -369,7 +369,7 @@ public class CollectionUtils {
   }
 
   public static <T> Collector<T,?,T> toSingle(){
-    return new OptCollector<T, T>(){
+    return new OptCollector<>(){
       @Override
       public Function<AtomicReference<T>, T> finisher() {
         return r->notNull(r.get(), ()->"Empty stream.");
@@ -378,7 +378,7 @@ public class CollectionUtils {
   }
 
   public static <T> Collector<T,?,Stream<T>> toSingleStream(){
-    return new OptCollector<T, Stream<T>>(){
+    return new OptCollector<>(){
       @Override
       public Function<AtomicReference<T>, Stream<T>> finisher() {
         return r->Stream.of(notNull(r.get(), ()->"Empty stream."));
@@ -387,7 +387,7 @@ public class CollectionUtils {
   }
 
   public static <T> Collector<T,?,Optional<T>> toOptional(){
-    return new OptCollector<T, Optional<T>>(){
+    return new OptCollector<>(){
       @Override
       public Function<AtomicReference<T>, Optional<T>> finisher() {
         return r->Optional.ofNullable(r.get());
@@ -396,7 +396,7 @@ public class CollectionUtils {
   }
 
   public static <T> Collector<T,?,Stream<T>> toOptionalStream(){
-    return new OptCollector<T, Stream<T>>(){
+    return new OptCollector<>(){
       @Override
       public Function<AtomicReference<T>, Stream<T>> finisher() {
         return r->{final T v=r.get(); return v==null?Stream.empty():Stream.of(v);};
@@ -469,7 +469,7 @@ public class CollectionUtils {
   public static <S,T> Iterator<T> mapIterator(
     final Iterator<? extends S> delegate, final Function<? super S, ? extends T> mapping
   ){
-    return new Iterator<T>(){
+    return new Iterator<>(){
       @Override
       public boolean hasNext() {return delegate.hasNext();}
       @Override
@@ -484,12 +484,46 @@ public class CollectionUtils {
   public static final <A,B> Either<A,B> newThat(final B b){
     return EitherImp.newThat(b);
   }
-  
+
   public static final boolean optIs(final Optional<?> optional, final Object obj) {
     return optional.map(v->v.equals(obj)).orElse(false);
   }
-  
+
   public static final <K,V> IMap<V,K> revert(final Map<? extends K,? extends V> map){
     return map.entrySet().stream().collect(toIMap(Entry::getValue,Entry::getKey));
   }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public static final <U,E extends U> Optional<U> upcast(final Optional<E> optional){
+    return (Optional)optional;
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public static final <U,E extends U> IList<U> upcast(final IList<E> list){
+    return (IList)list;
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public static final <U,E extends U> ISet<U> upcast(final ISet<E> set){
+    return (ISortedSet)set;
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public static final <U extends Comparable<? super U>,E extends U> ISortedSet<U> upcast(final ISortedSet<E> set){
+    return (ISortedSet)set;
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public static final <UK,K extends UK,UV, V extends UV> IMap<UK,UV> upcast(final IMap<K,V> map){
+    return (IMap)map;
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public static final <UK extends Comparable<? super UK>,K extends UK,UV, V extends UV> ISortedMap<UK,UV>
+    upcast(final ISortedMap<K,V> map
+  ){
+    return (ISortedMap)map;
+  }
+
+
 }

@@ -1,8 +1,8 @@
-package com.github.gv2011.util.icol.guava;
+package com.github.gv2011.util.json;
 
 /*-
  * #%L
- * The MIT License (MIT)
+ * util-test
  * %%
  * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
  * %%
@@ -25,32 +25,19 @@ package com.github.gv2011.util.icol.guava;
  * THE SOFTWARE.
  * #L%
  */
+import static com.github.gv2011.testutil.Matchers.is;
+import static org.junit.Assert.assertThat;
 
-import java.util.Set;
-import java.util.function.Supplier;
+import org.junit.Test;
 
-import com.github.gv2011.util.icol.AbstractCollectionCollector;
-import com.github.gv2011.util.icol.ISet;
-import com.github.gv2011.util.icol.ISortedSet;
+public class JsonUtilsTest {
 
-final class ISortedSetCollector<T extends Comparable<? super T>>
-extends AbstractCollectionCollector<ISortedSet<T>, T, ISortedSet.Builder<T>>{
-
-  private static final ISet<Characteristics> CHARACTERISTICS =
-    new ISetBuilder<Characteristics>().add(Characteristics.CONCURRENT).add(Characteristics.UNORDERED).build()
-  ;
-
-  ISortedSetCollector() {super(TRY_ADD);}
-
-  @Override
-  public Set<Characteristics> characteristics() {
-    return CHARACTERISTICS;
+  @Test
+  public void testJsonFactory() {
+    assertThat(
+      JsonUtils.jsonFactory().getClass().getName(),
+      is("com.github.gv2011.jsong.JsonFactoryImp")
+    );
   }
-
-  @Override
-  public Supplier<ISortedSet.Builder<T>> supplier() {
-    return ISortedSetBuilder::new;
-  }
-
 
 }

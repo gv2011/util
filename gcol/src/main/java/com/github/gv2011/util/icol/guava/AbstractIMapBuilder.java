@@ -12,10 +12,10 @@ package com.github.gv2011.util.icol.guava;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,16 +32,13 @@ import static com.github.gv2011.util.ex.Exceptions.format;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import com.github.gv2011.util.icol.IMap;
-import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.MapBuilder;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedMap;
 
 abstract class AbstractIMapBuilder<M extends IMap<K,V>, K, V, B extends MapBuilder<M,K,V,B>>
 implements MapBuilder<M,K,V,B>{
@@ -122,13 +119,5 @@ implements MapBuilder<M,K,V,B>{
     }
     return self();
   }
-
-  @Override
-  public ISortedMap<K, V> build(final Comparator<? super K> comparator) {
-    synchronized(map){
-      return new ISortedMapWrapper<>(ImmutableSortedMap.copyOf(map, comparator));
-    }
-  }
-
 
 }

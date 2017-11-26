@@ -12,10 +12,10 @@ package com.github.gv2011.util.html.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -43,12 +43,11 @@ public class HtmlBuilderImpTest {
       .build().toString()
     ;
     assertThat(html, is(
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-      + "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\""
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\""
       +   " \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
       + "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
       + "<head><title>title1</title></head>\n"
-      + "<body/>\n"
+      + "<body />\n"
       + "</html>"
     ));
     System.out.println(html);

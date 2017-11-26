@@ -12,10 +12,10 @@ package com.github.gv2011.util.icol.guava;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,7 +33,9 @@ import java.util.Optional;
 import com.github.gv2011.util.icol.ISortedSet;
 import com.google.common.collect.ImmutableSortedSet;
 
-final class ISortedSetWrapper<E> extends ISetWrapper<E,NavigableSet<E>> implements ISortedSet<E>{
+final class ISortedSetWrapper<E extends Comparable<? super E>>
+extends ISetWrapper<E,NavigableSet<E>>
+implements ISortedSet<E>{
 
   ISortedSetWrapper(final NavigableSet<E> delegate) {
     super(delegate);

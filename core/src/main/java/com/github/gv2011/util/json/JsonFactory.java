@@ -1,4 +1,4 @@
-package com.github.gv2011.util.icol.guava;
+package com.github.gv2011.util.json;
 
 /*-
  * #%L
@@ -26,31 +26,37 @@ package com.github.gv2011.util.icol.guava;
  * #L%
  */
 
-import java.util.Set;
-import java.util.function.Supplier;
+import java.math.BigDecimal;
+import java.util.function.Function;
+import java.util.stream.Collector;
 
-import com.github.gv2011.util.icol.AbstractCollectionCollector;
-import com.github.gv2011.util.icol.ISet;
-import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.bytes.Bytes;
 
-final class ISortedSetCollector<T extends Comparable<? super T>>
-extends AbstractCollectionCollector<ISortedSet<T>, T, ISortedSet.Builder<T>>{
+public interface JsonFactory {
 
-  private static final ISet<Characteristics> CHARACTERISTICS =
-    new ISetBuilder<Characteristics>().add(Characteristics.CONCURRENT).add(Characteristics.UNORDERED).build()
-  ;
+  JsonNode deserialize(String json);
 
-  ISortedSetCollector() {super(TRY_ADD);}
+  Collector<JsonNode,?,JsonList> toJsonList();
 
-  @Override
-  public Set<Characteristics> characteristics() {
-    return CHARACTERISTICS;
-  }
+  <T> Collector<T, ?, JsonObject> toJsonObject(
+    final Function<? super T, String> keyMapper,
+    final Function<? super T, JsonNode> valueMapper
+  );
 
-  @Override
-  public Supplier<ISortedSet.Builder<T>> supplier() {
-    return ISortedSetBuilder::new;
-  }
+  JsonNull jsonNull();
 
+  JsonPrimitive<String> primitive(String s);
+
+  JsonPrimitive<String> primitive(Bytes b);
+
+  JsonPrimitive<BigDecimal> primitive(int number);
+
+  JsonPrimitive<BigDecimal> primitive(long number);
+
+  JsonPrimitive<BigDecimal> primitive(BigDecimal number);
+
+  JsonPrimitive<Boolean> primitive(boolean b);
+
+  JsonPrimitive<Boolean> primitive(Boolean b);
 
 }

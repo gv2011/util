@@ -12,10 +12,10 @@ package com.github.gv2011.util.icol.guava;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -88,7 +88,7 @@ public final class GuavaIcolFactory implements ICollectionFactory{
   public <T> IList<T> listOf(final T element, final T... more) {
     return ((IList.Builder<T>)listBuilder()).add(element).addAll(more).build();
   }
-  
+
   @SuppressWarnings("unchecked")
   @Override
   public <T> IList<T> listFrom(final Collection<? extends T> collection) {
@@ -104,13 +104,13 @@ public final class GuavaIcolFactory implements ICollectionFactory{
 
   @SuppressWarnings("unchecked")
   @Override
-  public <T> ISortedSet<T> sortedSetOf(final T element, final T... more) {
+  public <T extends Comparable<? super T>> ISortedSet<T> sortedSetOf(final T element, final T... more) {
     return ((ISortedSet.Builder<T>)sortedSetBuilder()).add(element).addAll(more).build();
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  public <T> ISortedSet<T> sortedSetFrom(final Collection<? extends T> elements) {
+  public <T extends Comparable<? super T>> ISortedSet<T> sortedSetFrom(final Collection<? extends T> elements) {
     return ((ISortedSet.Builder<T>)sortedSetBuilder()).addAll(elements).build();
   }
 
@@ -124,13 +124,10 @@ public final class GuavaIcolFactory implements ICollectionFactory{
     return new ISetWrapper<>(ImmutableSet.of(element));
   }
 
-  @SuppressWarnings("deprecation") //Suppress false Eclipse warning
   @Override
-  public <T> ISortedSet<T> sortedSetOf(final T element) {
+  public <T extends Comparable<? super T>> ISortedSet<T> sortedSetOf(final T element) {
     return new ISortedSetWrapper<>(ImmutableSortedSet.of(element));
   }
-
-
 
   @Override
   public <T> IList<T> asList(final T[] elements) {
@@ -178,7 +175,7 @@ public final class GuavaIcolFactory implements ICollectionFactory{
   }
 
   @Override
-  public <T extends Comparable<?>> Collector<T, ?, ISortedSet<T>> sortedSetCollector() {
+  public <T extends Comparable<? super T>> Collector<T, ?, ISortedSet<T>> sortedSetCollector() {
     return new ISortedSetCollector<>();
   }
 

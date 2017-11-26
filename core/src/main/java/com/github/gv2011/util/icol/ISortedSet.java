@@ -12,10 +12,10 @@ package com.github.gv2011.util.icol;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,14 +35,15 @@ import java.util.NavigableSet;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-public interface ISortedSet<E> extends ISet<E>, NavigableSet<E>{
+public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, NavigableSet<E>{
 
-  public static interface Builder<E> extends CollectionBuilder<ISortedSet<E>,E,Builder<E>>{}
+  public static interface Builder<E extends Comparable<? super E>> extends CollectionBuilder<ISortedSet<E>,E,Builder<E>>{}
 
   @Override
   @Deprecated
-  default Comparator<? super E> comparator() {
-    throw new UnsupportedOperationException();
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  default Comparator<E> comparator() {
+    return (Comparator)Comparator.naturalOrder();
   }
 
   @Override

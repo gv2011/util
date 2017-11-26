@@ -12,10 +12,10 @@ package com.github.gv2011.util.icol;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,13 +32,24 @@ package com.github.gv2011.util.icol;
 import static com.github.gv2011.util.CollectionUtils.toIList;
 import static com.github.gv2011.util.CollectionUtils.toISortedMap;
 import static com.github.gv2011.util.Verify.verify;
+import static java.util.stream.Collectors.joining;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.stream.IntStream;
 
+import com.github.gv2011.util.Constant;
+import com.github.gv2011.util.Constants;
+
 public abstract class AbstractIList<E> implements IList<E>{
+
+  private final Constant<Integer> hash = Constants.cachedConstant(()->{
+    int hashCode = 1;
+    for (final E e : this) hashCode = 31*hashCode + e.hashCode();
+    return hashCode;
+  });
 
   @Override
   public abstract int size();
@@ -103,7 +114,7 @@ public abstract class AbstractIList<E> implements IList<E>{
 
   @Override
   public ListIterator<E> listIterator(final int index) {
-    return new ListIterator<E>(){
+    return new ListIterator<>(){
       private int i = index;
       @Override
       public boolean hasNext() {
@@ -157,6 +168,32 @@ public abstract class AbstractIList<E> implements IList<E>{
       i->i,
       this::get
     ));
+  }
+
+  @Override
+  public String toString() {
+    return stream().map(Object::toString).collect(joining(", ","[","]"));
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    boolean result;
+    if (o == this) result = true;
+    else if (!(o instanceof List)) result = false;
+    else {
+      final List<?> other = ((List<?>) o);
+      if(size()!=other.size()) result = false;
+      else if(hashCode()!=other.hashCode()) result = false;
+      else {
+        result = IntStream.range(0, size()).parallel().allMatch(i->get(i).equals(other.get(i)));
+      }
+    }
+    return result;
+  }
+
+  @Override
+  public int hashCode() {
+    return hash.get();
   }
 
 
