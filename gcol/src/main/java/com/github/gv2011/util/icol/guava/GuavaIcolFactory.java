@@ -31,11 +31,13 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 
 import com.github.gv2011.util.icol.ICollectionFactory;
+import com.github.gv2011.util.icol.IComparableList.Builder;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.IMap;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.icol.Path;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -45,7 +47,7 @@ import com.google.common.collect.ImmutableSortedSet;
 public final class GuavaIcolFactory implements ICollectionFactory{
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
-  private static final IList EMPTY_LIST = new IListWrapper(ImmutableList.of());
+  static final IList EMPTY_LIST = new IListWrapper(ImmutableList.of());
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
   private static final ISortedSet EMPTY_SET = new ISortedSetWrapper(ImmutableSortedSet.of());
@@ -114,9 +116,10 @@ public final class GuavaIcolFactory implements ICollectionFactory{
     return ((ISortedSet.Builder<T>)sortedSetBuilder()).addAll(elements).build();
   }
 
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   @Override
   public <T> IList<T> listOf(final T element) {
-    return new IListWrapper<>(ImmutableList.of(element));
+    return new IListWrapper(ImmutableList.of(element));
   }
 
   @Override
@@ -129,9 +132,10 @@ public final class GuavaIcolFactory implements ICollectionFactory{
     return new ISortedSetWrapper<>(ImmutableSortedSet.of(element));
   }
 
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
   public <T> IList<T> asList(final T[] elements) {
-    return new IListWrapper<>(ImmutableList.copyOf(elements));
+    return new IListWrapper(ImmutableList.copyOf(elements));
   }
 
   @Override
@@ -147,6 +151,11 @@ public final class GuavaIcolFactory implements ICollectionFactory{
   @Override
   public <E> IList.Builder<E> listBuilder() {
     return new IListBuilder<>();
+  }
+
+  @Override
+  public <E extends Comparable<? super E>> Builder<E> comparableListBuilder() {
+    return new IComparableListBuilder<>();
   }
 
   @Override
@@ -199,5 +208,12 @@ public final class GuavaIcolFactory implements ICollectionFactory{
   ) {
     return new ISortedMapCollector<>(keyMapper, valueMapper);
   }
+
+  @Override
+  public Path emptyPath() {
+    return PathImp.EMPTY;
+  }
+
+
 
 }

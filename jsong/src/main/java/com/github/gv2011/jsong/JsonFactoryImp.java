@@ -12,10 +12,10 @@ package com.github.gv2011.jsong;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,7 +29,6 @@ package com.github.gv2011.jsong;
 
 
 import static com.github.gv2011.util.ex.Exceptions.call;
-import static com.github.gv2011.util.ex.Exceptions.run;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -130,7 +129,7 @@ public final class JsonFactoryImp implements JsonFactory{
     final JsonWriter jsonWriter = new JsonWriter(out);
     jsonWriter.setIndent("  ");
     jsonWriter.setSerializeNulls(false);
-    run(()->adapter.write(jsonWriter, e));
+    call(()->adapter.write(jsonWriter, e));
     return out.toString();
   }
 

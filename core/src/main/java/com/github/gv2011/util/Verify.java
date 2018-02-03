@@ -12,10 +12,10 @@ package com.github.gv2011.util;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -53,7 +53,7 @@ public final class Verify {
     return verify(arg, predicate, a->format("Unexpected: {}", a));
   }
 
-  public static <T> T verify(final T arg, final Predicate<? super T> predicate, final Function<T,String> msg) {
+  public static <T> T verify(final T arg, final Predicate<? super T> predicate, final Function<? super T,String> msg) {
     if(!predicate.test(arg)){
       throw new IllegalStateException(msg.apply(arg));
     }
@@ -82,8 +82,18 @@ public final class Verify {
     return actual;
   }
 
-  public static <T> UnaryOperator<T> verify(final Predicate<T> predicate) {
-    return e->{return verify(e, predicate);};
+  public static <T> UnaryOperator<T> check(final Predicate<T> predicate) {
+    return check(predicate, (Function<T,String>)String::valueOf);
+  }
+
+//  TODO remove
+//  @Deprecated //use check
+//  public static <T> UnaryOperator<T> verify(final Predicate<T> predicate) {
+//    return check(predicate);
+//  }
+
+  public static <T> UnaryOperator<T> check(final Predicate<T> predicate, final Function<? super T,String> msg) {
+    return e->{return verify(e, predicate, msg);};
   }
 
   public static <T> T notNull(final T arg){

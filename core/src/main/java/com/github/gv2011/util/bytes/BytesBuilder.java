@@ -12,10 +12,10 @@ package com.github.gv2011.util.bytes;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -31,7 +31,6 @@ package com.github.gv2011.util.bytes;
 
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
-import static com.github.gv2011.util.ex.Exceptions.run;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.ByteArrayOutputStream;
@@ -47,6 +46,7 @@ import org.slf4j.Logger;
 
 import com.github.gv2011.util.AutoCloseableNt;
 import com.github.gv2011.util.Builder;
+import com.github.gv2011.util.FileUtils;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -57,7 +57,7 @@ public class BytesBuilder extends FilterOutputStream implements Builder<Bytes>, 
 
   private long count=0;
   private int hashCode = 1;
-  private final int limit = 16384;
+  private final int limit = 0x10000;
   private Path tmpFile;
   private final AtomicBoolean closed = new AtomicBoolean(false);
   private Bytes result;
@@ -93,7 +93,7 @@ public class BytesBuilder extends FilterOutputStream implements Builder<Bytes>, 
   @Override
   public void write(final byte[] b, final int off, final int len){
     checkSize(len);
-    run(()->out.write(b, off, len));
+    call(()->out.write(b, off, len));
     count+=len;
     final int end = off+len;
     for(int i=off; i<end; i++) hashCode = 31*hashCode + Byte.hashCode(b[i]);
@@ -109,7 +109,7 @@ public class BytesBuilder extends FilterOutputStream implements Builder<Bytes>, 
     if(closed()) throw new IllegalStateException("Closed.");
     if(tmpFile==null){
       if(count+len>limit){
-        run(()->{
+        call(()->{
           tmpFile = Files.createTempFile("buffer", ".bin");
           LOG.debug("Created tempFile {}.", tmpFile.toAbsolutePath());
           tmpFile.toFile().deleteOnExit();
@@ -126,7 +126,7 @@ public class BytesBuilder extends FilterOutputStream implements Builder<Bytes>, 
   @Override
   public void write(final int b){
     checkSize(1);
-    run(()->out.write(b));
+    call(()->out.write(b));
     count++;
     hashCode = 31*hashCode + Byte.hashCode((byte)b);
   }
@@ -137,7 +137,7 @@ public class BytesBuilder extends FilterOutputStream implements Builder<Bytes>, 
   @Override
   public Bytes build() {
     if(closed.getAndSet(true)==false){
-      run(out::close);
+      call(out::close);
       if(tmpFile!=null){
         result = new FileBackedBytesImp(tmpFile, count, hashCode, new Hash256Imp(digest.getMessageDigest()));
       }else{
@@ -147,6 +147,27 @@ public class BytesBuilder extends FilterOutputStream implements Builder<Bytes>, 
     }
     return result;
   }
+
+  public Bytes copy() {
+    if(closed()) throw new IllegalStateException("Closed.");
+    if(tmpFile!=null){
+      final Path newTmp =
+      call(()->{
+        out.flush();
+        final Path tmpFile2 = Files.createTempFile("buffer", ".bin");
+        LOG.debug("Created tempFile {}.", tmpFile2.toAbsolutePath());
+        tmpFile2.toFile().deleteOnExit();
+        FileUtils.copy(tmpFile, tmpFile2);
+        return tmpFile2;
+      });
+      result = new FileBackedBytesImp(newTmp, count, hashCode, new Hash256Imp(digest.getMessageDigest()));
+    }else{
+      result = new ArrayBytes(bos.toByteArray());
+      bos = null;
+    }
+    return result;
+  }
+
 
   @Override
   public void close(){

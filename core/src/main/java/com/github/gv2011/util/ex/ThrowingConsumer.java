@@ -1,5 +1,10 @@
 package com.github.gv2011.util.ex;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import com.github.gv2011.util.Nothing;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -12,10 +17,10 @@ package com.github.gv2011.util.ex;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -30,12 +35,31 @@ package com.github.gv2011.util.ex;
 
 
 @FunctionalInterface
-public interface ThrowingConsumer<T> {
+public interface ThrowingConsumer<T> extends Throwing<T,Nothing>{
 
   void accept(T arg) throws Exception;
 
-  default ThrowingConsumer<T> andThen(final ThrowingConsumer<? super T> next) {
-    return (final T arg) -> {accept(arg); next.accept(arg);};
+  default Consumer<T> andThen(final ThrowingConsumer<? super T> next) {
+    return (final T arg) -> {
+      asFunction().apply(arg);
+      next.asFunction().apply(arg);
+    };
+  }
+
+  @Override
+  default Function<T,Nothing> asFunction() {
+    return (final T arg) -> {
+      try {
+        accept(arg);
+      }
+      catch (final RuntimeException e) {
+        throw e;
+        }
+      catch (final Exception e) {
+        throw new WrappedException(e);
+      }
+      return Nothing.INSTANCE;
+    };
   }
 
 }

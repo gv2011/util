@@ -149,7 +149,7 @@ public abstract class AbstractISortedMap<K extends Comparable<? super K>, V> imp
   @Override
   public ISortedMap<K, V> descendingMap() {
     final ISortedSet<K> reversed = keySet().descendingSet();
-    return new AbstractISortedMap<>(){
+    return new AbstractISortedMap<K,V>(){
       @Override
       public ISortedSet<K> keySet() {
         return reversed;

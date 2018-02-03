@@ -4,7 +4,7 @@ package com.github.gv2011.util.main;
  * #%L
  * The MIT License (MIT)
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@ package com.github.gv2011.util.main;
  * #L%
  */
 
-import static com.github.gv2011.util.ex.Exceptions.run;
+import static com.github.gv2011.util.ex.Exceptions.call;
 
 import com.github.gv2011.util.AutoCloseableNt;
 import com.github.gv2011.util.main.MainUtils.ServiceBuilder;
@@ -37,7 +37,7 @@ public class MainUtilsTest {
     new Thread().start();
     final MainUtils mainUtils = new MainUtils();
     new Thread(()->{
-      run(()->Thread.sleep(100));
+      call(()->Thread.sleep(100));
       mainUtils.shutdown();
     }).start();
     mainUtils.runMain(args, new TestServiceBuilder());

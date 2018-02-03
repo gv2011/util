@@ -12,10 +12,10 @@ package com.github.gv2011.util.ex;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -34,12 +34,12 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.io.InterruptedIOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.helpers.MessageFormatter;
 
+import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.OptCloseable;
 import com.github.gv2011.util.ann.Nullable;
 
@@ -69,8 +69,16 @@ public final class Exceptions {
     throw notYetImplementedException();
   }
 
+  public static <T> T notYetImplemented(final String msg){
+    throw notYetImplementedException(msg);
+  }
+
   public static RuntimeException bug(){
     return new Bug();
+  }
+
+  public static <T> T bugValue(){
+    throw bug();
   }
 
   public static RuntimeException bug(final Supplier<String> message){
@@ -96,24 +104,17 @@ public final class Exceptions {
     return MessageFormatter.arrayFormat(pattern, arguments).getMessage();
   }
 
-  public static <T> T call(final Callable<T> operation){
-    try {
-      return operation.call();
-    }
-    catch (final RuntimeException e) {
-      throw e;
-      }
-    catch (final Exception e) {
-      throw new WrappedException(e);
-    }
+  public static <R> R call(final ThrowingSupplier<R> throwing){
+    return throwing.asFunction().apply(null);
   }
 
-  public static void run(final ThrowingRunnable operation){
-    try {
-      operation.run();
-    }
-    catch (final RuntimeException e) {throw e;}
-    catch (final Exception e) {throw new WrappedException(e);}
+  public static Nothing call(final ThrowingRunnable throwing){
+    return throwing.asFunction().apply(null);
+  }
+
+  @Deprecated //use call instead
+  public static void run(final ThrowingRunnable throwing){
+    throwing.asFunction().apply(null);
   }
 
   public static void tryAll(final Runnable... operations){
@@ -179,7 +180,9 @@ public final class Exceptions {
     }
 
   public static <C,R> R callWithCloseable(
-    final ThrowingSupplier<C> supplier, final ThrowingFunction<C,R> function, final ThrowingConsumer<? super C> closer
+    final ThrowingSupplier<C> supplier,
+    final ThrowingFunction<C,R> function,
+    final ThrowingConsumer<? super C> closer
   ){
     try{
       final C closeable = supplier.get();
@@ -192,28 +195,52 @@ public final class Exceptions {
     catch(final Exception ex){throw wrap(ex);}
   }
 
+  public static <C extends AutoCloseable> Nothing callWithCloseable(
+    final ThrowingSupplier<C> supplier, final ThrowingConsumer<C> consumer
+  ){
+    callWithCloseable(supplier, consumer, AutoCloseable::close);
+    return Nothing.INSTANCE;
+  }
+
+  @Deprecated //use callWithCloseable instead
   public static <C extends OptCloseable> void doWithOptCloseable(
     final ThrowingSupplier<C> supplier, final ThrowingConsumer<C> consumer
   ){
-    doWithCloseable(supplier, consumer, OptCloseable::close);
+    callWithCloseable(supplier, consumer, OptCloseable::close);
   }
 
+  public static <C extends OptCloseable> Nothing callWithOptCloseable(
+    final ThrowingSupplier<C> supplier, final ThrowingConsumer<C> consumer
+  ){
+    return callWithCloseable(supplier, consumer, OptCloseable::close);
+  }
+
+  @Deprecated //use callWithCloseable instead
   public static <C extends AutoCloseable> void doWithCloseable(
     final ThrowingSupplier<C> supplier, final ThrowingConsumer<C> consumer
   ){
-    doWithCloseable(supplier, consumer, AutoCloseable::close);
+    callWithCloseable(supplier, consumer, AutoCloseable::close);
   }
 
+  @Deprecated //use callWithCloseable instead
   public static <C> void doWithCloseable(
     final ThrowingSupplier<C> supplier, final ThrowingConsumer<C> consumer, final ThrowingConsumer<? super C> closer
   ){
-    try{
-      final C closeable = supplier.get();
-      try{consumer.accept(closeable);}
-      finally{closer.accept(closeable);}
-    }
-    catch(final Exception ex){throw wrap(ex);}
+    callWithCloseable(supplier, consumer, closer);
   }
 
+  public static <C> Nothing callWithCloseable(
+      final ThrowingSupplier<C> supplier,
+      final ThrowingConsumer<C> consumer,
+      final ThrowingConsumer<? super C> closer
+    ){
+      try{
+        final C closeable = supplier.get();
+        try{consumer.accept(closeable);}
+        finally{closer.accept(closeable);}
+      }
+      catch(final Exception ex){throw wrap(ex);}
+      return Nothing.INSTANCE;
+    }
 
 }

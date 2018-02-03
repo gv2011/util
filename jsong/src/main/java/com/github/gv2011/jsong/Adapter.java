@@ -12,10 +12,10 @@ package com.github.gv2011.jsong;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -53,7 +53,7 @@ final class Adapter extends TypeAdapter<JsongNode> {
       return new JsonPrimitiveImp<>(f, in.nextString());
     case NUMBER:
       final String number = in.nextString();
-      return new JsonPrimitiveImp<>(f, new BigDecimal(number));
+      return new JsonPrimitiveImp<>(f, new BigDecimal(number).stripTrailingZeros());
     case BOOLEAN:
       return new JsonPrimitiveImp<>(f, Boolean.valueOf(in.nextBoolean()));
     case NULL:

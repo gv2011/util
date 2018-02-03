@@ -12,10 +12,10 @@ package com.github.gv2011.util.bytes;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,9 +25,6 @@ package com.github.gv2011.util.bytes;
  * THE SOFTWARE.
  * #L%
  */
-
-
-
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -49,13 +46,13 @@ public class Base64Test {
 
   @Test
   public void testEncode() {
-    assertThat(ByteUtils.asUtf8(text).toBase64().utf8ToString(), is(base64));
+    assertThat(ByteUtils.asUtf8(text).content().toBase64().utf8ToString(), is(base64));
   }
 
   @Test
   public void testDecode() {
-    final Bytes base64Bytes = ByteUtils.asUtf8(base64);
-    assertThat(base64Bytes.decodeBase64().utf8ToString(), is(text));
+    final TypedBytes base64Bytes = ByteUtils.asUtf8(base64);
+    assertThat(base64Bytes.content().decodeBase64().utf8ToString(), is(text));
   }
 
 }

@@ -12,10 +12,10 @@ package com.github.gv2011.util;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -36,6 +36,7 @@ import static com.github.gv2011.util.CollectionUtils.toISet;
 import static com.github.gv2011.util.CollectionUtils.toISortedSet;
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verify;
+import static com.github.gv2011.util.ex.Exceptions.bugValue;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 import static java.util.stream.Collectors.joining;
@@ -54,6 +55,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.ISortedSet;
 
@@ -68,7 +70,7 @@ public final class ReflectionUtils {
   public static final ISet<Method> OBJECT_METHODS = iCollections().setOf(EQUALS,HASH_CODE,TO_STRING);
 
   public static <T> Method method(final Class<T> intf, final Function<T,?> methodFunction){
-    return methodLookup(intf).method(methodFunction);
+    return methodLookup(intf).method(notNull(methodFunction));
   }
 
   public static <T> MethodSignature signature(final Class<T> intf, final Function<T,?> methodFunction){
@@ -85,7 +87,7 @@ public final class ReflectionUtils {
     private Lookup(final Class<T> interfaze){
       final InvocationHandler ih = (proxy, method, args) -> {
         this.method.set(method);
-        return null;
+        return defaultValue(method.getReturnType());
       };
       proxy = createProxy(interfaze, ih);
     }
@@ -95,6 +97,22 @@ public final class ReflectionUtils {
       return result;
     }
   }
+
+  public static final @Nullable Object defaultValue(final Class<?> clazz) {
+    if(clazz.isPrimitive()) {
+      if(clazz==boolean.class) return false;
+      else if(clazz==byte.class) return (byte)0;
+      else if(clazz==short.class) return (short)0;
+      else if(clazz==int.class) return (int)0;
+      else if(clazz==long.class) return (long)0;
+      else if(clazz==float.class) return (float)0;
+      else if(clazz==double.class) return (double)0;
+      else if(clazz==void.class) return null;
+      else return bugValue();
+    }
+    else return null;
+  }
+
 
   public static <T> Lookup<T> methodLookup(final Class<T> intf){
     return new Lookup<>(intf);
@@ -200,6 +218,21 @@ public final class ReflectionUtils {
       notUnique = notUniqueB.build();
     }
     return c->notUnique.contains(c)?c.getName():c.getSimpleName();
+  }
+
+  public static Class<?> getWrapperClass(final Class<?> clazz) {
+    if(clazz.isPrimitive()) {
+      if(clazz==boolean.class) return Boolean.class;
+      else if(clazz==byte.class) return Byte.class;
+      else if(clazz==short.class) return Short.class;
+      else if(clazz==int.class) return Integer.class;
+      else if(clazz==long.class) return Long.class;
+      else if(clazz==float.class) return Float.class;
+      else if(clazz==double.class) return Double.class;
+      else if(clazz==void.class) return Void.class;
+      else return bugValue();
+    }
+    else return clazz;
   }
 
 }

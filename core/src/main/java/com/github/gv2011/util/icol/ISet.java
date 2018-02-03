@@ -1,5 +1,7 @@
 package com.github.gv2011.util.icol;
 
+import static com.github.gv2011.util.CollectionUtils.toIList;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -83,4 +85,7 @@ public interface ISet<E> extends Set<E>, ICollection<E>{
     throw new UnsupportedOperationException();
   }
 
+  default IList<E> asList(){
+    return stream().collect(toIList());
+  }
 }

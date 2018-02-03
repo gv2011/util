@@ -4,7 +4,7 @@ package com.github.gv2011.util;
  * #%L
  * The MIT License (MIT)
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,7 @@ package com.github.gv2011.util;
  * #L%
  */
 
-
-
-
-import static com.github.gv2011.util.ex.Exceptions.run;
+import static com.github.gv2011.util.ex.Exceptions.call;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -42,7 +39,7 @@ class DefaultClock implements Clock{
   public void await(final Instant instant) {
     final Duration sleepTime = Duration.between(instant(), instant);
     if(!(sleepTime.isNegative()||sleepTime.isZero())){
-      run(()->Thread.sleep(sleepTime.toMillis()));
+      call(()->Thread.sleep(sleepTime.toMillis()));
     }
   }
 

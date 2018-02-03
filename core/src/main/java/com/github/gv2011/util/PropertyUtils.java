@@ -12,10 +12,10 @@ package com.github.gv2011.util;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,12 +26,10 @@ package com.github.gv2011.util;
  * #L%
  */
 
-
-
-
 import static com.github.gv2011.util.FileUtils.getStream;
 import static com.github.gv2011.util.ResourceUtils.getResourceUrl;
 import static com.github.gv2011.util.Verify.tryCast;
+import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.callWithCloseable;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
@@ -39,17 +37,20 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import com.github.gv2011.util.ex.ThrowingSupplier;
 
 public final class PropertyUtils {
+
 
   private PropertyUtils(){staticClass();}
 
@@ -66,7 +67,7 @@ public final class PropertyUtils {
   }
 
   public static SafeProperties readProperties(final Path file) {
-    return readProperties(()->Files.newInputStream(file));
+    return readProperties(()->FileUtils.tryGetStream(file));
   }
 
   public static SafeProperties readProperties(final ThrowingSupplier<InputStream> streamSupplier){
@@ -115,7 +116,27 @@ public final class PropertyUtils {
       return PropertyUtils.getMultiple(this, key);
     }
 
+    public Map<String,String> asMap() {
+      return new StringMap();
+    }
 
+    private class StringMap extends AbstractMap<String, String> {
+      @SuppressWarnings({ "unchecked", "rawtypes" })
+      @Override
+      public Set entrySet() {
+        return SafeProperties.this.entrySet();
+      }
+    }
+
+    public void store(final Path path) {
+      call(()->store(FileUtils.writer(path), ""));
+    }
+  }
+
+  public static void writeProperties(final Map<String, ?> props, final Path path) {
+    final SafeProperties sp = new SafeProperties();
+    props.keySet().stream().sorted().forEach(k->sp.put(k, props.get(k).toString()));
+    sp.store(path);
   }
 
 }

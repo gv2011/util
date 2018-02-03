@@ -12,10 +12,10 @@ package com.github.gv2011.testutil;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -30,7 +30,6 @@ import static com.github.gv2011.util.CollectionUtils.iCollections;
 import static com.github.gv2011.util.FileUtils.WORK_DIR;
 import static com.github.gv2011.util.ResourceUtils.tryGetResourceUrl;
 import static com.github.gv2011.util.ex.Exceptions.call;
-import static com.github.gv2011.util.ex.Exceptions.run;
 import static org.junit.Assert.assertTrue;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -118,7 +117,7 @@ public class TestFolderRule implements TestRule{
         }catch(final RuntimeException e){
           i++;
           if(i==1000) throw e;
-          else run(()->Thread.sleep(10));
+          else call(()->Thread.sleep(10));
         }
       }
       LOG.debug("Test {}: Created test folder {}.", testClass.getName(), result);

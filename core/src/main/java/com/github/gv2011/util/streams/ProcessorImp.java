@@ -1,5 +1,7 @@
 package com.github.gv2011.util.streams;
 
+import static com.github.gv2011.util.ex.Exceptions.call;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -27,7 +29,6 @@ package com.github.gv2011.util.streams;
  */
 
 import static com.github.gv2011.util.ex.Exceptions.notYetImplementedException;
-import static com.github.gv2011.util.ex.Exceptions.run;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -121,7 +122,7 @@ final class ProcessorImp implements Future<Long> {
   @Override
   public boolean cancel(final boolean mayInterrupt) {
     cancelled = true;
-    run(stream::close);
+    call(stream::close);
     return false;
   }
 }

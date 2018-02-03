@@ -12,10 +12,10 @@ package com.github.gv2011.util.bytes;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,13 +26,9 @@ package com.github.gv2011.util.bytes;
  * #L%
  */
 
-
-
-
 import static com.github.gv2011.util.CollectionUtils.pair;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.notYetImplementedException;
-import static com.github.gv2011.util.ex.Exceptions.run;
 import static com.github.gv2011.util.ex.Exceptions.wrap;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -148,7 +144,7 @@ public abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
 
   @Override
   public void write(final OutputStream stream){
-    run(()->{
+    call(()->{
       for(final byte b: this) stream.write(b);
     });
   }
@@ -249,7 +245,7 @@ public abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
     try(final BytesBuilder builder = ByteUtils.newBytesBuilder()){
       final OutputStream stream = Base64.getEncoder().wrap(builder);
       write(stream);
-      run(stream::close);
+      call(stream::close);
       return builder.build();
       }
   }
@@ -421,5 +417,19 @@ public abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
   }
 
 
+  @Override
+  public TypedBytes typed() {
+    return typed(DataTypeImp.APPLICATION_OCTET_STREAM);
+  }
+
+  @Override
+  public TypedBytes typed(final DataType dataType) {
+    return new AbstractTypedBytes() {
+      @Override
+      public Bytes content() {return AbstractBytes.this;}
+      @Override
+      public DataType dataType() {return dataType;}
+    };
+  }
 
 }

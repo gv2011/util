@@ -12,10 +12,10 @@ package com.github.gv2011.util.bytes;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -98,8 +98,8 @@ public class ByteUtils {
     return new ArrayBytes(array);
   }
 
-  public static Bytes asUtf8(final String text){
-    return new ArrayBytes(text.getBytes(UTF_8));
+  public static TypedBytes asUtf8(final String text){
+    return new ArrayBytes(text.getBytes(UTF_8)).typed(DataTypeImp.TEXT);
   }
 
   public static Hash256 hash(final String text){
@@ -175,10 +175,16 @@ public class ByteUtils {
 
 
   public static Optional<Bytes> tryRead(final Path file) {
-    return Files.exists(file) ? Optional.of(newFileBytes(file)) : Optional.empty();
+    return Files.exists(file) ? Optional.of(read(file)) : Optional.empty();
   }
 
-  public static Bytes newFileBytes(final Path file) {
+  //TODO remove
+  //  @Deprecated//Use read instead.
+  //  public static Bytes newFileBytes(final Path file) {
+  //    return read(file);
+  //  }
+
+  public static Bytes read(final Path file) {
     return new FileBytes(file);
   }
 

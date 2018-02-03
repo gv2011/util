@@ -12,10 +12,10 @@ package com.github.gv2011.util.streams;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,12 +26,9 @@ package com.github.gv2011.util.streams;
  * #L%
  */
 
-
-
-
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.Verify.verifyEqual;
-import static com.github.gv2011.util.ex.Exceptions.run;
+import static com.github.gv2011.util.ex.Exceptions.call;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -89,7 +86,7 @@ public class StreamConnector {
       synchronized(lock){
         if(outClosed) throw new IOException("Closed.");
         if(!inClosed) {
-          while(!canWrite(len)) run(lock::wait);
+          while(!canWrite(len)) call(()->lock.wait());
           if(!inClosed)buffer.write(b, off, len);
         }
         lock.notifyAll();
@@ -123,7 +120,7 @@ public class StreamConnector {
         if(inClosed) throw new IOException("Closed.");
         if(len==0) result = 0;
         else{
-          while(buffer.isEmpty() && !outClosed) run(lock::wait);
+          while(buffer.isEmpty() && !outClosed) call(()->lock.wait());
           if(!buffer.isEmpty()){
             final int count = (int) Math.min(len, buffer.size());
             final Bytes bytes = buffer.build();

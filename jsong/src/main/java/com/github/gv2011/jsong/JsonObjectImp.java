@@ -32,12 +32,14 @@ package com.github.gv2011.jsong;
 import static com.github.gv2011.util.CollectionUtils.upcast;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.github.gv2011.util.icol.AbstractISortedMap;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.json.JsonList;
 import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonObject;
 import com.google.gson.stream.JsonWriter;
@@ -96,5 +98,21 @@ final class JsonObjectImp extends AbstractISortedMap<String,JsonNode> implements
       return new JsonObjectImp(f, b.build());
     });
   }
+
+  @Override
+  public JsonList asList() {
+    return AbstractJsongNode.asList(this);
+  }
+
+  @Override
+  public String asString() {
+    return AbstractJsongNode.asString(this);
+  }
+
+  @Override
+  public BigDecimal asNumber() {
+    return AbstractJsongNode.asNumber(this);
+  }
+
 
 }

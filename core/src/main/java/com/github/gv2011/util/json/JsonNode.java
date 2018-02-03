@@ -1,5 +1,6 @@
 package com.github.gv2011.util.json;
 
+import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 /*-
@@ -34,5 +35,11 @@ public interface JsonNode {
   JsonNode filter(String attribute);
 
   Stream<JsonNode> stream();
+
+  JsonList asList();
+
+  String asString();
+
+  BigDecimal asNumber();
 
 }

@@ -1,5 +1,7 @@
 package com.github.gv2011.util;
 
+import static com.github.gv2011.util.CollectionUtils.pair;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -12,10 +14,10 @@ package com.github.gv2011.util;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,15 +35,20 @@ import static com.github.gv2011.util.ex.Exceptions.staticClass;
 
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 
 public final class Comparison {
 
   private Comparison(){staticClass();}
-  
+
+  @SuppressWarnings("rawtypes")
+  private static final Comparator LIST_COMPARATOR = listComparator(Comparator.naturalOrder());
+
   public static <C extends Comparable<C>> C min(final C c1, final C c2){
     final int diff = c1.compareTo(c2);
     assert (diff==0)==(c1.equals(c2));
@@ -54,32 +61,69 @@ public final class Comparison {
     return diff>=0?c1:c2;
   }
 
+  @SuppressWarnings("unchecked")
   public static <C extends Iterable<? extends E>, E extends Comparable<? super E>> Comparator<C>
   listComparator(){
-    return listComparator(Comparator.naturalOrder());
+    return LIST_COMPARATOR;
   }
 
   public static <C extends Iterable<? extends E>, E> Comparator<C>
   listComparator(final Comparator<? super E> comparator){
     return (c1,c2)->{
-      final Iterator<? extends E> it1 = c1.iterator();
-      final Iterator<? extends E> it2 = c2.iterator();
-      int result = -2;
-      while(result == -2){
-        final boolean hasNext1 = it1.hasNext();
-        final boolean hasNext2 = it2.hasNext();
-        if(!hasNext1 || !hasNext2){
-          result = hasNext1==hasNext2 ? 0 : hasNext1 ? 1:-1;
-        }else{
-          final E next1 = it1.next();
-          final E next2 = it2.next();
-          final int diff = comparator.compare(next1, next2);
-          if(diff!=0) result = diff;
+      if(c1==c2) return 0;
+      else {
+        final Iterator<? extends E> it1 = c1.iterator();
+        final Iterator<? extends E> it2 = c2.iterator();
+        int result = -2;
+        while(result == -2){
+          final boolean hasNext1 = it1.hasNext();
+          final boolean hasNext2 = it2.hasNext();
+          if(!hasNext1 || !hasNext2){
+            result = hasNext1==hasNext2 ? 0 : hasNext1 ? 1:-1;
+          }else{
+            final E next1 = it1.next();
+            final E next2 = it2.next();
+            final int diff = comparator.compare(next1, next2);
+            if(diff!=0) result = diff;
+          }
         }
+        return result;
       }
-      return result;
     };
   }
+
+  static <C extends List<? extends E>, E> Comparator<C>
+  listComparator2(final Comparator<? super E> comparator){
+    return (c1,c2)->{
+      if(c1==c2) return 0;
+      else {
+        final int min = Math.min(c1.size(), c2.size());
+        IntStream.range(0, min).parallel()
+          .mapToObj(i->pair(i,comparator.compare(c1.get(i), c2.get(i))))
+          .filter(p->p.getValue().intValue()!=0)
+          .sorted((p1,p2)->p1.getKey().compareTo(p2.getKey()))
+          .findFirst()
+        ;
+        final Iterator<? extends E> it1 = c1.iterator();
+        final Iterator<? extends E> it2 = c2.iterator();
+        int result = -2;
+        while(result == -2){
+          final boolean hasNext1 = it1.hasNext();
+          final boolean hasNext2 = it2.hasNext();
+          if(!hasNext1 || !hasNext2){
+            result = hasNext1==hasNext2 ? 0 : hasNext1 ? 1:-1;
+          }else{
+            final E next1 = it1.next();
+            final E next2 = it2.next();
+            final int diff = comparator.compare(next1, next2);
+            if(diff!=0) result = diff;
+          }
+        }
+        return result;
+      }
+    };
+  }
+
 
   public static <S extends Set<? extends E>, E extends Comparable<? super E>> Comparator<S> setComparator(){
     return setComparator(Comparator.naturalOrder());

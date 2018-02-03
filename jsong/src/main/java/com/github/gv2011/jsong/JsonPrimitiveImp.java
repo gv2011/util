@@ -32,13 +32,14 @@ import static com.github.gv2011.util.ex.Exceptions.notYetImplemented;
 import static com.github.gv2011.util.ex.Exceptions.notYetImplementedException;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonPrimitive;
 import com.google.gson.stream.JsonWriter;
 
-final class JsonPrimitiveImp<P> implements JsongNode, JsonPrimitive<P> {
+final class JsonPrimitiveImp<P> extends AbstractJsongNode implements JsongNode, JsonPrimitive<P> {
 
   private final JsonFactoryImp f;
   private final P value;
@@ -67,7 +68,7 @@ final class JsonPrimitiveImp<P> implements JsongNode, JsonPrimitive<P> {
   @Override
   public <P2> P2 value(final Class<P2> primitiveClass) {
     if(value.getClass().equals(primitiveClass)) return (P2) value;
-    else throw notYetImplementedException();
+    else throw notYetImplementedException(value.getClass().getName());
   }
 
   @Override
@@ -89,7 +90,7 @@ final class JsonPrimitiveImp<P> implements JsongNode, JsonPrimitive<P> {
     if (value instanceof Number)       out.value((Number)value);
     else if (value instanceof Boolean) out.value(((Boolean)value).booleanValue());
     else if (value instanceof String)  out.value((String)value);
-    else notYetImplemented();
+    else notYetImplemented(value.getClass().getName());
   }
 
   @Override
@@ -100,6 +101,18 @@ final class JsonPrimitiveImp<P> implements JsongNode, JsonPrimitive<P> {
   @Override
   public Stream<JsonNode> stream() {
     return Stream.of(this);
+  }
+
+  @Override
+  public String asString() {
+    if(value instanceof String) return value.toString();
+    else return super.asString();
+  }
+
+  @Override
+  public BigDecimal asNumber() {
+    if(value instanceof BigDecimal) return (BigDecimal) value;
+    else return super.asNumber();
   }
 
 }

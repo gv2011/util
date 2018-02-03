@@ -92,7 +92,7 @@ public class CollectionUtils {
     };
 
   public static final <T extends Comparable<? super T>> Collector<T, ?, NavigableSet<T>> toSortedSet(){
-    return new SortedSetCollector<>(){
+    return new SortedSetCollector<T,NavigableSet<T>>(){
       @Override
       public Function<NavigableSet<T>, NavigableSet<T>> finisher() {
         return Function.identity();
@@ -132,6 +132,13 @@ public class CollectionUtils {
     return single(collection, (n)->n==0?"No element.":"Multiple elements.");
   }
 
+  public static <T> T single(final T[] array){
+    final int size = array.length;
+    verify(size!=0, "No element.");
+    verify(size<2, size + " elements.");
+    return notNull(array[0]);
+  }
+
   public static <T> T single(final Iterator<? extends T> it){
     return single(it, i->i==0?"No element.":"Multiple elements.");
   }
@@ -167,7 +174,7 @@ public class CollectionUtils {
   }
 
   public static <T> Stream<T> stream(final Optional<? extends T> optional){
-    return optional.isPresent() ? Stream.of(optional.get()) : Stream.empty();
+    return optional.map(v->Stream.<T>of(v)).orElseGet(Stream::empty);
   }
 
   public static <T> Stream<T> stream(final T[] array){
@@ -281,6 +288,12 @@ public class CollectionUtils {
     return iCollections().sortedMapCollector(keyMapper, valueMapper);
   }
 
+  public static <T extends Entry<? extends K, ? extends V>, K extends Comparable<? super K>, V>
+  Collector<T, ?, ISortedMap<K,V>>
+  toISortedMap() {
+    return iCollections().sortedMapCollector(Entry::getKey, Entry::getValue);
+  }
+
   public static <T, K, V> Collector<T, ?, SortedMap<K,V>>
   toISortedMap(
     final Function<? super T, ? extends K> keyMapper,
@@ -369,16 +382,20 @@ public class CollectionUtils {
   }
 
   public static <T> Collector<T,?,T> toSingle(){
-    return new OptCollector<>(){
+    return toSingle(()->"Empty stream.");
+  }
+
+  public static <T> Collector<T,?,T> toSingle(final Supplier<String> msg){
+    return new OptCollector<T,T>(){
       @Override
       public Function<AtomicReference<T>, T> finisher() {
-        return r->notNull(r.get(), ()->"Empty stream.");
+        return r->notNull(r.get(), msg);
       }
     };
   }
 
   public static <T> Collector<T,?,Stream<T>> toSingleStream(){
-    return new OptCollector<>(){
+    return new OptCollector<T,Stream<T>>(){
       @Override
       public Function<AtomicReference<T>, Stream<T>> finisher() {
         return r->Stream.of(notNull(r.get(), ()->"Empty stream."));
@@ -387,7 +404,7 @@ public class CollectionUtils {
   }
 
   public static <T> Collector<T,?,Optional<T>> toOptional(){
-    return new OptCollector<>(){
+    return new OptCollector<T,Optional<T>>(){
       @Override
       public Function<AtomicReference<T>, Optional<T>> finisher() {
         return r->Optional.ofNullable(r.get());
@@ -396,7 +413,7 @@ public class CollectionUtils {
   }
 
   public static <T> Collector<T,?,Stream<T>> toOptionalStream(){
-    return new OptCollector<>(){
+    return new OptCollector<T,Stream<T>>(){
       @Override
       public Function<AtomicReference<T>, Stream<T>> finisher() {
         return r->{final T v=r.get(); return v==null?Stream.empty():Stream.of(v);};
@@ -460,6 +477,14 @@ public class CollectionUtils {
     return builder.build();
   }
 
+  public static <K extends Comparable<? super K>,V> ISortedMap<K,V> sortedMapOf() {
+    return iCollections().emptySortedMap();
+  }
+
+  public static <K extends Comparable<? super K>,V> ISortedMap<K,V> sortedMapOf(final K key,final V value) {
+    return iCollections().<K,V>sortedMapBuilder().put(key, value).build();
+  }
+
   public static <S,T> Iterable<T> mapIterable(
     final Iterable<? extends S> delegate, final Function<? super S, ? extends T> mapping
   ){
@@ -469,7 +494,7 @@ public class CollectionUtils {
   public static <S,T> Iterator<T> mapIterator(
     final Iterator<? extends S> delegate, final Function<? super S, ? extends T> mapping
   ){
-    return new Iterator<>(){
+    return new Iterator<T>(){
       @Override
       public boolean hasNext() {return delegate.hasNext();}
       @Override

@@ -12,10 +12,10 @@ package com.github.gv2011.util.sec;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -36,9 +36,7 @@ import static com.github.gv2011.util.NumUtils.withLeadingZeros;
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.callWithCloseable;
-import static com.github.gv2011.util.ex.Exceptions.doWithCloseable;
 import static com.github.gv2011.util.ex.Exceptions.format;
-import static com.github.gv2011.util.ex.Exceptions.run;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 
 import java.io.ByteArrayInputStream;
@@ -71,6 +69,7 @@ import com.github.gv2011.util.FileUtils;
 import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.bytes.Bytes;
 import com.github.gv2011.util.bytes.BytesBuilder;
+import com.github.gv2011.util.ex.ThrowingConsumer;
 import com.github.gv2011.util.ex.ThrowingSupplier;
 import com.github.gv2011.util.icol.IList;
 
@@ -100,14 +99,17 @@ public final class SecUtils {
 
   public static final X509Certificate readCertificate(final Bytes bytes){
     final CertificateFactory certFactory = call(()->CertificateFactory.getInstance(X_509));
-    return (X509Certificate)callWithCloseable(bytes::openStream, s->certFactory.generateCertificate(s));
+    return callWithCloseable(
+      bytes::openStream,
+      s->(X509Certificate)certFactory.generateCertificate(s)
+    );
   }
 
   public static final X509Certificate readCertificateFromPem(final String pem){
     final CertificateFactory certFactory = call(()->CertificateFactory.getInstance(X_509));
-    return (X509Certificate)callWithCloseable(
+    return callWithCloseable(
       ()->new ByteArrayInputStream(pem.getBytes(StandardCharsets.US_ASCII)),
-      s->certFactory.generateCertificate(s)
+      s->(X509Certificate)certFactory.generateCertificate(s)
     );
   }
 
@@ -144,7 +146,7 @@ public final class SecUtils {
     int i = 0;
     Path certFile = certFile(folder, i);
     while(Files.exists(certFile)){
-      chain.add(readCertificate(ByteUtils.newFileBytes(certFile)));
+      chain.add(readCertificate(ByteUtils.read(certFile)));
       certFile = certFile(folder, ++i);
     }
     return chain.build();
@@ -157,7 +159,10 @@ public final class SecUtils {
 
   public static final KeyStore readKeyStore(final ThrowingSupplier<InputStream> streamSupplier){
     final KeyStore ks = call(()->KeyStore.getInstance(JKS));
-    doWithCloseable(streamSupplier, s->ks.load(s, JKS_DEFAULT_PASSWORD.toCharArray()));
+    callWithCloseable(
+      streamSupplier,
+      (ThrowingConsumer<InputStream>)s->ks.load(s, JKS_DEFAULT_PASSWORD.toCharArray())
+    );
     return ks;
   }
 
@@ -167,15 +172,15 @@ public final class SecUtils {
     final X509Certificate cert = certChain.get(0);
     verifyEqual(privKey.getPublic(), cert.getPublicKey());
     final KeyStore keystore = call(()->KeyStore.getInstance(JKS));
-    run(()->keystore.load(null, null));
-    run(()->keystore.setKeyEntry(
+    call(()->keystore.load(null, null));
+    call(()->keystore.setKeyEntry(
       CERT_ALIAS, privKey.getPrivate(),
       JKS_DEFAULT_PASSWORD.toCharArray(),
       certChain.toArray(new Certificate[certChain.size()])
     ));
     Bytes result;
     try(BytesBuilder builder = ByteUtils.newBytesBuilder()){
-      run(()->keystore.store(builder, JKS_DEFAULT_PASSWORD.toCharArray()));
+      call(()->keystore.store(builder, JKS_DEFAULT_PASSWORD.toCharArray()));
       result = builder.build();
     }
     return result;

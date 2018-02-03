@@ -4,7 +4,7 @@ package com.github.gv2011.jsong;
  * #%L
  * jsong
  * %%
- * Copyright (C) 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -12,10 +12,10 @@ package com.github.gv2011.jsong;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,9 +26,7 @@ package com.github.gv2011.jsong;
  * #L%
  */
 
-
-
-import static com.github.gv2011.util.ex.Exceptions.run;
+import static com.github.gv2011.util.ex.Exceptions.call;
 
 import java.util.stream.Stream;
 
@@ -36,7 +34,7 @@ import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonNull;
 import com.google.gson.stream.JsonWriter;
 
-final class JsonNullImp implements JsongNode, JsonNull{
+final class JsonNullImp extends AbstractJsongNode implements JsongNode, JsonNull{
 
   private final JsonFactoryImp f;
 
@@ -67,7 +65,7 @@ final class JsonNullImp implements JsongNode, JsonNull{
 
   @Override
   public void write(final JsonWriter out) {
-    run(out::nullValue);
+    call(out::nullValue);
   }
 
   @Override
@@ -79,7 +77,5 @@ final class JsonNullImp implements JsongNode, JsonNull{
   public Stream<JsonNode> stream() {
     return Stream.empty();
   }
-
-
 
 }

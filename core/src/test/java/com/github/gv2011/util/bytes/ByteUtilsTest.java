@@ -12,10 +12,10 @@ package com.github.gv2011.util.bytes;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -45,11 +45,11 @@ public class ByteUtilsTest {
 
   @Test
   public void testHash() {
-    final Bytes b = ByteUtils.asUtf8("Franz jagt im komplett verwahrlosten Taxi quer durch Bayern");
+    final TypedBytes b = ByteUtils.asUtf8("Franz jagt im komplett verwahrlosten Taxi quer durch Bayern");
     final Bytes expected = ByteUtils.parseHash(
       "d32b568cd1b96d459e7291ebf4b25d007f275c9f13149beeb782fac0716613f8"
     );
-    assertThat(b.hash(), is(expected));
+    assertThat(b.content().hash(), is(expected));
   }
 
   @Test

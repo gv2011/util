@@ -12,10 +12,10 @@ package com.github.gv2011.util;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,17 +26,17 @@ package com.github.gv2011.util;
  * #L%
  */
 
-
-
-
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
-import static com.github.gv2011.util.ex.Exceptions.run;
+import static com.github.gv2011.util.ex.Exceptions.callWithCloseable;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
@@ -44,9 +44,9 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.bytes.Bytes;
@@ -67,6 +67,14 @@ public final class FileUtils {
     return FileSystems.getDefault().getPath(first, more);
   }
 
+  public static boolean sameFile(final Path f1, final Path f2){
+    return call(()->Files.isSameFile(f1, f2));
+  }
+
+  public static Stream<Path> list(final Path dir){
+    return call(()->Files.list(dir));
+  }
+
   public static Reader getReader(final String first, final String... more){
     return call(()->Files.newBufferedReader(path(first, more), UTF_8));
   }
@@ -85,7 +93,23 @@ public final class FileUtils {
   }
 
   public static InputStream getStream(final String first, final String... more){
-    return call(()->Files.newInputStream(path(first, more)));
+    return getStream(path(first, more));
+  }
+
+  public static InputStream getStream(final Path path){
+    return call(()->Files.newInputStream(path));
+  }
+
+  public static InputStream tryGetStream(final Path path){
+    return call(()->{
+      InputStream newInputStream;
+      try {
+        newInputStream = Files.newInputStream(path);
+      } catch (final NoSuchFileException e) {
+        newInputStream = new ByteArrayInputStream(new byte[0]);
+      }
+      return newInputStream;
+    });
   }
 
   public static String readText(final String first, final String... more){
@@ -98,6 +122,10 @@ public final class FileUtils {
 
   public static Reader reader(final Path path){
     return call(()->Files.newBufferedReader(path, UTF_8));
+  }
+
+  public static Bytes read(final Path path){
+    return ByteUtils.read(path);
   }
 
   public static Optional<String> tryReadText(final Path path){
@@ -114,7 +142,7 @@ public final class FileUtils {
   }
 
   public static void writeText(final String text, final Path path){
-    run(()->Files.write(path, text.getBytes(UTF_8), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE));
+    call(()->Files.write(path, text.getBytes(UTF_8), TRUNCATE_EXISTING, CREATE));
   }
 
   public static long getSize(final String first, final String... more){
@@ -157,7 +185,7 @@ public final class FileUtils {
 
   private static void deleteFolder(final Path folder) {
     deleteContents(folder);
-    run(()->Files.delete(folder));
+    call(()->Files.delete(folder));
     verify(!Files.exists(folder));
   }
 
@@ -195,6 +223,16 @@ public final class FileUtils {
       finally{
         delete(folder);
       }
+    });
+  }
+
+  public static Writer writer(final Path file) {
+    return call(()->Files.newBufferedWriter(file, UTF_8));
+  }
+
+  public static long copy(final Path src, final Path target) {
+    return callWithCloseable(()->Files.newOutputStream(target, CREATE, TRUNCATE_EXISTING), out->{
+      return StreamUtils.copy(()->Files.newInputStream(src), out);
     });
   }
 

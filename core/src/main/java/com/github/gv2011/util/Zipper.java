@@ -12,10 +12,10 @@ package com.github.gv2011.util;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,16 +26,14 @@ package com.github.gv2011.util;
  * #L%
  */
 
-
-
-
 import static com.github.gv2011.util.CollectionUtils.toISortedSet;
 import static com.github.gv2011.util.FileUtils.contains;
 import static com.github.gv2011.util.Verify.verify;
-import static com.github.gv2011.util.ex.Exceptions.doWithCloseable;
+import static com.github.gv2011.util.ex.Exceptions.callWithCloseable;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.TimeZone;
@@ -44,6 +42,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import com.github.gv2011.util.ex.ThrowingConsumer;
 import com.github.gv2011.util.ex.ThrowingSupplier;
 import com.github.gv2011.util.icol.ISortedSet;
 
@@ -59,13 +58,13 @@ public final class Zipper {
   }
 
   private void zipFile(final Path source, final Path zipFile) {
-    doWithCloseable(()->new ZipOutputStream(Files.newOutputStream(zipFile)), zos->{
+    callWithCloseable(()->new ZipOutputStream(Files.newOutputStream(zipFile)), zos->{
       zipFile(source.getFileName().toString(), source, zos);
     });
   }
 
   private void zipFolder(final Path sourceFolder, final Path zipFile) {
-    doWithCloseable(()->new ZipOutputStream(Files.newOutputStream(zipFile)), zos->{
+    callWithCloseable(()->new ZipOutputStream(Files.newOutputStream(zipFile)), zos->{
       zipFolder(sourceFolder.getFileName().toString()+"/", sourceFolder, zos);
     });
   }
@@ -104,8 +103,8 @@ public final class Zipper {
   public void unZip(
     final ThrowingSupplier<InputStream> stream, final Path targetFolder, final Consumer<Path> pathCollector
   ) {
-    doWithCloseable(stream, s->{
-      doWithCloseable(()->new ZipInputStream(s), zis->{
+    callWithCloseable(stream, s->{
+      callWithCloseable(()->new ZipInputStream(s), (ThrowingConsumer<ZipInputStream>)zis->{
         final byte[] buffer = new byte[1024];
         ZipEntry ze = zis.getNextEntry();
         while(ze!=null){
@@ -115,7 +114,7 @@ public final class Zipper {
           }
           else{
             Files.createDirectories(path.getParent());
-            doWithCloseable(()->Files.newOutputStream(path), os->{
+            callWithCloseable(()->Files.newOutputStream(path), (ThrowingConsumer<OutputStream>)os->{
               int count = zis.read(buffer);
               while(count!=-1){
                 os.write(buffer, 0, count);

@@ -30,6 +30,7 @@ package com.github.gv2011.jsong;
 
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 import com.github.gv2011.util.icol.AbstractIList;
@@ -78,6 +79,21 @@ final class JsonListImp extends AbstractIList<JsonNode> implements JsongNode, Js
   @Override
   public Stream<JsonNode> stream() {
     return super.stream();
+  }
+
+  @Override
+  public JsonList asList() {
+    return this;
+  }
+
+  @Override
+  public String asString() {
+    return AbstractJsongNode.asString(this);
+  }
+
+  @Override
+  public BigDecimal asNumber() {
+    return AbstractJsongNode.asNumber(this);
   }
 
 }

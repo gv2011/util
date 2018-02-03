@@ -12,10 +12,10 @@ package com.github.gv2011.util.xml;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,14 +26,10 @@ package com.github.gv2011.util.xml;
  * #L%
  */
 
-
-
-
 import static com.github.gv2011.util.CollectionUtils.toOptional;
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
-import static com.github.gv2011.util.ex.Exceptions.run;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -103,7 +99,7 @@ public final class DomUtils {
     transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, doctype.getPublicId());
     transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, doctype.getSystemId());
     transformer.setOutputProperty(OutputKeys.ENCODING, UTF_8.name());
-    run(()->transformer.transform(domSource, result));
+    call(()->transformer.transform(domSource, result));
     return new String(bos.toByteArray(), UTF_8);
   }
 

@@ -1,5 +1,7 @@
 package com.github.gv2011.util;
 
+import static com.github.gv2011.util.CollectionUtils.listBuilder;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -12,10 +14,10 @@ package com.github.gv2011.util;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -46,6 +48,9 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import com.github.gv2011.util.icol.IList;
+import com.github.gv2011.util.icol.IList.Builder;
+
 public final class StringUtils {
 
   private StringUtils(){staticClass();}
@@ -58,7 +63,7 @@ public final class StringUtils {
     if(!s.endsWith(tail)) throw new IllegalArgumentException(format("{} does not end with {}.", s, tail));
     return s.substring(0, s.length()-tail.length());
   }
-  
+
   public static String lastPart(final String s) {
     return lastPart(s, '.');
   }
@@ -173,6 +178,19 @@ public final class StringUtils {
   @Deprecated//Moved to FileUtils
   public static void writeFile(final String text, final Path path) {
     run(()->Files.write(path, text.getBytes(UTF_8)));
+  }
+
+  public static IList<String> split(final String text, final char c) {
+    int i = text.indexOf(c);
+    int from = 0;
+    final Builder<String> b = listBuilder();
+    while(i!=-1) {
+      b.add(text.substring(from, i));
+      from = i+1;
+      i = text.indexOf(c, from);
+    }
+    b.add(text.substring(from));
+    return b.build();
   }
 
 }

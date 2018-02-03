@@ -15,13 +15,18 @@
 		<dependency>
 			<groupId>com.github.gv2011</groupId>
 			<artifactId>util</artifactId>
-      <version>${utils.version}</version>
+      <version>${util.version}</version>
 		</dependency>
     
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
     </dependency>
+    
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-server</artifactId>
+      </dependency>
 		
 	</dependencies>
   

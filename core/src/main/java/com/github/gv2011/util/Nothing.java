@@ -27,7 +27,8 @@ package com.github.gv2011.util;
  */
 
 /**
- * Marker class for "void" parameters (avoids null).
+ * Replacement for void/Void in some situations (avoids null).
+ * Example: allows to treat consumer and suppliers formally as functions.
  */
 public final class Nothing {
 

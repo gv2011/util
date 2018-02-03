@@ -4,7 +4,7 @@ package com.github.gv2011.util;
  * #%L
  * The MIT License (MIT)
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,7 @@ package com.github.gv2011.util;
  * #L%
  */
 
-
-
-
-import static com.github.gv2011.util.ex.Exceptions.run;
+import static com.github.gv2011.util.ex.Exceptions.call;
 
 public class PingPong {
 
@@ -38,7 +35,7 @@ public class PingPong {
 
   public void ping(){
     synchronized(lock){
-      while(!ping) run(()->lock.wait());
+      while(!ping) call(()->lock.wait());
       ping = false;
       lock.notifyAll();
     }
@@ -46,7 +43,7 @@ public class PingPong {
 
   public void pong(){
     synchronized(lock){
-      while(ping) run(()->lock.wait());
+      while(ping) call(()->lock.wait());
       ping = true;
       lock.notifyAll();
     }

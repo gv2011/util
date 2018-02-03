@@ -26,9 +26,6 @@ package com.github.gv2011.util.icol;
  * #L%
  */
 
-
-
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -79,6 +76,8 @@ public interface ICollectionFactory {
 
   <E> IList.Builder<E> listBuilder();
 
+  <E extends Comparable<? super E>> IComparableList.Builder<E> comparableListBuilder();
+
 
   <E> ISet.Builder<E> setBuilder();
 
@@ -125,4 +124,5 @@ public interface ICollectionFactory {
     return this.<E>setBuilder().addAll(collection).build();
   }
 
+  Path emptyPath();
 }
