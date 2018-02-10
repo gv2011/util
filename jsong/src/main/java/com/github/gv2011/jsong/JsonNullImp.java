@@ -1,5 +1,7 @@
 package com.github.gv2011.jsong;
 
+import static com.github.gv2011.util.Verify.verify;
+
 /*-
  * #%L
  * jsong
@@ -12,10 +14,10 @@ package com.github.gv2011.jsong;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -30,7 +32,9 @@ import static com.github.gv2011.util.ex.Exceptions.call;
 
 import java.util.stream.Stream;
 
+import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.json.JsonNode;
+import com.github.gv2011.util.json.JsonNodeType;
 import com.github.gv2011.util.json.JsonNull;
 import com.google.gson.stream.JsonWriter;
 
@@ -76,6 +80,33 @@ final class JsonNullImp extends AbstractJsongNode implements JsongNode, JsonNull
   @Override
   public Stream<JsonNode> stream() {
     return Stream.empty();
+  }
+
+
+  @Override
+  public JsonNodeType jsonNodeType() {
+    return JsonNodeType.NULL;
+  }
+
+  @Override
+  public Nothing value() {
+    return Nothing.INSTANCE;
+  }
+
+  @Override
+  public <P2> P2 value(final Class<P2> primitiveClass) {
+    verify(primitiveClass.equals(Nothing.class));
+    return primitiveClass.cast(Nothing.INSTANCE);
+  }
+
+  @Override
+  public int compareWithOtherOfSameJsonNodeType(final JsonNode o) {
+    return 0;
+  }
+
+  @Override
+  public JsonNull asNull() {
+    return this;
   }
 
 }

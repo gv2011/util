@@ -1,5 +1,7 @@
 package com.github.gv2011.util;
 
+import static com.github.gv2011.util.Verify.verifyEqual;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -30,9 +32,14 @@ package com.github.gv2011.util;
  * Replacement for void/Void in some situations (avoids null).
  * Example: allows to treat consumer and suppliers formally as functions.
  */
-public final class Nothing {
+public final class Nothing implements Parsable{
 
   public static final Nothing INSTANCE = new Nothing();
+
+  public static Nothing parse(final CharSequence cs) {
+    verifyEqual(cs.toString().toLowerCase(), "null");
+    return INSTANCE;
+  }
 
   private Nothing() {}
 

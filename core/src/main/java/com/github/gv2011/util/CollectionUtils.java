@@ -52,8 +52,6 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
@@ -64,7 +62,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import com.github.gv2011.util.icol.ICollectionFactory;
 import com.github.gv2011.util.icol.IList;
@@ -165,7 +162,7 @@ public class CollectionUtils {
     return Optional.ofNullable(map.get(key));
   }
 
-  public static <S,T> Function<S,Stream<T>> ifPresent(final Function<S,Optional<T>> optFunction){
+  public static <S,T> Function<S,XStream<T>> ifPresent(final Function<S,Optional<T>> optFunction){
     return s->stream(optFunction.apply(s));
   }
 
@@ -173,29 +170,29 @@ public class CollectionUtils {
     return new Pair<>(key, value);
   }
 
-  public static <T> Stream<T> stream(final Optional<? extends T> optional){
-    return optional.map(v->Stream.<T>of(v)).orElseGet(Stream::empty);
+  @Deprecated //use XStream method
+  public static <T> XStream<T> stream(final Optional<? extends T> optional){
+    return XStream.fromOptional(optional);
   }
 
-  public static <T> Stream<T> stream(final T[] array){
-    return Arrays.stream(array);
+  @Deprecated //use XStream method
+  public static <T> XStream<T> stream(final T[] array){
+    return XStream.of(array);
   }
 
-  public static <T> Stream<T> stream(final Iterator<? extends T> iterator){
-    return StreamSupport.stream(
-      Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED),
-      false
-    );
+  @Deprecated //use XStream method
+  public static <T> XStream<T> stream(final Iterator<? extends T> iterator){
+    return XStream.fromIterator(iterator);
   }
 
-  public static <T> Stream<T> stream(final Iterator<?> iterator, final Class<T> elementType){
-    return StreamSupport.stream(
-      Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED),
-      false
-    )
-    .map(elementType::cast)
-    ;
-  }
+//  public static <T> XStream<T> stream(final Iterator<?> iterator, final Class<T> elementType){
+//    return StreamSupport.stream(
+//      Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED),
+//      false
+//    )
+//    .map(elementType::cast)
+//    ;
+//  }
 
 
   @SafeVarargs
@@ -370,15 +367,6 @@ public class CollectionUtils {
         return EnumSet.of(Characteristics.UNORDERED);
       }
     };
-  }
-
-  @SafeVarargs
-  public static <T> Stream<T> concat(final Stream<? extends T>... more){
-    Stream<T> result = Stream.empty();
-    for(final Stream<? extends T> s: more){
-      result = Stream.concat(result, s);
-    }
-    return result;
   }
 
   public static <T> Collector<T,?,T> toSingle(){

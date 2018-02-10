@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Spliterator;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.ISortedMap;
@@ -100,16 +99,6 @@ class IListWrapper<E> implements IList<E>{
   @Override
   public E get(final int index) {
     return delegate.get(index);
-  }
-
-  @Override
-  public Stream<E> stream() {
-    return delegate.stream();
-  }
-
-  @Override
-  public Stream<E> parallelStream() {
-    return delegate.parallelStream();
   }
 
   @Override

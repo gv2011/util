@@ -33,6 +33,7 @@ import static com.github.gv2011.util.ex.Exceptions.call;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigDecimal;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collector.Characteristics;
@@ -41,11 +42,13 @@ import com.github.gv2011.util.CollectionUtils;
 import com.github.gv2011.util.bytes.Bytes;
 import com.github.gv2011.util.icol.ICollectionFactory;
 import com.github.gv2011.util.icol.ISet;
+import com.github.gv2011.util.json.JsonBoolean;
 import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonList;
 import com.github.gv2011.util.json.JsonNode;
+import com.github.gv2011.util.json.JsonNumber;
 import com.github.gv2011.util.json.JsonObject;
-import com.github.gv2011.util.json.JsonPrimitive;
+import com.github.gv2011.util.json.JsonString;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
@@ -82,6 +85,13 @@ public final class JsonFactoryImp implements JsonFactory{
     return new JsonObjectCollector<>(this, keyMapper, valueMapper);
   }
 
+
+
+  @Override
+  public Collector<Entry<String, JsonNode>, ?, JsonObject> toJsonObject() {
+    return toJsonObject(Entry::getKey, Entry::getValue);
+  }
+
   ICollectionFactory iCollections() {return ICOLF;}
 
   @Override
@@ -90,38 +100,38 @@ public final class JsonFactoryImp implements JsonFactory{
   }
 
   @Override
-  public JsonPrimitive<String> primitive(final String s) {
-    return new JsonPrimitiveImp<>(this, s);
+  public JsonString primitive(final String s) {
+    return new JsonStringImp(this, s);
   }
 
   @Override
-  public JsonPrimitive<String> primitive(final Bytes b) {
+  public JsonString primitive(final Bytes b) {
     return primitive(b.toBase64().utf8ToString());
   }
 
   @Override
-  public JsonPrimitive<BigDecimal> primitive(final int number) {
+  public JsonNumber primitive(final int number) {
     return primitive(BigDecimal.valueOf(number));
   }
 
   @Override
-  public JsonPrimitive<BigDecimal> primitive(final long number) {
+  public JsonNumber primitive(final long number) {
     return primitive(BigDecimal.valueOf(number));
   }
 
   @Override
-  public JsonPrimitive<BigDecimal> primitive(final BigDecimal number) {
-    return new JsonPrimitiveImp<>(this, number);
+  public JsonNumber primitive(final BigDecimal number) {
+    return new JsonNumberImp(this, number);
   }
 
   @Override
-  public JsonPrimitive<Boolean> primitive(final boolean b) {
+  public JsonBoolean primitive(final boolean b) {
     return primitive(Boolean.valueOf(b));
   }
 
   @Override
-  public JsonPrimitive<Boolean> primitive(final Boolean b) {
-    return new JsonPrimitiveImp<>(this, b);
+  public JsonBoolean primitive(final Boolean b) {
+    return new JsonBooleanImp(this, b);
   }
 
   String serialize(final JsongNode e) {

@@ -39,10 +39,10 @@ import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonPrimitive;
 import com.google.gson.stream.JsonWriter;
 
-final class JsonPrimitiveImp<P> extends AbstractJsongNode implements JsongNode, JsonPrimitive<P> {
+abstract class JsonPrimitiveImp<P> extends AbstractJsongNode implements JsongNode, JsonPrimitive<P> {
 
   private final JsonFactoryImp f;
-  private final P value;
+  final P value;
 
   JsonPrimitiveImp(final JsonFactoryImp f, final P value) {
     this.f = f;

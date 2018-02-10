@@ -27,6 +27,7 @@ package com.github.gv2011.util.json;
  */
 
 import java.math.BigDecimal;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
@@ -43,21 +44,23 @@ public interface JsonFactory {
     final Function<? super T, JsonNode> valueMapper
   );
 
+  Collector<Entry<String,JsonNode>, ?, JsonObject> toJsonObject();
+
   JsonNull jsonNull();
 
-  JsonPrimitive<String> primitive(String s);
+  JsonString primitive(String s);
 
-  JsonPrimitive<String> primitive(Bytes b);
+  JsonString primitive(Bytes b);
 
-  JsonPrimitive<BigDecimal> primitive(int number);
+  JsonNumber primitive(int number);
 
-  JsonPrimitive<BigDecimal> primitive(long number);
+  JsonNumber primitive(long number);
 
-  JsonPrimitive<BigDecimal> primitive(BigDecimal number);
+  JsonNumber primitive(BigDecimal number);
 
-  JsonPrimitive<Boolean> primitive(boolean b);
+  JsonBoolean primitive(boolean b);
 
-  JsonPrimitive<Boolean> primitive(Boolean b);
+  JsonBoolean primitive(Boolean b);
 
 
 }

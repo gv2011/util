@@ -30,8 +30,12 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Spliterator;
 import java.util.function.Function;
 import java.util.stream.Collector;
+import java.util.stream.Stream;
+
+import com.github.gv2011.util.XStream;
 
 
 public interface ICollectionFactory {
@@ -125,4 +129,8 @@ public interface ICollectionFactory {
   }
 
   Path emptyPath();
+
+  <E> XStream<E> xStream(Stream<E> s);
+
+  <E> XStream<E> xStream(Spliterator<E> spliterator, boolean parallel);
 }

@@ -1,5 +1,7 @@
 package com.github.gv2011.util.json;
 
+import com.github.gv2011.util.Nothing;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -25,7 +27,7 @@ package com.github.gv2011.util.json;
  * THE SOFTWARE.
  * #L%
  */
-public interface JsonNull extends JsonNode{
+public interface JsonNull extends JsonPrimitive<Nothing>{
 
   @Override
   public JsonNull filter(final String attribute);

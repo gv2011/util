@@ -12,10 +12,10 @@ package com.github.gv2011.jsong;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -30,14 +30,21 @@ import static com.github.gv2011.util.ex.Exceptions.format;
 import java.math.BigDecimal;
 
 import com.github.gv2011.util.json.JsonList;
+import com.github.gv2011.util.json.JsonNode;
+import com.github.gv2011.util.json.JsonNodeType;
+import com.github.gv2011.util.json.JsonNull;
+import com.github.gv2011.util.json.JsonObject;
 
 abstract class AbstractJsongNode implements JsongNode{
-
-
 
   @Override
   public JsonList asList() {
     return asList(this);
+  }
+
+  @Override
+  public boolean asBoolean() {
+    return asBoolean(this);
   }
 
   @Override
@@ -50,8 +57,51 @@ abstract class AbstractJsongNode implements JsongNode{
     return asNumber(this);
   }
 
+  @Override
+  public JsonObject asObject() {
+    return asObject(this);
+  }
+
+  @Override
+  public JsonNull asNull() {
+    return asNull(this);
+  }
+
+  @Override
+  public final int compareTo(final JsonNode o) {
+    return compare(this,o);
+  }
+
+  static final int compare(final JsongNode n1, final JsonNode n2) {
+    final int result;
+    if(n1==n2) result = 0;
+    else {
+      final JsonNodeType jsonNodeType = n1.jsonNodeType();
+      final int tr = jsonNodeType.compareTo(n2.jsonNodeType());
+      if(tr!=0) result = tr;
+      else result = n1.compareWithOtherOfSameJsonNodeType(n2);
+    }
+    return result;
+  }
+
+  static final JsongNode toJsongNode(final JsonNode n) {
+    return (JsongNode) n;
+  }
+
+  static final JsonObject asObject(final JsongNode n) {
+    throw new ClassCastException(format("{} is not a JsonObject.", n));
+  }
+
+  static final JsonNull asNull(final JsongNode n) {
+    throw new ClassCastException(format("{} is not a JsonNull.", n));
+  }
+
   static final JsonList asList(final JsongNode n) {
     throw new ClassCastException(format("{} is not a JsonList.", n));
+  }
+
+  static final boolean asBoolean(final JsongNode n) {
+    throw new ClassCastException(format("{} is not a Boolean node.", n));
   }
 
   static final String asString(final JsongNode n) {
@@ -61,6 +111,5 @@ abstract class AbstractJsongNode implements JsongNode{
   static final BigDecimal asNumber(final JsongNode n) {
     throw new ClassCastException(format("{} is not a Number node.", n));
   }
-
 
 }

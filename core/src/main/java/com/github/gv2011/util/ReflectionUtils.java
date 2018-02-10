@@ -31,7 +31,6 @@ package com.github.gv2011.util;
 
 import static com.github.gv2011.util.CollectionUtils.iCollections;
 import static com.github.gv2011.util.CollectionUtils.setBuilder;
-import static com.github.gv2011.util.CollectionUtils.stream;
 import static com.github.gv2011.util.CollectionUtils.toISet;
 import static com.github.gv2011.util.CollectionUtils.toISortedSet;
 import static com.github.gv2011.util.Verify.notNull;
@@ -198,7 +197,7 @@ public final class ReflectionUtils {
     final ISortedSet<String> result = methods.stream()
       .map(m->
         m.getName() +
-        stream(m.getParameterTypes()).map(nameShortener).collect(joining(",","(",")")) +
+        XStream.of(m.getParameterTypes()).map(nameShortener).collect(joining(",","(",")")) +
         ":"+nameShortener.apply(m.getDeclaringClass())+"->"+nameShortener.apply(m.getReturnType())
       )
       .collect(toISortedSet())

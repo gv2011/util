@@ -49,6 +49,19 @@ public final class Comparison {
   @SuppressWarnings("rawtypes")
   private static final Comparator LIST_COMPARATOR = listComparator(Comparator.naturalOrder());
 
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  private static final Comparator OPTIONAL_COMPARATOR = (opt1,opt2)->{
+    return (int)
+      ((Optional)opt1)
+      .map(o1->
+        ((Optional)opt2)
+        .map(o2->((Comparable)o1).compareTo(o2))
+        .orElse(1)
+      )
+      .orElseGet(()->((Optional)opt2).isPresent() ? -1 : 0)
+    ;
+  };
+
   public static <C extends Comparable<C>> C min(final C c1, final C c2){
     final int diff = c1.compareTo(c2);
     assert (diff==0)==(c1.equals(c2));
@@ -59,6 +72,11 @@ public final class Comparison {
     final int diff = c1.compareTo(c2);
     assert (diff==0)==(c1.equals(c2));
     return diff>=0?c1:c2;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <C extends Comparable<? super C>> Comparator<Optional<C>> optionalComparator(){
+    return OPTIONAL_COMPARATOR;
   }
 
   @SuppressWarnings("unchecked")
@@ -148,22 +166,6 @@ public final class Comparison {
         }
       }
       return result;
-    };
-  }
-
-  public static <E extends Comparable<? super E>> Comparator<Optional<E>> optComparator(){
-    return (o1,o2)->{
-      if(o1.isPresent()!=o2.isPresent()){
-        return o1.isPresent() ? 1 : -1;
-      }else if(!o1.isPresent()){
-        assert !o2.isPresent();
-        return 0;
-      }else{
-        final E e1 = o1.get();
-        final E e2 = o2.get();
-        if(e1==e2) return 0;
-        else return e1.compareTo(e2);
-      }
     };
   }
 

@@ -28,7 +28,9 @@ import java.util.stream.Stream;
  * THE SOFTWARE.
  * #L%
  */
-public interface JsonNode {
+public interface JsonNode extends Comparable<JsonNode>{
+
+  JsonNodeType jsonNodeType();
 
   String serialize();
 
@@ -36,10 +38,16 @@ public interface JsonNode {
 
   Stream<JsonNode> stream();
 
+  JsonObject asObject();
+
   JsonList asList();
 
   String asString();
 
   BigDecimal asNumber();
+
+  boolean asBoolean();
+
+  JsonNull asNull();
 
 }

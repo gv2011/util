@@ -12,10 +12,10 @@ package com.github.gv2011.util;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -37,8 +37,8 @@ public class IsoDay implements Comparable<IsoDay>{
   private static final Pattern PATTERN = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
   private static final Pattern DD_MM_YYYY = Pattern.compile("(\\d{2})\\.(\\d{2})\\.(\\d{4})");
 
-  public static IsoDay parse(final String yyyyMmDd) {
-    return new IsoDay(yyyyMmDd);
+  public static IsoDay parse(final CharSequence yyyyMmDd) {
+    return new IsoDay(yyyyMmDd.toString());
   };
 
   public static final IsoDay fromDdMmYyyy(final String ddMmYyyy){

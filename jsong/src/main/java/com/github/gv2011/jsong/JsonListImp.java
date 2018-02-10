@@ -31,15 +31,22 @@ package com.github.gv2011.jsong;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.stream.Stream;
+import java.util.Comparator;
 
+import com.github.gv2011.util.Comparison;
+import com.github.gv2011.util.XStream;
 import com.github.gv2011.util.icol.AbstractIList;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.json.JsonList;
 import com.github.gv2011.util.json.JsonNode;
+import com.github.gv2011.util.json.JsonNodeType;
+import com.github.gv2011.util.json.JsonNull;
+import com.github.gv2011.util.json.JsonObject;
 import com.google.gson.stream.JsonWriter;
 
 final class JsonListImp extends AbstractIList<JsonNode> implements JsongNode, JsonList{
+
+  private static final Comparator<JsonList> LIST_COMPARATOR = Comparison.listComparator();
 
   private final JsonFactoryImp f;
   private final IList<JsongNode> entries;
@@ -48,6 +55,24 @@ final class JsonListImp extends AbstractIList<JsonNode> implements JsongNode, Js
     this.f = f;
     this.entries = entries;
   }
+
+  @Override
+  public int compareTo(final JsonNode o) {
+    return AbstractJsongNode.compare(this,o);
+  }
+
+
+  @Override
+  public boolean asBoolean() {
+    return AbstractJsongNode.asBoolean(this);
+  }
+
+
+  @Override
+  public JsonNodeType jsonNodeType() {
+    return JsonNodeType.LIST;
+  }
+
 
   @Override
   public String serialize() {
@@ -77,7 +102,7 @@ final class JsonListImp extends AbstractIList<JsonNode> implements JsongNode, Js
   }
 
   @Override
-  public Stream<JsonNode> stream() {
+  public XStream<JsonNode> stream() {
     return super.stream();
   }
 
@@ -94,6 +119,21 @@ final class JsonListImp extends AbstractIList<JsonNode> implements JsongNode, Js
   @Override
   public BigDecimal asNumber() {
     return AbstractJsongNode.asNumber(this);
+  }
+
+  @Override
+  public JsonObject asObject() {
+    return AbstractJsongNode.asObject(this);
+  }
+
+  @Override
+  public JsonNull asNull() {
+    return AbstractJsongNode.asNull(this);
+  }
+
+  @Override
+  public int compareWithOtherOfSameJsonNodeType(final JsonNode o) {
+    return LIST_COMPARATOR.compare(this, o.asList());
   }
 
 }

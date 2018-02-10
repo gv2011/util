@@ -50,12 +50,12 @@ final class Adapter extends TypeAdapter<JsongNode> {
   public JsongNode read(final JsonReader in) throws IOException {
     switch (in.peek()) {
     case STRING:
-      return new JsonPrimitiveImp<>(f, in.nextString());
+      return new JsonStringImp(f, in.nextString());
     case NUMBER:
       final String number = in.nextString();
-      return new JsonPrimitiveImp<>(f, new BigDecimal(number).stripTrailingZeros());
+      return new JsonNumberImp(f, new BigDecimal(number));
     case BOOLEAN:
-      return new JsonPrimitiveImp<>(f, Boolean.valueOf(in.nextBoolean()));
+      return new JsonBooleanImp(f, Boolean.valueOf(in.nextBoolean()));
     case NULL:
       in.nextNull();
       return f.jsonNull;

@@ -27,9 +27,13 @@ package com.github.gv2011.util.icol.guava;
  */
 
 import java.util.Collection;
+import java.util.Spliterator;
 import java.util.function.Function;
 import java.util.stream.Collector;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import com.github.gv2011.util.XStream;
 import com.github.gv2011.util.icol.ICollectionFactory;
 import com.github.gv2011.util.icol.IComparableList.Builder;
 import com.github.gv2011.util.icol.IList;
@@ -212,6 +216,16 @@ public final class GuavaIcolFactory implements ICollectionFactory{
   @Override
   public Path emptyPath() {
     return PathImp.EMPTY;
+  }
+
+  @Override
+  public <E> XStream<E> xStream(final Stream<E> s) {
+    return XStreamImp.xStream(s);
+  }
+
+  @Override
+  public <E> XStream<E> xStream(final Spliterator<E> spliterator, final boolean parallel) {
+    return XStreamImp.xStream(StreamSupport.stream(spliterator, parallel));
   }
 
 

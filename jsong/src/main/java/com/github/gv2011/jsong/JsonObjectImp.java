@@ -1,5 +1,7 @@
 package com.github.gv2011.jsong;
 
+import static com.github.gv2011.util.CollectionUtils.toISortedSet;
+
 /*-
  * #%L
  * jsong
@@ -33,18 +35,24 @@ import static com.github.gv2011.util.CollectionUtils.upcast;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.github.gv2011.util.Comparison;
 import com.github.gv2011.util.icol.AbstractISortedMap;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
 import com.github.gv2011.util.json.JsonList;
 import com.github.gv2011.util.json.JsonNode;
+import com.github.gv2011.util.json.JsonNodeType;
+import com.github.gv2011.util.json.JsonNull;
 import com.github.gv2011.util.json.JsonObject;
 import com.google.gson.stream.JsonWriter;
 
 final class JsonObjectImp extends AbstractISortedMap<String,JsonNode> implements JsongNode, JsonObject{
+
+  private static final Comparator<Optional<JsonNode>> OPTIONAL_COMPARATOR = Comparison.optionalComparator();
 
   private final JsonFactoryImp f;
   private final ISortedMap<String,JsongNode> entries;
@@ -112,6 +120,46 @@ final class JsonObjectImp extends AbstractISortedMap<String,JsonNode> implements
   @Override
   public BigDecimal asNumber() {
     return AbstractJsongNode.asNumber(this);
+  }
+
+  @Override
+  public JsonObject asObject() {
+    return this;
+  }
+
+  @Override
+  public JsonNull asNull() {
+    return AbstractJsongNode.asNull(this);
+  }
+
+  @Override
+  public int compareTo(final JsonNode o) {
+    return AbstractJsongNode.compare(this, o);
+  }
+
+  @Override
+  public boolean asBoolean() {
+    return AbstractJsongNode.asBoolean(this);
+  }
+
+  @Override
+  public JsonNodeType jsonNodeType() {
+    return JsonNodeType.OBJECT;
+  }
+
+  @Override
+  public int compareWithOtherOfSameJsonNodeType(final JsonNode o) {
+      final JsonObject obj2 = o.asObject();
+      return
+        Stream.concat(
+          keySet().parallelStream(),
+          obj2.keySet().parallelStream()
+        )
+        .collect(toISortedSet()).stream()
+        .mapToInt(k->OPTIONAL_COMPARATOR.compare(tryGet(k), obj2.tryGet(k)))
+        .filter(i->i!=0)
+        .findFirst().orElse(0)
+      ;
   }
 
 

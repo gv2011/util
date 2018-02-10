@@ -1,7 +1,6 @@
 package com.github.gv2011.util.json;
 
-import java.util.stream.Stream;
-
+import com.github.gv2011.util.XStream;
 /*-
  * #%L
  * The MIT License (MIT)
@@ -35,6 +34,6 @@ public interface JsonList extends JsonNode, IList<JsonNode>{
   public JsonList filter(final String attribute);
 
   @Override
-  Stream<JsonNode> stream();
+  XStream<JsonNode> stream();
 
 }

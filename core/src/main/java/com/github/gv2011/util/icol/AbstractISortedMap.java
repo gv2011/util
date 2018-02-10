@@ -30,61 +30,17 @@ package com.github.gv2011.util.icol;
 
 
 import static com.github.gv2011.util.CollectionUtils.pair;
-import static com.github.gv2011.util.CollectionUtils.toIList;
-import static com.github.gv2011.util.CollectionUtils.toISet;
 import static com.github.gv2011.util.CollectionUtils.toISortedMap;
-import static java.util.stream.Collectors.joining;
 
-import java.util.Map;
 import java.util.Optional;
 
-import com.github.gv2011.util.Equal;
-
-public abstract class AbstractISortedMap<K extends Comparable<? super K>, V> implements ISortedMap<K,V>{
+public abstract class AbstractISortedMap<K extends Comparable<? super K>, V>
+extends AbstractIMap<K,V>
+implements ISortedMap<K,V>{
 
   @Override
   public abstract ISortedSet<K> keySet();
 
-  @Override
-  public abstract Optional<V> tryGet(final Object key);
-
-  @Override
-  public ISet<Entry<K, V>> entrySet() {
-    return keySet().stream()
-      .map(k->(Entry<K, V>)pair(k, get(k)))
-      .collect(toISet())
-    ;
-  }
-
-  @Override
-  public Entry<K, V> single() {
-    return entrySet().single();
-  }
-
-  @Override
-  public int size() {
-    return keySet().size();
-  }
-
-  @Override
-  public boolean isEmpty() {
-    return keySet().isEmpty();
-  }
-
-  @Override
-  public boolean containsKey(final Object key) {
-    return keySet().contains(key);
-  }
-
-  @Override
-  public boolean containsValue(final Object value) {
-    return values().contains(value);
-  }
-
-  @Override
-  public IList<V> values() {
-    return keySet().stream().map(this::get).collect(toIList());
-  }
 
   @Override
   public Optional<Entry<K, V>> tryGetLowerEntry(final K key) {
@@ -170,25 +126,5 @@ public abstract class AbstractISortedMap<K extends Comparable<? super K>, V> imp
       this::get
     ));
   }
-
-  @Override
-  public int hashCode() {
-    return entrySet().parallelStream().mapToInt(Entry::hashCode).sum();
-  }
-
-  @Override
-  public boolean equals(final Object obj) {
-    return Equal.equal(this, obj, Map.class, m->{
-      if(size()!=m.size()) return false;
-      else if(!keySet().equals(m.keySet())) return false;
-      else return keySet().stream().allMatch(k->get(k).equals(m.get(k)));
-    });
-  }
-
-  @Override
-  public String toString() {
-    return keySet().stream().map(k->k+"="+get(k)).collect(joining(", ","{","}"));
-  }
-
 
 }
