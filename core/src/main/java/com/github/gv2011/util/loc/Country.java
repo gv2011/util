@@ -12,10 +12,10 @@ package com.github.gv2011.util.loc;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -39,9 +39,9 @@ import java.util.Locale;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
-import com.github.gv2011.util.tstr.TypedString;
+import com.github.gv2011.util.tstr.AbstractTypedString;
 
-public class Country extends TypedString<Country>{
+public class Country extends AbstractTypedString<Country>{
 
   private final static ISortedMap<String,Country> COUNTRIES;
 
@@ -78,12 +78,12 @@ public class Country extends TypedString<Country>{
   }
 
   @Override
-  protected Country self() {
+  public Country self() {
     return this;
   }
 
   @Override
-  protected Class<Country> clazz() {
+  public Class<Country> clazz() {
     return Country.class;
   }
 

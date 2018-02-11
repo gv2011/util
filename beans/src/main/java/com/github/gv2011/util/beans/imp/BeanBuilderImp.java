@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,11 +28,14 @@ package com.github.gv2011.util.beans.imp;
 import static com.github.gv2011.util.CollectionUtils.iCollections;
 import static com.github.gv2011.util.CollectionUtils.toISet;
 import static com.github.gv2011.util.Verify.verify;
+import static com.github.gv2011.util.Verify.verifyEqual;
 
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 import com.github.gv2011.util.beans.BeanBuilder;
 import com.github.gv2011.util.beans.Partial;
@@ -41,32 +44,33 @@ import com.github.gv2011.util.icol.ISet;
 
 final class BeanBuilderImp<T> implements BeanBuilder<T> {
 
+
     private final Map<String,Object> map = new HashMap<>();
 
-    private final BeanTypeImp<T> beanInfo;
+    private final BeanTypeImp<T> beanType;
 
 
     BeanBuilderImp(final BeanTypeImp<T> beanInfo) {
-        this.beanInfo = beanInfo;
+        this.beanType = beanInfo;
     }
 
     @Override
     public T build() {
-        for(final Property<?> p: beanInfo.properties().values()) {
+        for(final Property<?> p: beanType.properties().values()) {
             p.defaultValue().ifPresent(dv->{
                 final String propName = p.name();
                 if(!map.containsKey(propName)) map.put(p.name(), dv);
             });
         }
-        final ISet<Property<?>> missing = beanInfo.properties().values().stream()
+        final ISet<Property<?>> missing = beanType.properties().values().stream()
             .filter(p->!map.keySet().contains(p.name()))
             .collect(toISet())
         ;
         verify(missing, Set::isEmpty);
-        return beanInfo.beanClass.cast(Proxy.newProxyInstance(
-            beanInfo.beanClass.getClassLoader(),
-            new Class<?>[] {beanInfo.beanClass},
-            new BeanInvocationHandler(iCollections().copyOf(map))
+        return beanType.clazz.cast(Proxy.newProxyInstance(
+            beanType.clazz.getClassLoader(),
+            new Class<?>[] {beanType.clazz},
+            new BeanInvocationHandler(beanType.clazz, iCollections().copyOf(map))
         ));
     }
 
@@ -78,6 +82,48 @@ final class BeanBuilderImp<T> implements BeanBuilder<T> {
     @Override
     public <V> void set(final Property<V> p, final V value) {
         map.put(p.name(), value);
+    }
+
+    @Override
+    public <V> Setter<V> set(final Function<T, V> method) {
+      final PropertyImp<V> property = beanType.getProperty(method);
+      return new SetterImp<>(property);
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public <V> Setter<V> setOpt(final Function<T, Optional<V>> method) {
+      final PropertyImp<Optional<V>> property = beanType.getProperty(method);
+      verify(property.type() instanceof CollectionType);
+      final CollectionType optType = (CollectionType) property.type();
+      verifyEqual(optType.structure, Structure.opt());
+      return new OptSetter<>(property);
+    }
+
+    private class SetterImp<V> implements Setter<V> {
+      private final PropertyImp<V> property;
+      private SetterImp(final PropertyImp<V> property) {
+        this.property = property;
+      }
+      @Override
+      public void to(final V value) {
+        map.put(property.name(), property.type().cast(value));
+      }
+    }
+
+    private class OptSetter<V> implements Setter<V> {
+      private final PropertyImp<Optional<V>> property;
+      private OptSetter(final PropertyImp<Optional<V>> property) {
+        this.property = property;
+      }
+      @SuppressWarnings("rawtypes")
+      @Override
+      public void to(final V value) {
+        map.put(
+          property.name(),
+          Optional.of(((CollectionType) property.type()).elementType().cast(value))
+        );
+      }
     }
 
 }

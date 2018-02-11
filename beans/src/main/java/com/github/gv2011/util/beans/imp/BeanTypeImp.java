@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,13 +28,16 @@ package com.github.gv2011.util.beans.imp;
 import static com.github.gv2011.util.CollectionUtils.setOf;
 import static com.github.gv2011.util.CollectionUtils.toISortedMap;
 import static com.github.gv2011.util.Verify.verify;
+import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.function.Function;
 
+import com.github.gv2011.util.ReflectionUtils;
 import com.github.gv2011.util.beans.BeanBuilder;
 import com.github.gv2011.util.beans.BeanType;
 import com.github.gv2011.util.beans.DefaultValue;
@@ -203,7 +206,7 @@ class BeanTypeImp<T> extends AbstractType<T> implements BeanType<T> {
 
     @Override
     public <V> V get(final T bean, final Property<V> property) {
-      return property.type().cast(call(()->beanClass.getMethod(property.name()).invoke(bean)));
+      return property.type().cast(call(()->clazz.getMethod(property.name()).invoke(bean)));
     }
 
 
@@ -216,6 +219,14 @@ class BeanTypeImp<T> extends AbstractType<T> implements BeanType<T> {
             @Override
             public <T> T get(final Property<T> p) {throw new NoSuchElementException();}
         };
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public <V> PropertyImp<V> getProperty(final Function<T, V> method) {
+      final Method m = ReflectionUtils.method(clazz, method);
+      final PropertyImp<?> result = properties.get(m.getName());
+      verifyEqual(result.type().clazz, m.getReturnType());
+      return (PropertyImp)result;
     }
 
 }

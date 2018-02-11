@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -79,6 +79,7 @@ public final class DefaultElementaryTypeHandlerFactory implements ElementaryType
         else if(clazz.equals(Duration.class)) result = stringBasedType(Duration.class);
         else if(clazz.equals(IsoDay.class)) result = stringBasedType(IsoDay.class);
         else if(clazz.equals(InetSocketAddress.class)) result = new InetSocketAddressType();
+//        else if(TypedString.class.isAssignableFrom(clazz)) result = new TypedStringHandler(clazz);
         else throw new UnsupportedOperationException();
         return (ElementaryTypeHandler<T>) result;
     }
@@ -205,16 +206,15 @@ public final class DefaultElementaryTypeHandlerFactory implements ElementaryType
     }
 
     private static class InetSocketAddressType extends AbstractElementaryTypeHandler<InetSocketAddress>{
-        @Override
-        public InetSocketAddress fromJson(final JsonNode json) {
-          final String colonNotation = json.asString();
-          final int i = colonNotation.lastIndexOf(':');
-          verify(i!=-1);
-          final String host = colonNotation.substring(0, i);
-          final int port = Integer.parseInt(colonNotation.substring(i+1));
-          return InetSocketAddress.createUnresolved(host, port);
-        }
+      @Override
+      public InetSocketAddress fromJson(final JsonNode json) {
+        final String colonNotation = json.asString();
+        final int i = colonNotation.lastIndexOf(':');
+        verify(i!=-1);
+        final String host = colonNotation.substring(0, i);
+        final int port = Integer.parseInt(colonNotation.substring(i+1));
+        return InetSocketAddress.createUnresolved(host, port);
+      }
     }
-
 
 }

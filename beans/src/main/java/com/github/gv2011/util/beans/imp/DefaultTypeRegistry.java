@@ -34,7 +34,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.stream.Stream;
@@ -55,6 +54,7 @@ import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
 import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonUtils;
+import com.github.gv2011.util.tstr.TypedString;
 
 public class DefaultTypeRegistry implements TypeRegistry{
 
@@ -145,21 +145,40 @@ public class DefaultTypeRegistry implements TypeRegistry{
       else throw new UnsupportedOperationException();
   }
 
+  @SuppressWarnings("unchecked")
   private <T> AbstractType<T> createType(final Class<T> clazz) {
-    assert !ILIST.isAssignableFrom(clazz);
-    assert !Map.class.isAssignableFrom(clazz);
-    assert !OPTIONAL.equals(clazz);
-    if(isElementaryType(clazz)) return createElementaryType(clazz);
-    else return (AbstractType<T>)createBeanType(clazz);
+    if(isCollectionType(clazz)) throw new UnsupportedOperationException();
+    else if(isTypedStringType(clazz)) return createTypedStringType(clazz);
+    else if(isBeanClass(clazz)) return createBeanType(clazz);
+    else return createElementaryType(clazz);
   }
 
   private <T> BeanTypeImp<T> createBeanType(final Class<T> clazz) {
     return new BeanTypeImp<>(clazz, this);
   }
 
-  private boolean isElementaryType(final Class<?> clazz) {
-    return !COLLECTION_CLASSES.contains(clazz) && !isBeanClass(clazz);
+  private boolean isTypedStringType(final Class<?> clazz) {
+    return TypedString.class.isAssignableFrom(clazz);
   }
+
+  private boolean isCollectionType(final Class<?> clazz) {
+    return COLLECTION_CLASSES.contains(clazz);
+  }
+
+  @SuppressWarnings("unused")
+  private boolean isElementaryType(final Class<?> clazz) {
+    return
+      !isCollectionType(clazz) &&
+      !isTypedStringType(clazz) &&
+      !isBeanClass(clazz)
+    ;
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  private TypedStringType createTypedStringType(final Class<?> clazz) {
+    return new TypedStringType(jf, clazz);
+  }
+
 
   private <T> ElementaryTypeImp<T> createElementaryType(final Class<T> clazz) {
     return new ElementaryTypeImp<>(
@@ -221,6 +240,13 @@ public class DefaultTypeRegistry implements TypeRegistry{
       }
     }
   }
+
+  @Override
+  public <S extends TypedString<S>> S typedString(final Class<S> clazz, final String value) {
+    return ((TypedStringType<S>)type(clazz)).create(value);
+  }
+
+
 
 
 }

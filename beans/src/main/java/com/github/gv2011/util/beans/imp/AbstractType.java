@@ -34,27 +34,27 @@ import com.github.gv2011.util.json.JsonFactory;
 
 abstract class AbstractType<T> implements Type<T> {
 
-    final Class<T> beanClass;
+    final Class<T> clazz;
     final JsonFactory jf;
 
     AbstractType(final JsonFactory jf, final Class<T> beanClass) {
       this.jf = jf;
-      this.beanClass = beanClass;
+      this.clazz = beanClass;
     }
 
     @Override
     public String name() {
-        return beanClass.getName();
+        return clazz.getName();
     }
 
     @Override
     public final T cast(final Object object) {
-        return beanClass.cast(object);
+        return clazz.cast(object);
     }
 
     @Override
     public String toString() {
-        return beanClass.getSimpleName();
+        return clazz.getSimpleName();
     }
 
     public <C> CollectionType<C,Nothing,T> collectionType(final Structure<C,Nothing,T> structure) {

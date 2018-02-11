@@ -1,13 +1,10 @@
-package com.github.gv2011.util.beans;
-
-import java.util.Optional;
-import java.util.function.Function;
+package com.github.gv2011.util.beans.imp;
 
 /*-
  * #%L
- * The MIT License (MIT)
+ * util-beans
  * %%
- * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,22 +25,43 @@ import java.util.function.Function;
  * THE SOFTWARE.
  * #L%
  */
-public interface BeanBuilder<T> {
+import java.util.Optional;
 
+import com.github.gv2011.util.beans.ElementaryTypeHandler;
+import com.github.gv2011.util.json.JsonFactory;
+import com.github.gv2011.util.json.JsonNode;
+import com.github.gv2011.util.json.JsonNodeType;
 
-    T build();
+abstract class AbstractElementaryType<E> extends AbstractType<E>{
 
-    Partial<T> buildPartial();
+  AbstractElementaryType(final JsonFactory jf, final Class<E> clazz) {
+    super(jf, clazz);
+  }
 
-    <V> void set(Property<V> p, V value);
+  abstract ElementaryTypeHandler<E> handler();
 
-    <V> Setter<V> set(Function<T,V> method);
+  @Override
+  public final E parse(final JsonNode json) {
+    return handler().fromJson(json);
+  }
 
-    <V> Setter<V> setOpt(Function<T,Optional<V>> method);
+  @Override
+  public final JsonNode toJson(final E object) {
+    return handler().toJson(object, jf);
+  }
 
-    public interface Setter<V> {
-      void to(V value);
-    }
+  @Override
+  public final boolean isDefault(final E obj) {
+    return handler().defaultValue().map(d->d.equals(obj)).orElse(false);
+  }
 
+  @Override
+  public final Optional<E> getDefault() {
+    return handler().defaultValue();
+  }
+
+  final JsonNodeType jsonNodeType() {
+    return handler().jsonNodeType();
+  }
 
 }
