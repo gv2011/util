@@ -71,8 +71,8 @@ public final class FileUtils {
     return call(()->Files.isSameFile(f1, f2));
   }
 
-  public static Stream<Path> list(final Path dir){
-    return call(()->Files.list(dir));
+  public static XStream<Path> list(final Path dir){
+    return XStream.xStream(call(()->Files.list(dir)));
   }
 
   public static Reader getReader(final String first, final String... more){

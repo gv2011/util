@@ -12,10 +12,10 @@ package com.github.gv2011.util;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,6 +26,7 @@ package com.github.gv2011.util;
  * #L%
  */
 import static com.github.gv2011.util.CollectionUtils.iCollections;
+import static com.github.gv2011.util.CollectionUtils.pair;
 import static com.github.gv2011.util.CollectionUtils.toSingle;
 
 import java.util.Arrays;
@@ -66,6 +67,18 @@ public interface XStream<E> extends Stream<E>, AutoCloseableNt{
 
   default Optional<E> toOptional(final Predicate<? super E> predicate){
     return filter(predicate).collect(CollectionUtils.toOptional());
+  }
+
+  @Override
+  XStream<E> filter(Predicate<? super E> predicate);
+
+
+
+  @Override
+  <R> XStream<R> map(Function<? super E, ? extends R> mapper);
+
+  default <R> XStream<Pair<E,R>> enrich(final Function<? super E, ? extends R> mapper){
+    return map(e->pair(e, mapper.apply(e)));
   }
 
   <T> XStream<T> filter(final Class<T> clazz);

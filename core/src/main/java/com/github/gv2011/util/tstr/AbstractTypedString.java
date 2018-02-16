@@ -28,9 +28,6 @@ import java.util.Comparator;
  * #L%
  */
 
-
-
-
 import com.github.gv2011.util.Equal;
 
 public abstract class AbstractTypedString<T extends AbstractTypedString<T>>
@@ -44,17 +41,19 @@ implements TypedString<T>{
     return clazz.hashCode() * 31 + canonical.hashCode();
   }
 
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   public static final Comparator<TypedString<?>> COMPARATOR = (s1,s2)->{
     int result;
     if(s1==s2) result = 0;
     else {
       result = s1.clazz().getName().compareTo(s2.clazz().getName());
       if(result==0) {
-        result = s1.canonical().compareTo(s2.canonical());
+        result = ((TypedString)s1).compareWithOtherOfSameType(((TypedString)s2));
       }
     }
     return result;
   };
+
 
   @Override
   public abstract String toString();
