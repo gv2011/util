@@ -1,4 +1,0 @@
-language: java
-jdk: oraclejdk9
-install: true
-script: mvn clean install -B
