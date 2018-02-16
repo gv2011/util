@@ -32,10 +32,13 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 
 import com.github.gv2011.util.bytes.Bytes;
+import com.github.gv2011.util.icol.IList;
 
 public interface JsonFactory {
 
   JsonNode deserialize(String json);
+
+  JsonList asJsonList(IList<?> list, Function<Object,JsonNode> converter);
 
   Collector<JsonNode,?,JsonList> toJsonList();
 

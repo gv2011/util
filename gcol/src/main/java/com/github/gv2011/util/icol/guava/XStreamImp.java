@@ -50,7 +50,6 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.XStream;
 
 final class XStreamImp<T> implements XStream<T> {

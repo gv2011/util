@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,9 +32,9 @@ import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.beans.Type;
 import com.github.gv2011.util.json.JsonFactory;
 
-abstract class AbstractType<T> implements Type<T> {
+public abstract class AbstractType<T> implements Type<T> {
 
-    final Class<T> clazz;
+    public final Class<T> clazz;
     final JsonFactory jf;
 
     AbstractType(final JsonFactory jf, final Class<T> beanClass) {
@@ -42,13 +42,15 @@ abstract class AbstractType<T> implements Type<T> {
       this.clazz = beanClass;
     }
 
+    void initialize() {}
+
     @Override
     public String name() {
         return clazz.getName();
     }
 
     @Override
-    public final T cast(final Object object) {
+    public T cast(final Object object) {
         return clazz.cast(object);
     }
 
@@ -82,6 +84,14 @@ abstract class AbstractType<T> implements Type<T> {
 
     public Optional<T> getDefault() {
       return Optional.empty();
+    }
+
+    public boolean isCollectionType() {
+        return false;
+    }
+
+    boolean isOptional() {
+      return false;
     }
 
 }

@@ -46,7 +46,6 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.bytes.Bytes;
@@ -237,3 +236,4 @@ public final class FileUtils {
   }
 
 }
+

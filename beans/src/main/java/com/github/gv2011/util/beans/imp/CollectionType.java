@@ -29,7 +29,7 @@ import java.util.Optional;
 
 import com.github.gv2011.util.json.JsonNode;
 
-public class CollectionType<C,K,E> extends AbstractType<C>{
+public final class CollectionType<C,K,E> extends AbstractType<C>{
 
   private final Optional<AbstractType<K>> keyType;
 
@@ -110,5 +110,16 @@ public class CollectionType<C,K,E> extends AbstractType<C>{
     public String toString() {
       return super.toString()+"<"+elementType+">";
     }
+
+    @Override
+    public boolean isCollectionType() {
+        return true;
+    }
+
+    @Override
+    boolean isOptional() {
+      return structure.equals(Structure.opt());
+    }
+
 
 }

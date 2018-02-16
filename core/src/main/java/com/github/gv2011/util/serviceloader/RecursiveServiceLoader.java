@@ -26,43 +26,56 @@ package com.github.gv2011.util.serviceloader;
  * #L%
  */
 
-import static com.github.gv2011.util.CollectionUtils.iCollections;
-import static com.github.gv2011.util.CollectionUtils.mapBuilder;
-import static com.github.gv2011.util.CollectionUtils.toISet;
-import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verify;
+import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
+import static com.github.gv2011.util.ex.Exceptions.format;
+import static java.util.stream.Collectors.toSet;
 
 import java.lang.reflect.Constructor;
-import java.util.Map.Entry;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 
-import com.github.gv2011.util.icol.IMap;
-import com.github.gv2011.util.icol.IMap.Builder;
-import com.github.gv2011.util.icol.ISet;
+import com.github.gv2011.util.CachedConstant;
+import com.github.gv2011.util.Constants;
+
 
 public final class RecursiveServiceLoader {
 
-    private static final RecursiveServiceLoader INSTANCE = new RecursiveServiceLoader();
+    private static final CachedConstant<RecursiveServiceLoader> INSTANCE =
+      Constants.cachedConstant(RecursiveServiceLoader::new)
+    ;
 
     public static final <S> S service(final Class<S> serviceClass) {
-        return INSTANCE.getService(serviceClass);
+        return INSTANCE.get().getService(serviceClass);
     }
 
-    private IMap<Class<?>,ISet<?>> services = iCollections().emptyMap();
+    private final Object lock = new Object();
 
-    private RecursiveServiceLoader() {}
+    private final Map<Class<?>,Set<?>> services = new HashMap<>();
+
+    private RecursiveServiceLoader() {
+
+    }
 
     private <S> S getService(final Class<S> serviceClass) {
-        return getServices(serviceClass).single();
+        final Set<S> services = getServices(serviceClass);
+        verify(!services.isEmpty(), ()->format("No implementation for {} found.", serviceClass));
+        verifyEqual(services.size(),1);
+        return services.iterator().next();
     }
 
     @SuppressWarnings("unchecked")
-    private <S> ISet<S> getServices(final Class<S> serviceClass) {
-        Optional<ISet<?>> entry = services.tryGet(serviceClass);
+    private <S> Set<S> getServices(final Class<S> serviceClass) {
+        Optional<Set<?>> entry = Optional.ofNullable(services.get(serviceClass));
         if(!entry.isPresent()) {
-            synchronized(this) {
-                entry = services.tryGet(serviceClass);
+            synchronized(lock) {
+                entry = Optional.ofNullable(services.get(serviceClass));
                 if(!entry.isPresent()) {
                     loadServices(serviceClass);
                     entry = Optional.of(services.get(serviceClass));
@@ -70,37 +83,33 @@ public final class RecursiveServiceLoader {
             }
         }
         entry.get();
-        return (ISet<S>) entry.get();
+        return (Set<S>) entry.get();
     }
 
     private <S> void loadServices(final Class<S> serviceClass) {
-        final ISet<S> implementations = ServiceProviderConfigurationFile.files(serviceClass).stream()
-            .flatMap(f->f.implementations().stream())
+        final Set<S> implementations = Collections.unmodifiableSet(
+            ServiceProviderConfigurationFile.filesInternal(serviceClass)
+            .flatMap(f->f.implementationsInternal())
             .map(n->createInstance(serviceClass, n))
-            .collect(toISet())
-        ;
-        final Builder<Class<?>,ISet<?>> b = mapBuilder();
-        for(final Entry<Class<?>, ISet<?>> e: services.entrySet()) b.put(e.getKey(), e.getValue());
-        //b.putAll(services);
-        b.put(serviceClass, implementations);
-        services = b.build();
+            .collect(toSet())
+        );
+        services.put(serviceClass, implementations);
     }
 
     private <S> S createInstance(final Class<S> serviceClass, final String implementationClassName) {
         final Class<?> implClass = call(()->Class.forName(implementationClassName));
         verify(serviceClass.isAssignableFrom(implClass));
-        final Constructor<?> constr = single(implClass.getConstructors());
+        final Constructor<?> constr = Arrays.stream(implClass.getConstructors())
+            .filter(c->c.getParameterCount()==0)
+            .findAny()
+            .orElseThrow(()->new NoSuchElementException(format("{} has no no-arg constructor.", implClass)))
+        ;
         final Class<?>[] pTypes = constr.getParameterTypes();
         final Object[] initargs = new Object[pTypes.length];
         for(int i=0; i<initargs.length; i++) {
             initargs[i] = getService(pTypes[i]);
         }
         return serviceClass.cast(call(()->constr.newInstance(initargs)));
-    }
-
-    private static final <T> T single(final T[] array) {
-        verify(array.length==1);
-        return notNull(array[0]);
     }
 
 }

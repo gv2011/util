@@ -34,6 +34,8 @@ public interface JsonNode extends Comparable<JsonNode>{
 
   String serialize();
 
+  void write(final JsonWriter out);
+
   JsonNode filter(String attribute);
 
   Stream<JsonNode> stream();
@@ -49,5 +51,7 @@ public interface JsonNode extends Comparable<JsonNode>{
   boolean asBoolean();
 
   JsonNull asNull();
+
+  default boolean isNull() {return false;}
 
 }

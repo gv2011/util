@@ -118,4 +118,8 @@ public class ResourceUtils {
     ;
   }
 
+  public static URL getClassResource(final Class<?> refClass, final String fileNameExtension) {
+    return getResourceUrl(refClass, refClass.getSimpleName()+"."+fileNameExtension);
+  }
+
 }

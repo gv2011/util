@@ -1,5 +1,7 @@
 package com.github.gv2011.util.serviceloader;
 
+import static com.github.gv2011.util.CollectionUtils.iCollections;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -12,10 +14,10 @@ package com.github.gv2011.util.serviceloader;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,20 +27,27 @@ package com.github.gv2011.util.serviceloader;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.util.CollectionUtils.toIList;
-import static com.github.gv2011.util.CollectionUtils.toISet;
-import static com.github.gv2011.util.ResourceUtils.getResourceUrls;
+
 import static com.github.gv2011.util.StreamUtils.readText;
+import static com.github.gv2011.util.ex.Exceptions.call;
+import static java.util.stream.Collectors.toList;
 
 import java.io.BufferedReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import com.github.gv2011.util.LegacyCollections;
+import com.github.gv2011.util.icol.ICollectionFactory;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.ISet;
 
@@ -46,14 +55,29 @@ import com.github.gv2011.util.icol.ISet;
 public final class ServiceProviderConfigurationFile<S> {
 
     public static <S> ISet<ServiceProviderConfigurationFile<S>> files(final Class<S> service){
-        return getResourceUrls("META-INF/services/"+service.getName()).stream()
-            .map(u->new ServiceProviderConfigurationFile<>(service, u))
-            .collect(toISet())
+        final ICollectionFactory iCollections = iCollections();
+        return filesInternal(service).collect(iCollections.setCollector())
+        ;
+    }
+
+
+    static <S> Stream<ServiceProviderConfigurationFile<S>> filesInternal(final Class<S> service){
+        return
+          StreamSupport.stream(
+            Spliterators.spliteratorUnknownSize(
+              LegacyCollections.asIterator(call(()->
+                Thread.currentThread().getContextClassLoader().getResources("META-INF/services/"+service.getName())
+              ))
+              ,Spliterator.ORDERED
+            )
+            ,false
+          )
+          .map(u->new ServiceProviderConfigurationFile<>(service, u))
         ;
     }
 
     private final Class<S> service;
-    private final IList<String> implementations;
+    private final List<String> implementations;
     private final URL url;
 
 
@@ -61,13 +85,14 @@ public final class ServiceProviderConfigurationFile<S> {
         this.service = service;
         this.url = url;
         final Set<String> set = new HashSet<>();
-        implementations = lines(readText(url::openStream)).stream()
+        implementations = Collections.unmodifiableList(
+            lines(readText(url::openStream)).stream()
             .map(this::stripComment)
             .map(String::trim)
             .filter(not(String::isEmpty))
             .filter(l->set.add(l)) //ignore duplicates
-            .collect(toIList())
-        ;
+            .collect(toList())
+        );
     }
 
     public Class<S> service(){
@@ -79,18 +104,23 @@ public final class ServiceProviderConfigurationFile<S> {
     }
 
     public IList<String> implementations(){
-        return implementations;
+        final ICollectionFactory iCollections = iCollections();
+        return implementationsInternal().collect(iCollections.listCollector());
     }
 
-    public static IList<String> lines(final String text){
-        return lines(new StringReader(text)).collect(toIList());
+    Stream<String> implementationsInternal(){
+        return implementations.stream();
     }
 
-    public static Stream<String> lines(final Reader text){
+    private static List<String> lines(final String text){
+        return lines(new StringReader(text)).collect(toList());
+    }
+
+    private static Stream<String> lines(final Reader text){
         return new BufferedReader(text).lines();
     }
 
-    public static <T> Predicate<T> not(final Predicate<T> p){
+    private static <T> Predicate<T> not(final Predicate<T> p){
         return o->!p.test(o);
     }
 

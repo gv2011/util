@@ -28,12 +28,14 @@ package com.github.gv2011.util.beans.imp;
 import static com.github.gv2011.util.CollectionUtils.sortedSetOf;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
+import static com.github.gv2011.util.ex.Exceptions.format;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Date;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -42,8 +44,13 @@ import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.beans.ElementaryTypeHandler;
 import com.github.gv2011.util.beans.ElementaryTypeHandlerFactory;
 import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.json.JsonBoolean;
+import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonNodeType;
+import com.github.gv2011.util.json.JsonNull;
+import com.github.gv2011.util.json.JsonNumber;
+import com.github.gv2011.util.json.JsonString;
 
 public final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandlerFactory{
 
@@ -73,14 +80,16 @@ public final class DefaultElementaryTypeHandlerFactory implements ElementaryType
         else if(clazz.equals(Nothing.class)) result = new NothingType();
         else if(clazz.equals(Boolean.class)) result = new BooleanType();
         else if(clazz.equals(Integer.class)) result = new IntegerType();
+        else if(clazz.equals(int.class)) result = new IntegerType();
         else if(clazz.equals(Long.class)) result = new LongType();
+        else if(clazz.equals(long.class)) result = new PrimitiveLongType();
         else if(clazz.equals(BigDecimal.class)) result = new DecimalType();
         else if(clazz.equals(Instant.class)) result = stringBasedType(Instant.class);
-        else if(clazz.equals(Duration.class)) result = stringBasedType(Duration.class);
+        else if(clazz.equals(Date.class)) result = new DateType();
+        else if(clazz.equals(Duration.class)) result = new DurationType();
         else if(clazz.equals(IsoDay.class)) result = stringBasedType(IsoDay.class);
         else if(clazz.equals(InetSocketAddress.class)) result = new InetSocketAddressType();
-//        else if(TypedString.class.isAssignableFrom(clazz)) result = new TypedStringHandler(clazz);
-        else throw new UnsupportedOperationException();
+        else throw new UnsupportedOperationException(format("No handler for {}.", clazz));
         return (ElementaryTypeHandler<T>) result;
     }
 
@@ -110,8 +119,6 @@ public final class DefaultElementaryTypeHandlerFactory implements ElementaryType
       };
     }
 
-
-
     private static class StringType extends AbstractElementaryTypeHandler<String> {
         private static final Optional<String> EMPTY = Optional.of("".intern());
         @Override
@@ -132,6 +139,10 @@ public final class DefaultElementaryTypeHandlerFactory implements ElementaryType
         return Nothing.INSTANCE;
       }
       @Override
+      public JsonNull toJson(final Nothing object, final JsonFactory jf) {
+        return jf.jsonNull();
+      }
+      @Override
       public Optional<Nothing> defaultValue() {
         return DEF;
       }
@@ -146,6 +157,10 @@ public final class DefaultElementaryTypeHandlerFactory implements ElementaryType
       @Override
       public Boolean fromJson(final JsonNode json) {
         return json.asBoolean();
+      }
+      @Override
+      public JsonBoolean toJson(final Boolean b, final JsonFactory jf) {
+        return jf.primitive(b);
       }
       @Override
       public Optional<Boolean> defaultValue() {
@@ -164,6 +179,10 @@ public final class DefaultElementaryTypeHandlerFactory implements ElementaryType
         return json.asNumber().intValueExact();
       }
       @Override
+      public JsonNumber toJson(final Integer i, final JsonFactory jf) {
+        return jf.primitive(i);
+      }
+      @Override
       public Optional<Integer> defaultValue() {
         return ZERO;
       }
@@ -180,6 +199,10 @@ public final class DefaultElementaryTypeHandlerFactory implements ElementaryType
         return json.asNumber().longValueExact();
       }
       @Override
+      public JsonNumber toJson(final Long i, final JsonFactory jf) {
+        return jf.primitive(i);
+      }
+      @Override
       public Optional<Long> defaultValue() {
         return ZERO;
       }
@@ -189,11 +212,22 @@ public final class DefaultElementaryTypeHandlerFactory implements ElementaryType
       }
     }
 
+    private static class PrimitiveLongType extends LongType {
+        @Override
+        public Long cast(final Class<Long> clazz, final Object object) {
+            return (Long) object;
+        }
+      }
+
     private static class DecimalType extends AbstractElementaryTypeHandler<BigDecimal> {
       private static final Optional<BigDecimal> ZERO = Optional.of(BigDecimal.ZERO);
       @Override
       public BigDecimal fromJson(final JsonNode json) {
         return json.asNumber();
+      }
+      @Override
+      public JsonNumber toJson(final BigDecimal dec, final JsonFactory jf) {
+        return jf.primitive(dec);
       }
       @Override
       public Optional<BigDecimal> defaultValue() {
@@ -205,6 +239,51 @@ public final class DefaultElementaryTypeHandlerFactory implements ElementaryType
       }
     }
 
+    private static class DateType extends AbstractElementaryTypeHandler<Date> {
+        @Override
+        public Date fromJson(final JsonNode json) {
+          if(json instanceof JsonNumber) {
+              return new Date(json.asNumber().longValueExact());
+          }
+          else return Date.from(Instant.parse(json.asString()));
+        }
+        @Override
+        public JsonString toJson(final Date date, final JsonFactory jf) {
+          return jf.primitive(date.toInstant().toString());
+        }
+        @Override
+        public Optional<Date> defaultValue() {
+          return Optional.empty();
+        }
+        @Override
+        public JsonNodeType jsonNodeType() {
+          return JsonNodeType.STRING;
+        }
+      }
+
+    private static class DurationType extends AbstractElementaryTypeHandler<Duration> {
+        private static final Optional<Duration> ZERO = Optional.of(Duration.ZERO);
+        @Override
+        public Duration fromJson(final JsonNode json) {
+          if(json instanceof JsonNumber) {
+              return Duration.ofMillis(json.asNumber().longValueExact());
+          }
+          else return Duration.parse(json.asString());
+        }
+        @Override
+        public JsonString toJson(final Duration duration, final JsonFactory jf) {
+          return jf.primitive(duration.toString());
+        }
+        @Override
+        public Optional<Duration> defaultValue() {
+          return ZERO;
+        }
+        @Override
+        public JsonNodeType jsonNodeType() {
+          return JsonNodeType.STRING;
+        }
+      }
+
     private static class InetSocketAddressType extends AbstractElementaryTypeHandler<InetSocketAddress>{
       @Override
       public InetSocketAddress fromJson(final JsonNode json) {
@@ -214,6 +293,10 @@ public final class DefaultElementaryTypeHandlerFactory implements ElementaryType
         final String host = colonNotation.substring(0, i);
         final int port = Integer.parseInt(colonNotation.substring(i+1));
         return InetSocketAddress.createUnresolved(host, port);
+      }
+      @Override
+      public JsonString toJson(final InetSocketAddress socket, final JsonFactory jf) {
+        return jf.primitive(socket.getHostString()+":"+socket.getPort());
       }
     }
 

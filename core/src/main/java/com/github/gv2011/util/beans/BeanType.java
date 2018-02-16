@@ -34,7 +34,7 @@ public interface BeanType<T> extends Type<T>{
 
     Partial<T> emptyPartial();
 
-    ISortedMap<String,Property<?>> properties();
+    ISortedMap<String,? extends Property<?>> properties();
 
     @Override
     JsonObject toJson(T object);

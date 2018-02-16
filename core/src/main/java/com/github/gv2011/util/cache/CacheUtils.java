@@ -32,8 +32,11 @@ package com.github.gv2011.util.cache;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import com.github.gv2011.util.Pair;
 
 public final class CacheUtils {
 
@@ -44,7 +47,13 @@ public final class CacheUtils {
   }
 
   public static <K,V> SoftIndex<K,V> softIndex(final Function<K,Optional<? extends V>> constantFunction){
-    return new SoftIndexImp<>(constantFunction);
+    return new SoftIndexImp<>(constantFunction, p->{});
+  }
+
+  public static <K,V> SoftIndex<K,V> softIndex(
+    final Function<K,Optional<? extends V>> constantFunction, final Consumer<Pair<K,Optional<V>>> addedListener
+  ){
+    return new SoftIndexImp<>(constantFunction, addedListener);
   }
 
 }

@@ -37,13 +37,14 @@ public interface BeanBuilder<T> {
 
     <V> void set(Property<V> p, V value);
 
-    <V> Setter<V> set(Function<T,V> method);
+    <V> Setter<T,V> set(Function<T,V> method);
 
-    <V> Setter<V> setOpt(Function<T,Optional<V>> method);
+    <V> Setter<T,V> setOpt(Function<T,Optional<V>> method);
 
-    public interface Setter<V> {
-      void to(V value);
+    BeanBuilder<T> setAll(T bean);
+
+    public interface Setter<T,V> {
+      BeanBuilder<T> to(V value);
     }
-
 
 }

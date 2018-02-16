@@ -27,8 +27,10 @@ package com.github.gv2011.util.beans.imp;
  */
 import static com.github.gv2011.util.CollectionUtils.iCollections;
 import static com.github.gv2011.util.CollectionUtils.toISet;
+import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.Verify.verifyEqual;
+import static com.github.gv2011.util.ex.Exceptions.format;
 
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
@@ -80,19 +82,31 @@ final class BeanBuilderImp<T> implements BeanBuilder<T> {
     }
 
     @Override
+    public BeanBuilder<T> setAll(final T bean) {
+        for(final PropertyImp<?> p: beanType.properties().values()) {
+            copy(p, bean);
+        }
+        return this;
+    }
+
+    private <V >void copy(final PropertyImp<V> p, final T bean) {
+        map.put(p.name(), beanType.get(bean, p));
+    }
+
+    @Override
     public <V> void set(final Property<V> p, final V value) {
         map.put(p.name(), value);
     }
 
     @Override
-    public <V> Setter<V> set(final Function<T, V> method) {
+    public <V> Setter<T,V> set(final Function<T, V> method) {
       final PropertyImp<V> property = beanType.getProperty(method);
       return new SetterImp<>(property);
     }
 
     @SuppressWarnings("rawtypes")
     @Override
-    public <V> Setter<V> setOpt(final Function<T, Optional<V>> method) {
+    public <V> Setter<T,V> setOpt(final Function<T, Optional<V>> method) {
       final PropertyImp<Optional<V>> property = beanType.getProperty(method);
       verify(property.type() instanceof CollectionType);
       final CollectionType optType = (CollectionType) property.type();
@@ -100,29 +114,34 @@ final class BeanBuilderImp<T> implements BeanBuilder<T> {
       return new OptSetter<>(property);
     }
 
-    private class SetterImp<V> implements Setter<V> {
+    private class SetterImp<V> implements Setter<T,V> {
       private final PropertyImp<V> property;
       private SetterImp(final PropertyImp<V> property) {
         this.property = property;
       }
       @Override
-      public void to(final V value) {
-        map.put(property.name(), property.type().cast(value));
+      public BeanBuilder<T> to(final V value) {
+        map.put(
+            property.name(),
+            property.type().cast(notNull(value, ()->format("Trying to set {} to null.", property)))
+        );
+        return BeanBuilderImp.this;
       }
     }
 
-    private class OptSetter<V> implements Setter<V> {
+    private class OptSetter<V> implements Setter<T,V> {
       private final PropertyImp<Optional<V>> property;
       private OptSetter(final PropertyImp<Optional<V>> property) {
         this.property = property;
       }
       @SuppressWarnings("rawtypes")
       @Override
-      public void to(final V value) {
+      public BeanBuilder<T> to(final V value) {
         map.put(
           property.name(),
-          Optional.of(((CollectionType) property.type()).elementType().cast(value))
+          Optional.of(((CollectionType) property.type()).elementType().cast(notNull(value)))
         );
+        return BeanBuilderImp.this;
       }
     }
 

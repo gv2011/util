@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,7 +35,6 @@ import static com.github.gv2011.util.CollectionUtils.toIMap;
 import static com.github.gv2011.util.CollectionUtils.toISet;
 import static com.github.gv2011.util.CollectionUtils.toISortedMap;
 import static com.github.gv2011.util.CollectionUtils.toISortedSet;
-import static com.github.gv2011.util.CollectionUtils.toOptional;
 import static com.github.gv2011.util.ex.Exceptions.bug;
 
 import java.util.Map.Entry;
@@ -159,9 +158,13 @@ abstract class Structure<C,K,E> {
     }
 
     @Override
-    Collector<E, ?, Optional<E>> collector() {
-      return toOptional();
+    Optional<E> convert(final JsonNode json, final CollectionType<Optional<E>,Nothing,E> collectionType) {
+      return json.isNull()
+        ? Optional.empty()
+        : Optional.of(collectionType.elementType().parse(json))
+      ;
     }
+
   }
 
 
@@ -297,8 +300,8 @@ abstract class Structure<C,K,E> {
       return stream
         .map(JsonNode::asObject)
         .map(n->pair(
-          (K) keyType.parse(n.get("k")),
-          (V) valueType.parse(n.get("v"))
+          keyType.parse(n.get("k")),
+          valueType.parse(n.get("v"))
         ))
         .collect(toIMap())
       ;
@@ -346,8 +349,8 @@ abstract class Structure<C,K,E> {
       return stream
         .map(JsonNode::asObject)
         .map(n->pair(
-          (String) keyType.parse(n.get("k")),
-          (V) valueType.parse(n.get("v"))
+          keyType.parse(n.get("k")),
+          valueType.parse(n.get("v"))
         ))
         .collect(toISortedMap())
       ;

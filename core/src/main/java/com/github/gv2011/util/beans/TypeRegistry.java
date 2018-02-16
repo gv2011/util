@@ -37,5 +37,7 @@ public interface TypeRegistry {
 
     <S extends TypedString<S>> S typedString(Class<S> clazz, String value);
 
+    boolean isSupported(Class<?> clazz);
+
 
 }

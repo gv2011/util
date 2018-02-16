@@ -49,6 +49,8 @@
     <module>beans</module>
     <module>gcol</module>
     <module>http</module>
+    <module>jacksonadapter</module>
+    <module>json</module>
     <module>jsong</module>
     <module>logback</module>
     <module>swing</module>

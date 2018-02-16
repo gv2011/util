@@ -170,17 +170,14 @@ public class CollectionUtils {
     return new Pair<>(key, value);
   }
 
-  @Deprecated //use XStream method
   public static <T> XStream<T> stream(final Optional<? extends T> optional){
     return XStream.fromOptional(optional);
   }
 
-  @Deprecated //use XStream method
   public static <T> XStream<T> stream(final T[] array){
     return XStream.of(array);
   }
 
-  @Deprecated //use XStream method
   public static <T> XStream<T> stream(final Iterator<? extends T> iterator){
     return XStream.fromIterator(iterator);
   }
@@ -441,6 +438,24 @@ public class CollectionUtils {
     public Set<Characteristics> characteristics() {
       return EnumSet.of(Characteristics.UNORDERED);
     }
+  }
+
+  public static <T> IList<T> copyToIList(final Collection<? extends T> collection) {
+    return collection.stream().collect(toIList());
+  }
+
+  public static <S,T> IList<T> copyToIList(
+    final Collection<S> collection, final Function<? super S, ? extends T> mapping
+  ) {
+    return collection.stream().map(mapping).collect(toIList());
+  }
+
+  public static <T> ISet<T> copyToISet(final Collection<? extends T> collection) {
+    return collection.parallelStream().collect(toISet());
+  }
+
+  public static <T extends Comparable<? super T>> ISortedSet<T> copyToISortedSet(final Collection<? extends T> collection) {
+    return collection.parallelStream().collect(toISortedSet());
   }
 
   @SafeVarargs

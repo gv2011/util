@@ -30,13 +30,15 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
+import com.github.gv2011.util.json.imp.JsonFactoryImp;
+
 public class JsonUtilsTest {
 
   @Test
   public void testJsonFactory() {
     assertThat(
       JsonUtils.jsonFactory().getClass().getName(),
-      is("com.github.gv2011.jsong.JsonFactoryImp")
+      is(JsonFactoryImp.class.getName())
     );
   }
 

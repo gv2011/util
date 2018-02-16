@@ -32,7 +32,7 @@ import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonNodeType;
 
-abstract class AbstractElementaryType<E> extends AbstractType<E>{
+public abstract class AbstractElementaryType<E> extends AbstractType<E>{
 
   AbstractElementaryType(final JsonFactory jf, final Class<E> clazz) {
     super(jf, clazz);
@@ -62,6 +62,11 @@ abstract class AbstractElementaryType<E> extends AbstractType<E>{
 
   final JsonNodeType jsonNodeType() {
     return handler().jsonNodeType();
+  }
+
+  @Override
+  public E cast(final Object object) {
+    return handler().cast(clazz, object);
   }
 
 }

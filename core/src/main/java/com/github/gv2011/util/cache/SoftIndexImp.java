@@ -12,10 +12,10 @@ package com.github.gv2011.util.cache;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.github.gv2011.util.Pair;
@@ -47,9 +48,11 @@ final class SoftIndexImp<K,V> implements SoftIndex<K,V>{
   private final Object lock = new Object();
   private SoftReference<Set<WeakReference<Pair<K,Optional<V>>>>> data = new SoftReference<>(null);
   private SoftReference<Map<K,Optional<V>>> index = new SoftReference<>(null);
+  private final Consumer<Pair<K,Optional<V>>> addedListener;
 
-  SoftIndexImp(final Function<K, Optional<? extends V>> function) {
+  SoftIndexImp(final Function<K, Optional<? extends V>> function, final Consumer<Pair<K,Optional<V>>> addedListener) {
     this.function = function;
+    this.addedListener = addedListener;
   }
 
   private Set<WeakReference<Pair<K,Optional<V>>>> data(){
@@ -90,28 +93,39 @@ final class SoftIndexImp<K,V> implements SoftIndex<K,V>{
   @Override
   public Optional<V> tryGet(final K key) {
     final Optional<V> result;
-    @Nullable final Optional<V> current = index().get(key);
+    final Map<K, Optional<V>> index = index();
+    @Nullable final Optional<V> current = index.get(key);
     if(current==null) {
       final Optional<V> created = function.apply(key).map(v->v);
-      synchronized(lock) {
-        final Set<WeakReference<Pair<K, Optional<V>>>> set = data();
-        final Optional<Pair<K, Optional<V>>> existing = set.parallelStream()
-        .map(WeakReference::get)
-        .filter(p->p!=null)
-        .filter(p->p.getKey().equals(key))
-        .findAny();
-        if(!existing.isPresent()) {
-          set.add(new WeakReference<>(pair(key, created)));
-          result = created;
-        }
-        else {
-          result = existing.get().getValue();
-          verifyEqual(created, result);
-        }
-      }
+      result = tryAddSync(key, created, index);
     }
     else result = notNull(current);
     return result;
+  }
+
+  private Optional<V> tryAddSync(final K key, final Optional<V> created, final Map<K, Optional<V>> index) {
+    synchronized(lock) {
+      @Nullable Optional<V> added = null;
+      final Set<WeakReference<Pair<K, Optional<V>>>> set = data();
+      final Optional<Pair<K, Optional<V>>> existing = set.parallelStream()
+      .map(WeakReference::get)
+      .filter(p->p!=null)
+      .filter(p->p.getKey().equals(key))
+      .findAny();
+      Optional<V> result;
+      if(!existing.isPresent()) {
+        set.add(new WeakReference<>(pair(key, created)));
+        added = created;
+        result = created;
+      }
+      else {
+        result = existing.get().getValue();
+        verifyEqual(created, result);
+      }
+      index.put(key, result);
+      if(added!=null) addedListener.accept(pair(key, added));
+      return result;
+    }
   }
 
 

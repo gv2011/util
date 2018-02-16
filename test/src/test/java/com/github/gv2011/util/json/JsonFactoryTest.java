@@ -53,7 +53,7 @@ public class JsonFactoryTest {
     assertThat(n, isA(JsonObject.class));
     final JsonObject obj = (JsonObject)n;
     assertThat(obj, meets(o->o.size()==1));
-    assertThat(obj.get("k").toString(), is("str"));
+    assertThat(obj.get("k").asString(), is("str"));
   }
 
   @Test
