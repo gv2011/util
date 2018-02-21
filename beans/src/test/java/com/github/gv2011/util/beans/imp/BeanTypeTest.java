@@ -48,7 +48,7 @@ public class BeanTypeTest {
   public static interface TestBeanA{
     String stringProp();
     @DefaultValue("5") Integer intProp();
-    @DefaultValue("[\"localhost:443\"]") Optional<InetSocketAddress> socket();
+    @DefaultValue("localhost:443") Optional<InetSocketAddress> socket();
   }
 
   public static interface Colour extends TypedString<Colour>{}

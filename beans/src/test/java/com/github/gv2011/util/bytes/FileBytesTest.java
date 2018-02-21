@@ -1,4 +1,4 @@
-package com.github.gv2011.util.cache;
+package com.github.gv2011.util.bytes;
 
 /*-
  * #%L
@@ -29,31 +29,57 @@ package com.github.gv2011.util.cache;
 
 
 
-import static com.github.gv2011.util.ex.Exceptions.staticClass;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-import com.github.gv2011.util.Pair;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-public final class CacheUtils {
+public class FileBytesTest {
 
-  private CacheUtils(){staticClass();}
 
-  public static <T> Supplier<T> cache(final Supplier<T> supplier){
-    return new SoftRefCache<>(supplier)::get;
+
+  private byte[] array;
+  private Bytes bytes;
+  private Path file;
+  private Bytes fileBytes;
+
+  @Before
+  public void setup(){
+    array = new byte[]{0,1,2,3,4,5,6,7,8,9,0xA,0xB,0xC,0xD,0xE,0xF};
+    bytes = ByteUtils.newBytes(array);
+    file = FileSystems.getDefault().getPath("test.bin");
+    bytes.write(file);
+    fileBytes = ByteUtils.read(file);
   }
 
-  public static <K,V> SoftIndex<K,V> softIndex(final Function<K,Optional<? extends V>> constantFunction){
-    return new SoftIndexImp<>(constantFunction, p->{});
+  @After
+  public void close() throws IOException{
+    Files.deleteIfExists(file);
   }
 
-  public static <K,V> SoftIndex<K,V> softIndex(
-    final Function<K,Optional<? extends V>> constantFunction, final Consumer<Pair<K,Optional<V>>> addedListener
-  ){
-    return new SoftIndexImp<>(constantFunction, addedListener);
+
+  @Test
+  public void testGetLong() {
+    long i = 0;
+    for(final byte b: array){
+      assertThat(bytes.get(i), is(b));
+      assertThat(fileBytes.get(i), is(b));
+      i++;
+    }
+  }
+
+  @Test
+  public void testToString() {
+    final String expected = "00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F";
+    assertThat(bytes.toString(), is(expected));
+    assertThat(fileBytes.toString(), is(expected));
   }
 
 }

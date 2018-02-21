@@ -1,10 +1,10 @@
-package com.github.gv2011.util.tstr;
+package com.github.gv2011.util.bytes;
 
 /*-
  * #%L
  * The MIT License (MIT)
  * %%
- * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -12,10 +12,10 @@ package com.github.gv2011.util.tstr;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,22 +25,27 @@ package com.github.gv2011.util.tstr;
  * THE SOFTWARE.
  * #L%
  */
-public interface TypedString<T extends TypedString<T>> extends Comparable<TypedString<?>>{
 
-  public static <T extends TypedString<T>> T create(final Class<T> clazz, final String value) {
-    return TypedStringInvocationHandler.create(clazz, value);
-  }
 
-  T self();
 
-  Class<T> clazz();
 
-  default String canonical() {
-    return toString();
-  }
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
-  default int compareWithOtherOfSameType(final T o) {
-    return canonical().compareTo(o.canonical());
+import org.junit.Test;
+
+public class BytesBuilderTest {
+
+  @Test
+  public void testBuild() {
+    final Bytes expected = ByteUtils.newRandomBytes(100000);
+    Bytes bytes = null;
+    try(BytesBuilder builder = new BytesBuilder()){
+      bytes = builder.append(expected).build();
+    }
+    assertThat(bytes, is(expected));
+    assertThat(bytes.hash(), is(expected.hash()));
+    assertThat(bytes.hashCode(), is(expected.hashCode()));
   }
 
 }

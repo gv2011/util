@@ -1,4 +1,4 @@
-package com.github.gv2011.util.tstr;
+package com.github.gv2011.util.beans;
 
 /*-
  * #%L
@@ -25,22 +25,19 @@ package com.github.gv2011.util.tstr;
  * THE SOFTWARE.
  * #L%
  */
-public interface TypedString<T extends TypedString<T>> extends Comparable<TypedString<?>>{
 
-  public static <T extends TypedString<T>> T create(final Class<T> clazz, final String value) {
-    return TypedStringInvocationHandler.create(clazz, value);
-  }
 
-  T self();
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-  Class<T> clazz();
-
-  default String canonical() {
-    return toString();
-  }
-
-  default int compareWithOtherOfSameType(final T o) {
-    return canonical().compareTo(o.canonical());
-  }
-
+/**
+ * Instances that directly implement the annotated interface must not be created.
+ * The annotated interface serves only as superinterface for other interfaces.
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface TypeName {
+    String value();
 }

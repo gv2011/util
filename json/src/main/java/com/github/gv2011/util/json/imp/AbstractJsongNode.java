@@ -94,15 +94,15 @@ abstract class AbstractJsongNode implements JsongNode{
   }
 
   static final JsonObject asObject(final JsongNode n) {
-    throw new ClassCastException(format("{} is not a JsonObject.", n));
+    throw new ClassCastException(format("{} is not a JsonObject (actual class is {}).", n, n.getClass()));
   }
 
   static final JsonNull asNull(final JsongNode n) {
-    throw new ClassCastException(format("{} is not a JsonNull.", n));
+    throw new ClassCastException(format("{} is not a JsonNull (actual class is {}).", n, n.getClass()));
   }
 
   static final JsonList asList(final JsongNode n) {
-    throw new ClassCastException(format("{} is not a JsonList.", n));
+    throw new ClassCastException(format("{} is not a JsonList (actual class is {}).", n, n.getClass()));
   }
 
   static final boolean asBoolean(final JsongNode n) {
@@ -110,11 +110,11 @@ abstract class AbstractJsongNode implements JsongNode{
   }
 
   static final String asString(final JsongNode n) {
-    throw new ClassCastException(format("{} is not a String node.", n));
+    throw new ClassCastException(format("{} is not a String node (actual class is {}).", n, n.getClass()));
   }
 
   static final BigDecimal asNumber(final JsongNode n) {
-    throw new ClassCastException(format("{} is not a Number node.", n));
+    throw new ClassCastException(format("{} is not a Boolean node (actual class is {}).", n, n.getClass()));
   }
 
   static final String toString(final JsongNode n) {

@@ -1,4 +1,4 @@
-package com.github.gv2011.util.tstr;
+package com.github.gv2011.util.beans;
 
 /*-
  * #%L
@@ -25,22 +25,15 @@ package com.github.gv2011.util.tstr;
  * THE SOFTWARE.
  * #L%
  */
-public interface TypedString<T extends TypedString<T>> extends Comparable<TypedString<?>>{
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-  public static <T extends TypedString<T>> T create(final Class<T> clazz, final String value) {
-    return TypedStringInvocationHandler.create(clazz, value);
-  }
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface FixedBooleanValue {
 
-  T self();
-
-  Class<T> clazz();
-
-  default String canonical() {
-    return toString();
-  }
-
-  default int compareWithOtherOfSameType(final T o) {
-    return canonical().compareTo(o.canonical());
-  }
+    boolean value();
 
 }

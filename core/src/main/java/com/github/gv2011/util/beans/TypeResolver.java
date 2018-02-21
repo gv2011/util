@@ -1,4 +1,4 @@
-package com.github.gv2011.util.tstr;
+package com.github.gv2011.util.beans;
 
 /*-
  * #%L
@@ -12,10 +12,10 @@ package com.github.gv2011.util.tstr;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,22 +25,10 @@ package com.github.gv2011.util.tstr;
  * THE SOFTWARE.
  * #L%
  */
-public interface TypedString<T extends TypedString<T>> extends Comparable<TypedString<?>>{
+import com.github.gv2011.util.json.JsonNode;
 
-  public static <T extends TypedString<T>> T create(final Class<T> clazz, final String value) {
-    return TypedStringInvocationHandler.create(clazz, value);
-  }
+public interface TypeResolver {
 
-  T self();
-
-  Class<T> clazz();
-
-  default String canonical() {
-    return toString();
-  }
-
-  default int compareWithOtherOfSameType(final T o) {
-    return canonical().compareTo(o.canonical());
-  }
+    Class<?> resolve(JsonNode json);
 
 }

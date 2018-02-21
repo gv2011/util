@@ -47,6 +47,9 @@ public interface JsonFactory {
     final Function<? super T, JsonNode> valueMapper
   );
 
+  JsonNode emptyList();
+
+
   Collector<Entry<String,JsonNode>, ?, JsonObject> toJsonObject();
 
   JsonNull jsonNull();
@@ -64,6 +67,5 @@ public interface JsonFactory {
   JsonBoolean primitive(boolean b);
 
   JsonBoolean primitive(Boolean b);
-
 
 }

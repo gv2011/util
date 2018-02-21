@@ -34,6 +34,7 @@ import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -41,6 +42,8 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.TreeSet;
 import java.util.function.Function;
+
+import org.slf4j.Logger;
 
 import com.github.gv2011.util.ReflectionUtils;
 import com.github.gv2011.util.ann.Nullable;
@@ -56,14 +59,15 @@ import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonNodeType;
 import com.github.gv2011.util.json.JsonObject;
 
+
 public final class BeanTypeImp<T> extends AbstractType<T> implements BeanType<T> {
+
+    private static final Logger LOG = getLogger(BeanTypeImp.class);
 
     private static final ISet<String> RESERVED = setOf();
 
     @SuppressWarnings("rawtypes")
     private static final Partial EMPTY_PARTIAL = createEmptyPartial();
-
-    private static final ISet<Character> JSON_START = setOf('\"','[','{');
 
     private final DefaultTypeRegistry registry;
 
@@ -82,14 +86,29 @@ public final class BeanTypeImp<T> extends AbstractType<T> implements BeanType<T>
 
     @Override
     void initialize() {
-        verify(properties==null && defaultValue==null);
-        properties = getProperties(clazz, registry);
-        defaultValue = createDefaultValue();
+        if(properties==null) {
+            LOG.debug("Initializing {}.", this);
+            verify(defaultValue==null);
+            properties = getProperties(clazz, registry);
+            defaultValue = createDefaultValue();
+            LOG.debug("{} initialized.", this);
+        }
     }
 
 
     private Optional<T> createDefaultValue() {
-      if(properties().values().stream().allMatch(p->p.defaultValue().isPresent())) {
+      LOG.debug("Creating default value for {}.", this);
+      if(properties().values().stream()
+        .allMatch(p->{
+          Optional<?> defaultValue;
+          try {
+            defaultValue = p.defaultValue();
+          } catch (final Exception e) {
+            throw new IllegalStateException(format("Could not get default value of {} of {}.", p, this), e);
+          }
+          return defaultValue.isPresent();
+        })
+      ){
         final BeanBuilder<T> b = createBuilder();
         for(final PropertyImp<?> p: properties().values()) setDefaultValue(b, p);
         return Optional.of(b.build());
@@ -116,6 +135,7 @@ public final class BeanTypeImp<T> extends AbstractType<T> implements BeanType<T>
 
     @Override
     public ISortedMap<String, PropertyImp<?>> properties() {
+        initialize();
         return notNull(properties);
     }
 
@@ -148,23 +168,34 @@ public final class BeanTypeImp<T> extends AbstractType<T> implements BeanType<T>
     }
 
     private static JsonNode parseTolerant(final AbstractType<?> type, final JsonFactory jf, final String string) {
-      JsonNode result;
-      final String trimmed = string.trim();
-      if(trimmed.isEmpty()) {
-        result = jf.primitive(string);
-      }
-      else {
-        final char start = trimmed.charAt(0);
-        if(!JSON_START.contains(start) && type instanceof ElementaryTypeImp) {
-          final ElementaryTypeImp<?> et = (ElementaryTypeImp<?>)type;
-          if(!et.jsonNodeType().equals(JsonNodeType.STRING)) {
-            result = jf.deserialize(string);
+      try {
+        JsonNode result;
+            if(type.isOptional()) {
+                if(string.trim().equals("null")) result = jf.jsonNull();
+                else {
+                    final CollectionType<?,?,?> cType = (CollectionType<?,?,?>) type;
+                    result = parseTolerant(cType.elementType(), jf, string);
+                }
+            }
+            else if(type instanceof AbstractElementaryType) {
+              final AbstractElementaryType<?> eType = (AbstractElementaryType<?>) type;
+              if(eType.jsonNodeType().equals(JsonNodeType.STRING)) {
+                final String trimmed = string.trim();
+                if(trimmed.isEmpty()?true:trimmed.charAt(0)!='"') {
+                    result = jf.primitive(string);
+                }
+                else result = jf.deserialize(string);
+              }
+              else result = jf.deserialize(string);
           }
-          else result = jf.primitive(string);
-        }
-        else result = jf.deserialize(string);
+          else result = jf.deserialize(string);
+          return result;
+      } catch (final Exception e) {
+        throw new IllegalArgumentException(format(
+            "Could not parse annotated default value \"{}\" to type {}.",
+            string, type
+        ));
       }
-      return result;
     }
 
     @Override
@@ -224,7 +255,8 @@ public final class BeanTypeImp<T> extends AbstractType<T> implements BeanType<T>
 
     @Override
     public Optional<T> getDefault() {
-      return notNull(defaultValue);
+      initialize();
+      return notNull(defaultValue, ()->this.clazz.toString());
     }
 
 

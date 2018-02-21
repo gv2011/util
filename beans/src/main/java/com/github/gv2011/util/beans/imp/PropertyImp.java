@@ -1,5 +1,7 @@
 package com.github.gv2011.util.beans.imp;
 
+import static com.github.gv2011.util.ex.Exceptions.format;
+
 /*-
  * #%L
  * util-beans
@@ -58,7 +60,11 @@ public final class PropertyImp<T> implements Property<T> {
 
     @Override
     public Optional<T> defaultValue() {
-         return defaultValue.isPresent() ? defaultValue : type().getDefault();
+        try {
+          return defaultValue.isPresent() ? defaultValue : type.getDefault();
+        }catch(final RuntimeException e) {
+            throw new IllegalStateException(format("Could not obtain default value of {}.", type), e);
+        }
     }
 
     boolean isOptional() {

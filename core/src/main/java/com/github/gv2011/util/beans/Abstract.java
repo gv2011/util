@@ -32,10 +32,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.github.gv2011.util.Nothing;
+
 /**
  * Instances that directly implement the annotated interface must not be created.
  * The annotated interface serves only as superinterface for other interfaces.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Abstract {}
+public @interface Abstract {
+    Class<?>[] subClasses() default Nothing.class;
+    Class<? extends TypeResolver> typeResolver() default TypeResolver.class;
+}

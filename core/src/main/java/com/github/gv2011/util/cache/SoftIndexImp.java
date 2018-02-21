@@ -29,6 +29,7 @@ import static com.github.gv2011.util.CollectionUtils.pair;
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static java.util.stream.Collectors.toMap;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
@@ -39,15 +40,20 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.slf4j.Logger;
+
 import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.ann.Nullable;
 
 final class SoftIndexImp<K,V> implements SoftIndex<K,V>{
 
+  private static final Logger LOG = getLogger(SoftIndexImp.class);
+
   private final Function<K, Optional<? extends V>> function;
   private final Object lock = new Object();
   private SoftReference<Set<WeakReference<Pair<K,Optional<V>>>>> data = new SoftReference<>(null);
   private SoftReference<Map<K,Optional<V>>> index = new SoftReference<>(null);
+
   private final Consumer<Pair<K,Optional<V>>> addedListener;
 
   SoftIndexImp(final Function<K, Optional<? extends V>> function, final Consumer<Pair<K,Optional<V>>> addedListener) {
@@ -96,16 +102,14 @@ final class SoftIndexImp<K,V> implements SoftIndex<K,V>{
     final Map<K, Optional<V>> index = index();
     @Nullable final Optional<V> current = index.get(key);
     if(current==null) {
-      final Optional<V> created = function.apply(key).map(v->v);
-      result = tryAddSync(key, created, index);
+      result = tryAddSync(key, index);
     }
     else result = notNull(current);
     return result;
   }
 
-  private Optional<V> tryAddSync(final K key, final Optional<V> created, final Map<K, Optional<V>> index) {
+  private Optional<V> tryAddSync(final K key, final Map<K, Optional<V>> index) {
     synchronized(lock) {
-      @Nullable Optional<V> added = null;
       final Set<WeakReference<Pair<K, Optional<V>>>> set = data();
       final Optional<Pair<K, Optional<V>>> existing = set.parallelStream()
       .map(WeakReference::get)
@@ -113,17 +117,21 @@ final class SoftIndexImp<K,V> implements SoftIndex<K,V>{
       .filter(p->p.getKey().equals(key))
       .findAny();
       Optional<V> result;
+      final @Nullable Optional<V> created;
       if(!existing.isPresent()) {
+        created = function.apply(key).map(v->v);
+        LOG.debug("Adding entry for {}.", key);
         set.add(new WeakReference<>(pair(key, created)));
-        added = created;
         result = created;
       }
       else {
+        LOG.debug("There is already an entry for {}.", key);
+        created = null;
         result = existing.get().getValue();
         verifyEqual(created, result);
       }
       index.put(key, result);
-      if(added!=null) addedListener.accept(pair(key, added));
+      if(created!=null) addedListener.accept(pair(key, created));
       return result;
     }
   }

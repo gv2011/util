@@ -1,5 +1,7 @@
 package com.github.gv2011.jacksonadapter;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 /*-
  * #%L
  * jacksonadapter
@@ -12,10 +14,10 @@ package com.github.gv2011.jacksonadapter;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,6 +28,8 @@ package com.github.gv2011.jacksonadapter;
  * #L%
  */
 import java.io.IOException;
+
+import org.slf4j.Logger;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -52,6 +56,8 @@ import com.github.gv2011.util.json.imp.JsonFactoryImp;
 
 
 public final class ImmutableBeansModule extends Module{
+
+    private static final Logger LOG = getLogger(ImmutableBeansModule.class);
 
     private static final Version VERSION = Version.unknownVersion();
 
@@ -109,7 +115,15 @@ public final class ImmutableBeansModule extends Module{
             final JavaType type, final DeserializationConfig config, final BeanDescription beanDesc
         ) throws JsonMappingException {
             final Class<?> clazz = type.getRawClass();
-            return typeRegistry.isSupported(clazz) ? createDeserializer(clazz) : null;
+            if(typeRegistry.isSupported(clazz)) {
+                final JsonDeserializer<?> createDeserializer = createDeserializer(clazz);
+                LOG.trace("Created deserializer for {}.", clazz);
+                return createDeserializer;
+            }
+            else {
+                LOG.trace("{} is not supported.", clazz);
+                return null;
+            }
         }
 
         private <T> JsonDeserializer<T> createDeserializer(final Class<T> clazz) {

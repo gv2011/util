@@ -75,10 +75,14 @@ public class DefaultTypeRegistry implements TypeRegistry{
 
   final JsonFactory jf;
 
-  private final SoftIndex<Class<?>,AbstractType<?>> typeMap = CacheUtils.softIndex(
+  private final SoftIndex<Class<?>,AbstractType<?>> typeMap = createTypeMap();
+
+  private SoftIndex<Class<?>, AbstractType<?>> createTypeMap() {
+    return CacheUtils.softIndex(
       c->Optional.of(createType(c)),
       p->p.getValue().ifPresent(AbstractType::initialize)
-  );
+    );
+  }
 
   private final DefaultElementaryTypeHandlerFactory defaultFactory = new DefaultElementaryTypeHandlerFactory();
   private final IList<ElementaryTypeHandlerFactory> additionalTypeHandlerFactories;
@@ -156,11 +160,12 @@ public class DefaultTypeRegistry implements TypeRegistry{
           }
           else throw new UnsupportedOperationException();
       }
-      else throw new UnsupportedOperationException();
+      else throw new UnsupportedOperationException(genType.toString());
   }
 
   @SuppressWarnings("unchecked")
   private <T> AbstractType<T> createType(final Class<T> clazz) {
+    LOG.debug("Creating type for {}.", clazz);
     if(isCollectionType(clazz)) throw new UnsupportedOperationException();
     else if(isTypedStringType(clazz)) return createTypedStringType(clazz);
     else if(isBeanClass(clazz)) return createBeanType(clazz);

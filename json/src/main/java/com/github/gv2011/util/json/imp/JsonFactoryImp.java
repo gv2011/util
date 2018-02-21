@@ -56,6 +56,7 @@ public final class JsonFactoryImp implements JsonFactory{
   private final Adapter adapter;
 
   final JsonNullImp jsonNull;
+  final AbstractJsonList emptyList;
   final ISet<Characteristics> listCharacteristics = ICOLF.emptySet();
   final ISet<Characteristics> mapCharacteristics = ICOLF.setOf(Characteristics.UNORDERED);
 
@@ -66,6 +67,7 @@ public final class JsonFactoryImp implements JsonFactory{
   public JsonFactoryImp(final Adapter adapter) {
     this.adapter = adapter;
     jsonNull = new JsonNullImp(this);
+    emptyList = createEmptyList();
   }
 
   @Override
@@ -76,6 +78,11 @@ public final class JsonFactoryImp implements JsonFactory{
   @Override
   public Collector<JsonNode, ?, JsonList> toJsonList() {
     return new JsonListCollector(this);
+  }
+
+  @Override
+  public JsonNode emptyList() {
+    return emptyList;
   }
 
   @Override
@@ -145,7 +152,20 @@ public final class JsonFactoryImp implements JsonFactory{
 
   @Override
   public JsonList asJsonList(final IList<?> list, final Function<Object, JsonNode> converter) {
-    return new JsonListWrapper<Object>(this, list, o->(JsongNode)converter.apply(o));
+    return list.isEmpty() ? emptyList :new JsonListWrapper<Object>(this, list, o->(JsongNode)converter.apply(o));
+  }
+
+  private AbstractJsonList createEmptyList() {
+    return new AbstractJsonList(this){
+      @Override
+      public JsongNode get(final int index) {
+        throw new IndexOutOfBoundsException();
+      }
+      @Override
+      public int size() {
+        return 0;
+      }
+    };
   }
 
 
