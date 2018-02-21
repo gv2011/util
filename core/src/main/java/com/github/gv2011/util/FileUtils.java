@@ -57,11 +57,6 @@ public final class FileUtils {
 
   public static final Path WORK_DIR = call(()->FileSystems.getDefault().getPath(".").toRealPath());
 
-//  @Deprecated
-//  public static Path getPath(final String first, final String... more){
-//    return path(first, more);
-//  }
-
   public static Path path(final String first, final String... more){
     return FileSystems.getDefault().getPath(first, more);
   }
@@ -83,8 +78,12 @@ public final class FileUtils {
   }
 
   public static Reader getReaderRemoveBom(final String first, final String... more){
+    return getReaderRemoveBom(path(first, more));
+  }
+
+  public static Reader getReaderRemoveBom(final Path file){
     return call(()->{
-      final BufferedReader reader = Files.newBufferedReader(path(first, more), UTF_8);
+      final BufferedReader reader = Files.newBufferedReader(file, UTF_8);
       final int bom = reader.read();
       verifyEqual(bom, 0xFEFF);
       return reader;
