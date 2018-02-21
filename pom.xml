@@ -31,7 +31,7 @@
   </parent>
 
   <artifactId>util-parent</artifactId>
-  <version>0.3.1</version>
+  <version>0.3.2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <description>General purpose utilities - parent.</description>
@@ -41,7 +41,7 @@
     <connection>scm:git:git@github.com:gv2011/util.git</connection>
     <developerConnection>scm:git:git@github.com:gv2011/util.git</developerConnection>
     <url>https://github.com/gv2011/util</url>
-    <tag>util-parent-0.3.1</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <modules>
