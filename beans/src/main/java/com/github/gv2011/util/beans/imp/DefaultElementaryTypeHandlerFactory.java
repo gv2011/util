@@ -52,7 +52,7 @@ import com.github.gv2011.util.json.JsonNull;
 import com.github.gv2011.util.json.JsonNumber;
 import com.github.gv2011.util.json.JsonString;
 
-public final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandlerFactory{
+final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandlerFactory{
 
     private static final ISortedSet<String> SUPPORTED_CLASS_NAMES = sortedSetOf(
         Nothing.class.getName(),

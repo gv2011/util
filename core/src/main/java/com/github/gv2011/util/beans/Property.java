@@ -35,4 +35,6 @@ public interface Property<V> {
 
     Optional<V> defaultValue();
 
+    Optional<V> fixedValue();
+
 }

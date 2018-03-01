@@ -29,7 +29,7 @@ import java.util.Optional;
 
 import com.github.gv2011.util.json.JsonNode;
 
-public final class CollectionType<C,K,E> extends AbstractType<C>{
+final class CollectionType<C,K,E> extends AbstractType<C>{
 
   private final Optional<AbstractType<K>> keyType;
 

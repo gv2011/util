@@ -32,7 +32,7 @@ import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonNodeType;
 
-public abstract class AbstractElementaryType<E> extends AbstractType<E>{
+abstract class AbstractElementaryType<E> extends AbstractType<E>{
 
   AbstractElementaryType(final JsonFactory jf, final Class<E> clazz) {
     super(jf, clazz);

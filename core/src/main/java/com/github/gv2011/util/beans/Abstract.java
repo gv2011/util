@@ -41,6 +41,9 @@ import com.github.gv2011.util.Nothing;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Abstract {
+
     Class<?>[] subClasses() default Nothing.class;
+
+    @SuppressWarnings("rawtypes")
     Class<? extends TypeResolver> typeResolver() default TypeResolver.class;
 }

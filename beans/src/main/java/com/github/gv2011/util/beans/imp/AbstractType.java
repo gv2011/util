@@ -37,9 +37,9 @@ public abstract class AbstractType<T> implements Type<T> {
     public final Class<T> clazz;
     final JsonFactory jf;
 
-    AbstractType(final JsonFactory jf, final Class<T> beanClass) {
+    AbstractType(final JsonFactory jf, final Class<T> clazz) {
       this.jf = jf;
-      this.clazz = beanClass;
+      this.clazz = clazz;
     }
 
     void initialize() {}
@@ -91,6 +91,14 @@ public abstract class AbstractType<T> implements Type<T> {
     }
 
     boolean isOptional() {
+      return false;
+    }
+
+    boolean isPolymorphic(){
+      return false;
+    }
+
+    boolean isAbstractBean(){
       return false;
     }
 

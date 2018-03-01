@@ -172,7 +172,7 @@ public final class ReflectionUtils {
     }
     else clazz = Optional.empty();
     if(clazz.isPresent()){
-      final Type superclass = clazz.get().getGenericSuperclass();
+      final @Nullable Type superclass = clazz.get().getGenericSuperclass();
       if(superclass!=null){
         collectAllInterfaces(result, superclass);
       }

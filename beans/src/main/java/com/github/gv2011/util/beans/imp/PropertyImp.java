@@ -31,16 +31,21 @@ import java.util.Optional;
 
 import com.github.gv2011.util.beans.Property;
 
-public final class PropertyImp<T> implements Property<T> {
+final class PropertyImp<T> implements Property<T> {
 
     private final String name;
     private final AbstractType<T> type;
     private final Optional<T> defaultValue;
+    private final Optional<T> fixedValue;
 
-    PropertyImp(final String name, final AbstractType<T> type, final Optional<T> defaultValue) {
-        this.name = name;
-        this.type = type;
-        this.defaultValue = defaultValue;
+    PropertyImp(
+      final String name, final AbstractType<T> type, final Optional<T> defaultValue, final Optional<T> fixedValue
+    ) {
+      this.name = name;
+      this.type = type;
+      assert !(defaultValue.isPresent() && fixedValue.isPresent());
+      this.defaultValue = defaultValue;
+      this.fixedValue = fixedValue;
     }
 
     @Override
@@ -60,11 +65,16 @@ public final class PropertyImp<T> implements Property<T> {
 
     @Override
     public Optional<T> defaultValue() {
-        try {
-          return defaultValue.isPresent() ? defaultValue : type.getDefault();
-        }catch(final RuntimeException e) {
-            throw new IllegalStateException(format("Could not obtain default value of {}.", type), e);
-        }
+      try {
+        return fixedValue.isPresent() ? fixedValue : defaultValue.isPresent() ? defaultValue : type.getDefault();
+      }catch(final RuntimeException e) {
+          throw new IllegalStateException(format("Could not obtain default value of {}.", type), e);
+      }
+    }
+
+    @Override
+    public Optional<T> fixedValue() {
+       return fixedValue;
     }
 
     boolean isOptional() {

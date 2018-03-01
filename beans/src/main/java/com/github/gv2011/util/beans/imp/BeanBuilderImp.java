@@ -49,31 +49,41 @@ final class BeanBuilderImp<T> implements BeanBuilder<T> {
 
     private final Map<String,Object> map = new HashMap<>();
 
-    private final BeanTypeImp<T> beanType;
+    final DefaultBeanType<T> beanType;
 
-
-    BeanBuilderImp(final BeanTypeImp<T> beanInfo) {
+    BeanBuilderImp(final DefaultBeanType<T> beanInfo) {
         this.beanType = beanInfo;
     }
 
     @Override
     public T build() {
-        for(final Property<?> p: beanType.properties().values()) {
-            p.defaultValue().ifPresent(dv->{
-                final String propName = p.name();
-                if(!map.containsKey(propName)) map.put(p.name(), dv);
-            });
-        }
-        final ISet<Property<?>> missing = beanType.properties().values().stream()
-            .filter(p->!map.keySet().contains(p.name()))
-            .collect(toISet())
-        ;
-        verify(missing, Set::isEmpty);
-        return beanType.clazz.cast(Proxy.newProxyInstance(
-            beanType.clazz.getClassLoader(),
-            new Class<?>[] {beanType.clazz},
-            new BeanInvocationHandler(beanType.clazz, iCollections().copyOf(map))
-        ));
+      //fill in fixed values:
+      for(final Property<?> p: beanType.properties().values()) {
+          p.fixedValue().ifPresent(fv->{
+              final String propName = p.name();
+              if(map.containsKey(propName)) verify(map.get(propName).equals(fv));
+              else map.put(p.name(), fv);
+          });
+      }
+      //fill in default values:
+      for(final Property<?> p: beanType.properties().values()) {
+          p.defaultValue().ifPresent(dv->{
+              final String propName = p.name();
+              if(!map.containsKey(propName)) map.put(p.name(), dv);
+          });
+      }
+      //verify all properties are set:
+      final ISet<Property<?>> missing = beanType.properties().values().stream()
+          .filter(p->!map.keySet().contains(p.name()))
+          .collect(toISet())
+      ;
+      verify(missing, Set::isEmpty);
+      //create proxy:
+      return beanType.clazz.cast(Proxy.newProxyInstance(
+          beanType.clazz.getClassLoader(),
+          new Class<?>[] {beanType.clazz},
+          new BeanInvocationHandler(beanType.clazz, iCollections().copyOf(map))
+      ));
     }
 
     @Override

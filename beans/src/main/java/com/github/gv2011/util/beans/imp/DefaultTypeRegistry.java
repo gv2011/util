@@ -31,6 +31,7 @@ import static com.github.gv2011.util.CollectionUtils.single;
 import static com.github.gv2011.util.CollectionUtils.stream;
 import static com.github.gv2011.util.CollectionUtils.toISet;
 import static com.github.gv2011.util.CollectionUtils.toOptional;
+import static com.github.gv2011.util.Verify.verify;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.Method;
@@ -42,6 +43,7 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 
+import com.github.gv2011.util.ReflectionUtils;
 import com.github.gv2011.util.ServiceLoaderUtils;
 import com.github.gv2011.util.XStream;
 import com.github.gv2011.util.beans.Abstract;
@@ -94,7 +96,7 @@ public class DefaultTypeRegistry implements TypeRegistry{
   }
 
   public DefaultTypeRegistry(final JsonFactory jsonFactory) {
-      this.jf = jsonFactory;
+      jf = jsonFactory;
       final IList.Builder<ElementaryTypeHandlerFactory> b = listBuilder();
       for(final ElementaryTypeHandlerFactory tf: ServiceLoader.load(ElementaryTypeHandlerFactory.class)) {
           b.add(tf);
@@ -104,8 +106,12 @@ public class DefaultTypeRegistry implements TypeRegistry{
   }
 
   @Override
-  public <T> BeanTypeImp<T> beanType(final Class<T> beanClass) {
-      return (BeanTypeImp<T>) type(beanClass);
+  public <T> DefaultBeanType<T> beanType(final Class<T> beanClass) {
+      return (DefaultBeanType<T>) type(beanClass);
+  }
+
+  <T> AbstractBeanType<T>  abstractBeanType(final Class<T> abstractBeanClass) {
+      return (AbstractBeanType<T>) type(abstractBeanClass);
   }
 
   public <E> AbstractElementaryType<E> elementaryType(final Class<E> elementaryClass) {
@@ -169,11 +175,27 @@ public class DefaultTypeRegistry implements TypeRegistry{
     if(isCollectionType(clazz)) throw new UnsupportedOperationException();
     else if(isTypedStringType(clazz)) return createTypedStringType(clazz);
     else if(isBeanClass(clazz)) return createBeanType(clazz);
+    else if(isAbstractBeanClass(clazz)) return createAbstractBeanType(clazz);
     else return createElementaryType(clazz);
   }
 
-  private <T> BeanTypeImp<T> createBeanType(final Class<T> clazz) {
-    return new BeanTypeImp<>(clazz, this);
+  private <T> DefaultBeanType<T> createBeanType(final Class<T> clazz) {
+    assert clazz.getAnnotation(Abstract.class)==null;
+    final Optional<Class<?>> superBean = ReflectionUtils.getAllInterfaces(clazz).parallelStream()
+      .filter(i->i.getAnnotation(Abstract.class)!=null).findAny()
+    ;
+    if(!superBean.isPresent()) return new DefaultBeanType<>(clazz, this);
+    else{
+      return new PolymorphicBeanType<>(clazz, this,
+        abstractBeanType(superBean.get()).hasDefaultTypeResolver()
+        ? AbstractBeanType.TYPE_PROPERTY
+        : ""
+      );
+    }
+  }
+
+  private <T> AbstractBeanType<T> createAbstractBeanType(final Class<T> clazz) {
+    return new AbstractBeanType<>(this, clazz);
   }
 
   private boolean isTypedStringType(final Class<?> clazz) {
@@ -236,6 +258,15 @@ public class DefaultTypeRegistry implements TypeRegistry{
     }
   }
 
+  private boolean isAbstractBeanClass(final Class<?> clazz) {
+    if(clazz.getAnnotation(Abstract.class) == null) return false;
+    else{
+      verify(clazz.isInterface());
+      return true;
+    }
+  }
+
+
   private boolean isPropertyMethod(final Method m) {
     assert m.getDeclaringClass().isInterface();
     return m.getParameterCount()==0;
@@ -285,6 +316,7 @@ public class DefaultTypeRegistry implements TypeRegistry{
     return
       isCollectionType(clazz) ||
       isBeanClass(clazz) ||
+      isAbstractBeanClass(clazz) ||
       defaultFactory.isSupported(clazz) ||
       additionalTypeHandlerFactories.parallelStream().anyMatch(f->f.isSupported(clazz))
     ;
@@ -299,4 +331,5 @@ public class DefaultTypeRegistry implements TypeRegistry{
         else return Optional.empty();
     }
   }
+
 }

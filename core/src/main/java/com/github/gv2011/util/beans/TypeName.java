@@ -32,10 +32,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Instances that directly implement the annotated interface must not be created.
- * The annotated interface serves only as superinterface for other interfaces.
- */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface TypeName {
