@@ -54,250 +54,270 @@ import com.github.gv2011.util.json.JsonString;
 
 final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandlerFactory{
 
-    private static final ISortedSet<String> SUPPORTED_CLASS_NAMES = sortedSetOf(
-        Nothing.class.getName(),
-        Boolean.class.getName(),
-        Integer.class.getName(),
-        Long.class.getName(),
-        BigDecimal.class.getName(),
-        String.class.getName(),
-        Instant.class.getName(),
-        Duration.class.getName(),
-        IsoDay.class.getName(),
-        InetSocketAddress.class.getName()
-    );
+  private static final ISortedSet<String> SUPPORTED_CLASS_NAMES = sortedSetOf(
+    Nothing.class.getName(),
+    Boolean.class.getName(),
+    Integer.class.getName(),
+    Long.class.getName(),
+    BigDecimal.class.getName(),
+    String.class.getName(),
+    Instant.class.getName(),
+    Duration.class.getName(),
+    IsoDay.class.getName(),
+    InetSocketAddress.class.getName()
+  );
 
+  @Override
+  public boolean isSupported(final Class<?> clazz) {
+    return clazz.isEnum() || SUPPORTED_CLASS_NAMES.contains(clazz.getName());
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public <T> ElementaryTypeHandler<T> getTypeHandler(final Class<T> clazz) {
+    AbstractElementaryTypeHandler<?> result;
+    if(clazz.isEnum()) result = new EnumType<>(clazz.asSubclass(Enum.class));
+    else if(clazz.equals(String.class)) result = new StringType();
+    else if(clazz.equals(Nothing.class)) result = new NothingType();
+    else if(clazz.equals(Boolean.class)) result = new BooleanType();
+    else if(clazz.equals(Integer.class)) result = new IntegerType();
+    else if(clazz.equals(int.class)) result = new IntegerType();
+    else if(clazz.equals(Long.class)) result = new LongType();
+    else if(clazz.equals(long.class)) result = new PrimitiveLongType();
+    else if(clazz.equals(BigDecimal.class)) result = new DecimalType();
+    else if(clazz.equals(Instant.class)) result = stringBasedType(Instant.class);
+    else if(clazz.equals(Date.class)) result = new DateType();
+    else if(clazz.equals(Duration.class)) result = new DurationType();
+    else if(clazz.equals(IsoDay.class)) result = stringBasedType(IsoDay.class);
+    else if(clazz.equals(InetSocketAddress.class)) result = new InetSocketAddressType();
+    else throw new UnsupportedOperationException(format("No handler for {}.", clazz));
+    return (ElementaryTypeHandler<T>) result;
+  }
+
+  private static <T> AbstractElementaryTypeHandler<T> stringBasedType(final Class<T> parseable) {
+    final Method method = call(()->parseable.getMethod("parse", CharSequence.class));
+    final Function<? super String,T> constructor = s->call(()->parseable.cast(method.invoke(null, s)));
+    return stringBasedType(constructor , Optional.empty());
+  }
+
+  @SuppressWarnings("unused")
+  private static <T> AbstractElementaryTypeHandler<T> stringBasedType(final Function<? super String,T> constructor) {
+    return stringBasedType(constructor, Optional.empty());
+  }
+
+  private static <T> AbstractElementaryTypeHandler<T> stringBasedType(
+    final Function<? super String,T> constructor, final Optional<T> defaultValue
+  ) {
+    return new AbstractElementaryTypeHandler<T>() {
+      @Override
+      public T fromJson(final JsonNode json) {
+        return constructor.apply(json.asString());
+      }
+      @Override
+      public Optional<T> defaultValue() {
+        return defaultValue;
+      }
+    };
+  }
+
+  private static class EnumType<E extends Enum<E>> extends AbstractElementaryTypeHandler<E> {
+    private final Class<E> enumClass;
+    private EnumType(final Class<E> enumClass) {
+      this.enumClass = enumClass;
+    }
     @Override
-    public boolean isSupported(final Class<?> clazz) {
-        return SUPPORTED_CLASS_NAMES.contains(clazz.getName());
+    public E fromJson(final JsonNode json) {
+      return Enum.valueOf(enumClass, json.asString());
     }
-
-    @SuppressWarnings("unchecked")
     @Override
-    public <T> ElementaryTypeHandler<T> getTypeHandler(final Class<T> clazz) {
-        AbstractElementaryTypeHandler<?> result;
-        if(clazz.equals(String.class)) result = new StringType();
-        else if(clazz.equals(Nothing.class)) result = new NothingType();
-        else if(clazz.equals(Boolean.class)) result = new BooleanType();
-        else if(clazz.equals(Integer.class)) result = new IntegerType();
-        else if(clazz.equals(int.class)) result = new IntegerType();
-        else if(clazz.equals(Long.class)) result = new LongType();
-        else if(clazz.equals(long.class)) result = new PrimitiveLongType();
-        else if(clazz.equals(BigDecimal.class)) result = new DecimalType();
-        else if(clazz.equals(Instant.class)) result = stringBasedType(Instant.class);
-        else if(clazz.equals(Date.class)) result = new DateType();
-        else if(clazz.equals(Duration.class)) result = new DurationType();
-        else if(clazz.equals(IsoDay.class)) result = stringBasedType(IsoDay.class);
-        else if(clazz.equals(InetSocketAddress.class)) result = new InetSocketAddressType();
-        else throw new UnsupportedOperationException(format("No handler for {}.", clazz));
-        return (ElementaryTypeHandler<T>) result;
+    public Optional<E> defaultValue() {
+      return Optional.empty();
     }
-
-    private static <T> AbstractElementaryTypeHandler<T> stringBasedType(final Class<T> parseable) {
-      final Method method = call(()->parseable.getMethod("parse", CharSequence.class));
-      final Function<? super String,T> constructor = s->call(()->parseable.cast(method.invoke(null, s)));
-      return stringBasedType(constructor , Optional.empty());
+    @Override
+    public JsonNode toJson(final E enm, final JsonFactory jf) {
+      return jf.primitive(enm.name());
     }
+  }
 
-    @SuppressWarnings("unused")
-    private static <T> AbstractElementaryTypeHandler<T> stringBasedType(final Function<? super String,T> constructor) {
-      return stringBasedType(constructor, Optional.empty());
+  private static class StringType extends AbstractElementaryTypeHandler<String> {
+    private static final Optional<String> EMPTY = Optional.of("".intern());
+    @Override
+    public String fromJson(final JsonNode json) {
+      return json.asString();
     }
-
-    private static <T> AbstractElementaryTypeHandler<T> stringBasedType(
-        final Function<? super String,T> constructor, final Optional<T> defaultValue
-      ) {
-      return new AbstractElementaryTypeHandler<T>() {
-        @Override
-        public T fromJson(final JsonNode json) {
-          return constructor.apply(json.asString());
-        }
-        @Override
-        public Optional<T> defaultValue() {
-          return defaultValue;
-        }
-      };
+    @Override
+    public Optional<String> defaultValue() {
+      return EMPTY;
     }
+  }
 
-    private static class StringType extends AbstractElementaryTypeHandler<String> {
-        private static final Optional<String> EMPTY = Optional.of("".intern());
-        @Override
-        public String fromJson(final JsonNode json) {
-          return json.asString();
-        }
-        @Override
-        public Optional<String> defaultValue() {
-          return EMPTY;
-        }
+  private static class NothingType extends AbstractElementaryTypeHandler<Nothing> {
+    private static final Optional<Nothing> DEF = Optional.of(Nothing.INSTANCE);
+    @Override
+    public Nothing fromJson(final JsonNode json) {
+      json.asNull();
+      return Nothing.INSTANCE;
     }
-
-    private static class NothingType extends AbstractElementaryTypeHandler<Nothing> {
-      private static final Optional<Nothing> DEF = Optional.of(Nothing.INSTANCE);
-      @Override
-      public Nothing fromJson(final JsonNode json) {
-        json.asNull();
-        return Nothing.INSTANCE;
-      }
-      @Override
-      public JsonNull toJson(final Nothing object, final JsonFactory jf) {
-        return jf.jsonNull();
-      }
-      @Override
-      public Optional<Nothing> defaultValue() {
-        return DEF;
-      }
-      @Override
-      public JsonNodeType jsonNodeType() {
-        return JsonNodeType.NULL;
-      }
+    @Override
+    public JsonNull toJson(final Nothing object, final JsonFactory jf) {
+      return jf.jsonNull();
     }
-
-    private static class BooleanType extends AbstractElementaryTypeHandler<Boolean> {
-      private static final Optional<Boolean> FALSE = Optional.of(false);
-      @Override
-      public Boolean fromJson(final JsonNode json) {
-        return json.asBoolean();
-      }
-      @Override
-      public JsonBoolean toJson(final Boolean b, final JsonFactory jf) {
-        return jf.primitive(b);
-      }
-      @Override
-      public Optional<Boolean> defaultValue() {
-        return FALSE;
-      }
-      @Override
-      public JsonNodeType jsonNodeType() {
-        return JsonNodeType.BOOLEAN;
-      }
+    @Override
+    public Optional<Nothing> defaultValue() {
+      return DEF;
     }
-
-    private static class IntegerType extends AbstractElementaryTypeHandler<Integer> {
-      private static final Optional<Integer> ZERO = Optional.of(0);
-      @Override
-      public Integer fromJson(final JsonNode json) {
-        return json.asNumber().intValueExact();
-      }
-      @Override
-      public JsonNumber toJson(final Integer i, final JsonFactory jf) {
-        return jf.primitive(i);
-      }
-      @Override
-      public Optional<Integer> defaultValue() {
-        return ZERO;
-      }
-      @Override
-      public JsonNodeType jsonNodeType() {
-        return JsonNodeType.NUMBER;
-      }
+    @Override
+    public JsonNodeType jsonNodeType() {
+      return JsonNodeType.NULL;
     }
+  }
 
-    private static class LongType extends AbstractElementaryTypeHandler<Long> {
-      private static final Optional<Long> ZERO = Optional.of(0l);
-      @Override
-      public Long fromJson(final JsonNode json) {
-        return json.asNumber().longValueExact();
-      }
-      @Override
-      public JsonNumber toJson(final Long i, final JsonFactory jf) {
-        return jf.primitive(i);
-      }
-      @Override
-      public Optional<Long> defaultValue() {
-        return ZERO;
-      }
-      @Override
-      public JsonNodeType jsonNodeType() {
-        return JsonNodeType.NUMBER;
-      }
+  private static class BooleanType extends AbstractElementaryTypeHandler<Boolean> {
+    private static final Optional<Boolean> FALSE = Optional.of(false);
+    @Override
+    public Boolean fromJson(final JsonNode json) {
+      return json.asBoolean();
     }
-
-    private static class PrimitiveLongType extends LongType {
-        @Override
-        public Long cast(final Class<Long> clazz, final Object object) {
-            return (Long) object;
-        }
-      }
-
-    private static class DecimalType extends AbstractElementaryTypeHandler<BigDecimal> {
-      private static final Optional<BigDecimal> ZERO = Optional.of(BigDecimal.ZERO);
-      @Override
-      public BigDecimal fromJson(final JsonNode json) {
-        return json.asNumber();
-      }
-      @Override
-      public JsonNumber toJson(final BigDecimal dec, final JsonFactory jf) {
-        return jf.primitive(dec);
-      }
-      @Override
-      public Optional<BigDecimal> defaultValue() {
-        return ZERO;
-      }
-      @Override
-      public JsonNodeType jsonNodeType() {
-        return JsonNodeType.NUMBER;
-      }
+    @Override
+    public JsonBoolean toJson(final Boolean b, final JsonFactory jf) {
+      return jf.primitive(b);
     }
-
-    private static class DateType extends AbstractElementaryTypeHandler<Date> {
-        @Override
-        public Date fromJson(final JsonNode json) {
-          if(json instanceof JsonNumber) {
-              return new Date(json.asNumber().longValueExact());
-          }
-          else return Date.from(Instant.parse(json.asString()));
-        }
-        @Override
-        public JsonString toJson(final Date date, final JsonFactory jf) {
-          return jf.primitive(date.toInstant().toString());
-        }
-        @Override
-        public Optional<Date> defaultValue() {
-          return Optional.empty();
-        }
-        @Override
-        public JsonNodeType jsonNodeType() {
-          return JsonNodeType.STRING;
-        }
-      }
-
-    private static class DurationType extends AbstractElementaryTypeHandler<Duration> {
-        private static final Optional<Duration> ZERO = Optional.of(Duration.ZERO);
-        @Override
-        public Duration fromJson(final JsonNode json) {
-          if(json instanceof JsonNumber) {
-              return Duration.ofMillis(json.asNumber().longValueExact());
-          }
-          else return Duration.parse(json.asString());
-        }
-        @Override
-        public JsonString toJson(final Duration duration, final JsonFactory jf) {
-          return jf.primitive(duration.toString());
-        }
-        @Override
-        public Optional<Duration> defaultValue() {
-          return ZERO;
-        }
-        @Override
-        public JsonNodeType jsonNodeType() {
-          return JsonNodeType.STRING;
-        }
-      }
-
-    private static class InetSocketAddressType extends AbstractElementaryTypeHandler<InetSocketAddress>{
-      @Override
-      public InetSocketAddress fromJson(final JsonNode json) {
-        final String colonNotation = json.asString();
-        final int i = colonNotation.lastIndexOf(':');
-        verify(i!=-1);
-        final String host = colonNotation.substring(0, i);
-        final int port = Integer.parseInt(colonNotation.substring(i+1));
-        return InetSocketAddress.createUnresolved(host, port);
-      }
-      @Override
-      public JsonString toJson(final InetSocketAddress socket, final JsonFactory jf) {
-        return jf.primitive(socket.getHostString()+":"+socket.getPort());
-      }
+    @Override
+    public Optional<Boolean> defaultValue() {
+      return FALSE;
     }
+    @Override
+    public JsonNodeType jsonNodeType() {
+      return JsonNodeType.BOOLEAN;
+    }
+  }
+
+  private static class IntegerType extends AbstractElementaryTypeHandler<Integer> {
+    private static final Optional<Integer> ZERO = Optional.of(0);
+    @Override
+    public Integer fromJson(final JsonNode json) {
+      return json.asNumber().intValueExact();
+    }
+    @Override
+    public JsonNumber toJson(final Integer i, final JsonFactory jf) {
+      return jf.primitive(i);
+    }
+    @Override
+    public Optional<Integer> defaultValue() {
+      return ZERO;
+    }
+    @Override
+    public JsonNodeType jsonNodeType() {
+      return JsonNodeType.NUMBER;
+    }
+  }
+
+  private static class LongType extends AbstractElementaryTypeHandler<Long> {
+    private static final Optional<Long> ZERO = Optional.of(0l);
+    @Override
+    public Long fromJson(final JsonNode json) {
+      return json.asNumber().longValueExact();
+    }
+    @Override
+    public JsonNumber toJson(final Long i, final JsonFactory jf) {
+      return jf.primitive(i);
+    }
+    @Override
+    public Optional<Long> defaultValue() {
+      return ZERO;
+    }
+    @Override
+    public JsonNodeType jsonNodeType() {
+      return JsonNodeType.NUMBER;
+    }
+  }
+
+  private static class PrimitiveLongType extends LongType {
+    @Override
+    public Long cast(final Class<Long> clazz, final Object object) {
+        return (Long) object;
+    }
+  }
+
+  private static class DecimalType extends AbstractElementaryTypeHandler<BigDecimal> {
+    private static final Optional<BigDecimal> ZERO = Optional.of(BigDecimal.ZERO);
+    @Override
+    public BigDecimal fromJson(final JsonNode json) {
+      return json.asNumber();
+    }
+    @Override
+    public JsonNumber toJson(final BigDecimal dec, final JsonFactory jf) {
+      return jf.primitive(dec);
+    }
+    @Override
+    public Optional<BigDecimal> defaultValue() {
+      return ZERO;
+    }
+    @Override
+    public JsonNodeType jsonNodeType() {
+      return JsonNodeType.NUMBER;
+    }
+  }
+
+  private static class DateType extends AbstractElementaryTypeHandler<Date> {
+    @Override
+    public Date fromJson(final JsonNode json) {
+      if(json instanceof JsonNumber) {
+          return new Date(json.asNumber().longValueExact());
+      }
+      else return Date.from(Instant.parse(json.asString()));
+    }
+    @Override
+    public JsonString toJson(final Date date, final JsonFactory jf) {
+      return jf.primitive(date.toInstant().toString());
+    }
+    @Override
+    public Optional<Date> defaultValue() {
+      return Optional.empty();
+    }
+    @Override
+    public JsonNodeType jsonNodeType() {
+      return JsonNodeType.STRING;
+    }
+  }
+
+  private static class DurationType extends AbstractElementaryTypeHandler<Duration> {
+    private static final Optional<Duration> ZERO = Optional.of(Duration.ZERO);
+    @Override
+    public Duration fromJson(final JsonNode json) {
+      if(json instanceof JsonNumber) {
+          return Duration.ofMillis(json.asNumber().longValueExact());
+      }
+      else return Duration.parse(json.asString());
+    }
+    @Override
+    public JsonString toJson(final Duration duration, final JsonFactory jf) {
+      return jf.primitive(duration.toString());
+    }
+    @Override
+    public Optional<Duration> defaultValue() {
+      return ZERO;
+    }
+    @Override
+    public JsonNodeType jsonNodeType() {
+      return JsonNodeType.STRING;
+    }
+  }
+
+  private static class InetSocketAddressType extends AbstractElementaryTypeHandler<InetSocketAddress>{
+    @Override
+    public InetSocketAddress fromJson(final JsonNode json) {
+      final String colonNotation = json.asString();
+      final int i = colonNotation.lastIndexOf(':');
+      verify(i!=-1);
+      final String host = colonNotation.substring(0, i);
+      final int port = Integer.parseInt(colonNotation.substring(i+1));
+      return InetSocketAddress.createUnresolved(host, port);
+    }
+    @Override
+    public JsonString toJson(final InetSocketAddress socket, final JsonFactory jf) {
+      return jf.primitive(socket.getHostString()+":"+socket.getPort());
+    }
+  }
 
 }

@@ -31,7 +31,6 @@ import static com.github.gv2011.util.CollectionUtils.single;
 import static com.github.gv2011.util.CollectionUtils.stream;
 import static com.github.gv2011.util.CollectionUtils.toISet;
 import static com.github.gv2011.util.CollectionUtils.toOptional;
-import static com.github.gv2011.util.Verify.verify;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.Method;
@@ -46,7 +45,6 @@ import org.slf4j.Logger;
 import com.github.gv2011.util.ReflectionUtils;
 import com.github.gv2011.util.ServiceLoaderUtils;
 import com.github.gv2011.util.XStream;
-import com.github.gv2011.util.beans.Abstract;
 import com.github.gv2011.util.beans.ElementaryTypeHandlerFactory;
 import com.github.gv2011.util.beans.Type;
 import com.github.gv2011.util.beans.TypeRegistry;
@@ -91,6 +89,8 @@ public class DefaultTypeRegistry implements TypeRegistry{
 
   private final AbstractType<String> stringType;
 
+  final AnnotationHandler annotationHandler = new DefaultAnnotationHandler();
+
   public DefaultTypeRegistry() {
       this(ServiceLoaderUtils.loadService(JsonFactory.class));
   }
@@ -110,8 +110,8 @@ public class DefaultTypeRegistry implements TypeRegistry{
       return (DefaultBeanType<T>) type(beanClass);
   }
 
-  <T> AbstractBeanType<T>  abstractBeanType(final Class<T> abstractBeanClass) {
-      return (AbstractBeanType<T>) type(abstractBeanClass);
+  <T> PolymorphicAbstractBeanType<T>  abstractBeanType(final Class<T> abstractBeanClass) {
+      return (PolymorphicAbstractBeanType<T>) type(abstractBeanClass);
   }
 
   public <E> AbstractElementaryType<E> elementaryType(final Class<E> elementaryClass) {
@@ -175,27 +175,27 @@ public class DefaultTypeRegistry implements TypeRegistry{
     if(isCollectionType(clazz)) throw new UnsupportedOperationException();
     else if(isTypedStringType(clazz)) return createTypedStringType(clazz);
     else if(isBeanClass(clazz)) return createBeanType(clazz);
-    else if(isAbstractBeanClass(clazz)) return createAbstractBeanType(clazz);
+    else if(annotationHandler.isPolymorphicRoot(clazz)) return createAbstractBeanType(clazz);
     else return createElementaryType(clazz);
   }
 
   private <T> DefaultBeanType<T> createBeanType(final Class<T> clazz) {
-    assert clazz.getAnnotation(Abstract.class)==null;
+    assert !annotationHandler.declaredAsAbstract(clazz);
     final Optional<Class<?>> superBean = ReflectionUtils.getAllInterfaces(clazz).parallelStream()
-      .filter(i->i.getAnnotation(Abstract.class)!=null).findAny()
+      .filter(annotationHandler::isPolymorphicRoot).findAny()
     ;
     if(!superBean.isPresent()) return new DefaultBeanType<>(clazz, this);
     else{
-      return new PolymorphicBeanType<>(clazz, this,
+      return new PolymorphicConcreteBeanType<>(clazz, this,
         abstractBeanType(superBean.get()).hasDefaultTypeResolver()
-        ? AbstractBeanType.TYPE_PROPERTY
+        ? PolymorphicAbstractBeanType.TYPE_PROPERTY
         : ""
       );
     }
   }
 
-  private <T> AbstractBeanType<T> createAbstractBeanType(final Class<T> clazz) {
-    return new AbstractBeanType<>(this, clazz);
+  private <T> PolymorphicAbstractBeanType<T> createAbstractBeanType(final Class<T> clazz) {
+    return new PolymorphicAbstractBeanType<>(this, clazz);
   }
 
   private boolean isTypedStringType(final Class<?> clazz) {
@@ -239,7 +239,7 @@ public class DefaultTypeRegistry implements TypeRegistry{
         notBeanReason = "not an interface";
     else if(clazz.getTypeParameters().length!=0)
         notBeanReason = "parameterized class";
-    else if(clazz.getAnnotation(Abstract.class)!=null)
+    else if(annotationHandler.declaredAsAbstract(clazz))
         notBeanReason = "annotated as abstract";
     else if(Arrays.stream(clazz.getInterfaces()).anyMatch(this::isBeanClass))
         notBeanReason = "is subclass of a bean class";
@@ -257,15 +257,6 @@ public class DefaultTypeRegistry implements TypeRegistry{
         return false;
     }
   }
-
-  private boolean isAbstractBeanClass(final Class<?> clazz) {
-    if(clazz.getAnnotation(Abstract.class) == null) return false;
-    else{
-      verify(clazz.isInterface());
-      return true;
-    }
-  }
-
 
   private boolean isPropertyMethod(final Method m) {
     assert m.getDeclaringClass().isInterface();
@@ -316,7 +307,7 @@ public class DefaultTypeRegistry implements TypeRegistry{
     return
       isCollectionType(clazz) ||
       isBeanClass(clazz) ||
-      isAbstractBeanClass(clazz) ||
+      annotationHandler.isPolymorphicRoot(clazz) ||
       defaultFactory.isSupported(clazz) ||
       additionalTypeHandlerFactories.parallelStream().anyMatch(f->f.isSupported(clazz))
     ;

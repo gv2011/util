@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,19 +35,16 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 
-import com.github.gv2011.util.beans.DefaultValue;
-import com.github.gv2011.util.beans.FixedValue;
-import com.github.gv2011.util.beans.TypeName;
 
 
-final class PolymorphicBeanType<T> extends DefaultBeanType<T> {
+final class PolymorphicConcreteBeanType<T> extends DefaultBeanType<T> {
 
   @SuppressWarnings("unused")
-  private static final Logger LOG = getLogger(PolymorphicBeanType.class);
+  private static final Logger LOG = getLogger(PolymorphicConcreteBeanType.class);
 
   private final String typePropertyName;
 
-  PolymorphicBeanType(final Class<T> beanClass, final DefaultTypeRegistry registry, final String typePropertyName) {
+  PolymorphicConcreteBeanType(final Class<T> beanClass, final DefaultTypeRegistry registry, final String typePropertyName) {
     super(beanClass, registry);
     this.typePropertyName = typePropertyName;
   }
@@ -56,13 +53,13 @@ final class PolymorphicBeanType<T> extends DefaultBeanType<T> {
   <V> PropertyImp<V> createProperty(final Method m, final AbstractType<V> type) {
     if(!m.getName().equals(typePropertyName)) return super.createProperty(m, type);
     else{
-      verify(m.getAnnotation(DefaultValue.class)==null);
+      verify(!registry.annotationHandler.defaultValue(m).isPresent());
       final V fixedValue = type.parse(parseTolerant(
         type, registry.jf,
         (
           atMostOne(
-            Optional.ofNullable(clazz.getAnnotation(TypeName.class)).map(TypeName::value),
-            Optional.ofNullable(m.getAnnotation(FixedValue.class)).map(FixedValue::value)
+            registry.annotationHandler.typeName(clazz),
+            registry.annotationHandler.fixedValue(m)
           )
           .orElseGet(()->clazz.getSimpleName())
         )

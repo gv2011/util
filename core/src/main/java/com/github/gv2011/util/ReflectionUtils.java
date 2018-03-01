@@ -1,5 +1,7 @@
 package com.github.gv2011.util;
 
+import static com.github.gv2011.util.CollectionUtils.copyToISet;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -47,7 +49,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -143,7 +144,7 @@ public final class ReflectionUtils {
     return null;
   }
 
-  public static Set<Class<?>> getAllInterfaces(final Class<?> clazz){
+  public static ISet<Class<?>> getAllInterfaces(final Class<?> clazz){
     final Set<Type> types = new HashSet<>();
     collectAllInterfaces(types, clazz);
     return types.stream()
@@ -156,10 +157,10 @@ public final class ReflectionUtils {
     ;
   }
 
-  public static Set<Type> getAllPInterfaces(final Class<?> clazz){
+  public static ISet<Type> getAllPInterfaces(final Class<?> clazz){
     final Set<Type> result = new HashSet<>();
     collectAllInterfaces(result, clazz);
-    return Collections.unmodifiableSet(result);
+    return copyToISet(result);
   }
 
   private static void collectAllInterfaces(final Set<Type> result, final Type type){

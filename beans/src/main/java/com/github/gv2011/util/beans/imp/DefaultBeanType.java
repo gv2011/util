@@ -49,8 +49,6 @@ import com.github.gv2011.util.ReflectionUtils;
 import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.beans.BeanBuilder;
 import com.github.gv2011.util.beans.BeanType;
-import com.github.gv2011.util.beans.DefaultValue;
-import com.github.gv2011.util.beans.FixedValue;
 import com.github.gv2011.util.beans.Partial;
 import com.github.gv2011.util.beans.Property;
 import com.github.gv2011.util.icol.ISet;
@@ -164,12 +162,12 @@ class DefaultBeanType<T> extends AbstractType<T> implements BeanType<T> {
 
   <V> PropertyImp<V> createProperty(final Method m, final AbstractType<V> type) {
     final Optional<V> defaultValue =
-      Optional.ofNullable(m.getAnnotation(DefaultValue.class))
-      .map(a->type.parse(parseTolerant(type, registry.jf, a.value())))
+      registry.annotationHandler.defaultValue(m)
+      .map(v->type.parse(parseTolerant(type, registry.jf, v)))
     ;
     final Optional<V> fixedValue =
-      Optional.ofNullable(m.getAnnotation(FixedValue.class))
-      .map(a->type.parse(parseTolerant(type, registry.jf, a.value())))
+      registry.annotationHandler.fixedValue(m)
+      .map(v->type.parse(parseTolerant(type, registry.jf, v)))
     ;
     verify(!(defaultValue.isPresent() && fixedValue.isPresent()));
     return new PropertyImp<>(m.getName(), type, defaultValue, fixedValue);

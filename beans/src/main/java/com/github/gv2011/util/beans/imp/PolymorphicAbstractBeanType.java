@@ -25,9 +25,9 @@ package com.github.gv2011.util.beans.imp;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.util.CollectionUtils.stream;
+
 import static com.github.gv2011.util.CollectionUtils.toIMap;
-import static com.github.gv2011.util.Verify.notNull;
+import static com.github.gv2011.util.CollectionUtils.toSingle;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
 
@@ -35,28 +35,29 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 import com.github.gv2011.util.ReflectionUtils;
-import com.github.gv2011.util.beans.Abstract;
+import com.github.gv2011.util.XStream;
 import com.github.gv2011.util.beans.BeanBuilder;
 import com.github.gv2011.util.beans.Type;
 import com.github.gv2011.util.beans.TypeResolver;
+import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.IMap;
 import com.github.gv2011.util.json.JsonNode;
 
-class AbstractBeanType<B> extends AbstractType<B>{
+class PolymorphicAbstractBeanType<B> extends AbstractType<B>{
 
   static final String TYPE_PROPERTY = "type";
 
   private final TypeResolver<? super B> typeResolver;
   private final DefaultTypeRegistry typeRegistry;
-  private final AbstractBeanType<? super B> rootType;
+  private final PolymorphicAbstractBeanType<? super B> rootType;
 
   @SuppressWarnings("unchecked")
-  AbstractBeanType(final DefaultTypeRegistry typeRegistry, final Class<B> clazz) {
+  PolymorphicAbstractBeanType(final DefaultTypeRegistry typeRegistry, final Class<B> clazz) {
     super(typeRegistry.jf, clazz);
     this.typeRegistry = typeRegistry;
-    final Abstract annotation = notNull(clazz.getAnnotation(Abstract.class));
+    //final Abstract annotation = notNull(clazz.getAnnotation(Abstract.class));
     checkTypeMethod(clazz, typeRegistry);
-    final Optional<AbstractBeanType<? super B>> optRootType = rootType(typeRegistry,clazz);
+    final Optional<PolymorphicAbstractBeanType<? super B>> optRootType = rootType(typeRegistry,clazz);
     if(optRootType.isPresent()){
       rootType = optRootType.get();
       typeResolver = rootType.typeResolver;
@@ -64,11 +65,11 @@ class AbstractBeanType<B> extends AbstractType<B>{
     else{
       rootType = this;
       @SuppressWarnings("rawtypes")
-      final Class<? extends TypeResolver> tr = annotation.typeResolver();
-      typeResolver = tr.equals(TypeResolver.class)
-        ? defaultTypeResolver(annotation.subClasses())
-        : call(tr::newInstance)
+      final Optional<Class<? extends TypeResolver>> typeResolverClass =
+        typeRegistry.annotationHandler.typeResolver(clazz)
       ;
+      if(typeResolverClass.isPresent()) typeResolver = call(typeResolverClass.get()::newInstance);
+      else typeResolver = defaultTypeResolver(typeRegistry.annotationHandler.subClasses(clazz));
     }
   }
 
@@ -79,21 +80,20 @@ class AbstractBeanType<B> extends AbstractType<B>{
   }
 
   @SuppressWarnings("unchecked")
-  private Optional<AbstractBeanType<? super B>> rootType(
+  private Optional<PolymorphicAbstractBeanType<? super B>> rootType(
     final DefaultTypeRegistry typeRegistry, final Class<B> clazz
   ) {
-    Class<?> rootClass = clazz;
-    for(final Class<?> i: ReflectionUtils.getAllInterfaces(clazz)){
-      if(i.getAnnotation(Abstract.class)!=null){
-        if(i.isAssignableFrom(rootClass)) rootClass = i;
-      }
-    }
+    final Class<?> rootClass =
+      ReflectionUtils.getAllInterfaces(clazz).stream().concat(XStream.of(clazz))
+      .filter(typeRegistry.annotationHandler::isPolymorphicRoot)
+      .collect(toSingle())
+    ;
     if(rootClass.equals(clazz)) return Optional.empty();
-    else return Optional.of((AbstractBeanType<? super B>)typeRegistry.abstractBeanType(rootClass));
+    else return Optional.of((PolymorphicAbstractBeanType<? super B>)typeRegistry.abstractBeanType(rootClass));
   }
 
-  private TypeResolver<B> defaultTypeResolver(final Class<?>[] classes) {
-    final IMap<String, Class<? extends B>> subTypes = stream(classes).collect(toIMap(
+  private TypeResolver<B> defaultTypeResolver(final IList<Class<?>> classes) {
+    final IMap<String, Class<? extends B>> subTypes = classes.stream().collect(toIMap(
       Class::getSimpleName,
       c->c.asSubclass(clazz)
     ));

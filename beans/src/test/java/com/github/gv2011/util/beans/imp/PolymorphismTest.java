@@ -29,6 +29,8 @@ package com.github.gv2011.util.beans.imp;
 import static com.github.gv2011.testutil.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.util.Optional;
+
 import org.junit.Test;
 
 import com.github.gv2011.util.beans.Abstract;
@@ -38,8 +40,17 @@ import com.github.gv2011.util.beans.TypeName;
 
 public class PolymorphismTest {
 
+  @Abstract
+  public static interface Sized{
+    int size();
+  }
+
+  public static interface Coloured{
+    String colour();
+  }
+
   @Abstract(subClasses={BlackPea.class, ChickPea.class})
-  public static interface Pea{
+  public static interface Pea extends Sized, Coloured{
     String type();
   }
 
@@ -64,11 +75,11 @@ public class PolymorphismTest {
   }
 
   @Test
-  public void testStringProperty() {
+  public void test() {
     final DefaultTypeRegistry reg = new DefaultTypeRegistry();
     reg.beanType(Pot.class);
 
-    final AbstractBeanType<Pea> peaType = reg.abstractBeanType(Pea.class);
+    final PolymorphicAbstractBeanType<Pea> peaType = reg.abstractBeanType(Pea.class);
     assertThat(peaType.isAbstractBean(), is(true));
     assertThat(peaType.isPolymorphic(), is(true));
 
@@ -79,6 +90,10 @@ public class PolymorphismTest {
     final BlackPea blackPea = reg.createBuilder(BlackPea.class).build();
     assertThat(blackPea.type(), is(BlackPea.class.getSimpleName()));
 
+    final DefaultBeanType<ChickPea> chickPeaType = reg.beanType(ChickPea.class);
+    assertThat(chickPeaType.getClass(), is(PolymorphicConcreteBeanType.class));
+    final PropertyImp<String> typeProp = chickPeaType.getProperty(ChickPea::type);
+    assertThat(typeProp.fixedValue(), is(Optional.of("chicks")));
     final ChickPea chickPea = reg.createBuilder(ChickPea.class).build();
     assertThat(chickPea.type(), is("chicks"));
 
