@@ -43,21 +43,21 @@ import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.IMap;
 import com.github.gv2011.util.json.JsonNode;
 
-class PolymorphicAbstractBeanType<B> extends AbstractType<B>{
+class PolymorphicAbstractBeanRootType<B> extends AbstractType<B>{
 
   static final String TYPE_PROPERTY = "type";
 
   private final TypeResolver<? super B> typeResolver;
   private final DefaultTypeRegistry typeRegistry;
-  private final PolymorphicAbstractBeanType<? super B> rootType;
+  private final PolymorphicAbstractBeanRootType<? super B> rootType;
 
   @SuppressWarnings("unchecked")
-  PolymorphicAbstractBeanType(final DefaultTypeRegistry typeRegistry, final Class<B> clazz) {
+  PolymorphicAbstractBeanRootType(final DefaultTypeRegistry typeRegistry, final Class<B> clazz) {
     super(typeRegistry.jf, clazz);
     this.typeRegistry = typeRegistry;
     //final Abstract annotation = notNull(clazz.getAnnotation(Abstract.class));
     checkTypeMethod(clazz, typeRegistry);
-    final Optional<PolymorphicAbstractBeanType<? super B>> optRootType = rootType(typeRegistry,clazz);
+    final Optional<PolymorphicAbstractBeanRootType<? super B>> optRootType = rootType(typeRegistry,clazz);
     if(optRootType.isPresent()){
       rootType = optRootType.get();
       typeResolver = rootType.typeResolver;
@@ -80,7 +80,7 @@ class PolymorphicAbstractBeanType<B> extends AbstractType<B>{
   }
 
   @SuppressWarnings("unchecked")
-  private Optional<PolymorphicAbstractBeanType<? super B>> rootType(
+  private Optional<PolymorphicAbstractBeanRootType<? super B>> rootType(
     final DefaultTypeRegistry typeRegistry, final Class<B> clazz
   ) {
     final Class<?> rootClass =
@@ -89,7 +89,7 @@ class PolymorphicAbstractBeanType<B> extends AbstractType<B>{
       .collect(toSingle())
     ;
     if(rootClass.equals(clazz)) return Optional.empty();
-    else return Optional.of((PolymorphicAbstractBeanType<? super B>)typeRegistry.abstractBeanType(rootClass));
+    else return Optional.of((PolymorphicAbstractBeanRootType<? super B>)typeRegistry.abstractBeanType(rootClass));
   }
 
   private TypeResolver<B> defaultTypeResolver(final IList<Class<?>> classes) {

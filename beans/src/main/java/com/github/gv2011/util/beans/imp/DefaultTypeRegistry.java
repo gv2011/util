@@ -110,8 +110,8 @@ public class DefaultTypeRegistry implements TypeRegistry{
       return (DefaultBeanType<T>) type(beanClass);
   }
 
-  <T> PolymorphicAbstractBeanType<T>  abstractBeanType(final Class<T> abstractBeanClass) {
-      return (PolymorphicAbstractBeanType<T>) type(abstractBeanClass);
+  <T> PolymorphicAbstractBeanRootType<T>  abstractBeanType(final Class<T> abstractBeanClass) {
+      return (PolymorphicAbstractBeanRootType<T>) type(abstractBeanClass);
   }
 
   public <E> AbstractElementaryType<E> elementaryType(final Class<E> elementaryClass) {
@@ -188,14 +188,14 @@ public class DefaultTypeRegistry implements TypeRegistry{
     else{
       return new PolymorphicConcreteBeanType<>(clazz, this,
         abstractBeanType(superBean.get()).hasDefaultTypeResolver()
-        ? PolymorphicAbstractBeanType.TYPE_PROPERTY
+        ? PolymorphicAbstractBeanRootType.TYPE_PROPERTY
         : ""
       );
     }
   }
 
-  private <T> PolymorphicAbstractBeanType<T> createAbstractBeanType(final Class<T> clazz) {
-    return new PolymorphicAbstractBeanType<>(this, clazz);
+  private <T> PolymorphicAbstractBeanRootType<T> createAbstractBeanType(final Class<T> clazz) {
+    return new PolymorphicAbstractBeanRootType<>(this, clazz);
   }
 
   private boolean isTypedStringType(final Class<?> clazz) {
