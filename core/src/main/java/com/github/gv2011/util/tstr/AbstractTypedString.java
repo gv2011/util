@@ -82,4 +82,19 @@ implements TypedString<T>{
     return COMPARATOR.compare(this, o);
   }
 
+    @Override
+    public int length() {
+        return canonical().length();
+    }
+
+@Override
+public char charAt(final int index) {
+    return canonical().charAt(index);
+}
+
+@Override
+public CharSequence subSequence(final int start, final int end) {
+    return canonical().subSequence(start, end);
+}
+
 }

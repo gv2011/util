@@ -108,6 +108,11 @@ final class SoftIndexImp<K,V> implements SoftIndex<K,V>{
     return result;
   }
 
+  @Override
+  public Optional<Optional<V>> getIfPresent(final K key) {
+    return Optional.ofNullable(index().get(key));
+  }
+
   private Optional<V> tryAddSync(final K key, final Map<K, Optional<V>> index) {
     synchronized(lock) {
       final Set<WeakReference<Pair<K, Optional<V>>>> set = data();

@@ -46,4 +46,6 @@ public @interface Abstract {
 
     @SuppressWarnings("rawtypes")
     Class<? extends TypeResolver> typeResolver() default TypeResolver.class;
+
+    Class<? extends TypeNameStrategy> typeNameStrategy() default TypeNameStrategy.class;
 }

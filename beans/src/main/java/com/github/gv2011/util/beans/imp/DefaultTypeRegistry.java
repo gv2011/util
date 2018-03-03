@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import com.github.gv2011.util.ReflectionUtils;
 import com.github.gv2011.util.ServiceLoaderUtils;
 import com.github.gv2011.util.XStream;
+import com.github.gv2011.util.beans.AnnotationHandler;
 import com.github.gv2011.util.beans.ElementaryTypeHandlerFactory;
 import com.github.gv2011.util.beans.Type;
 import com.github.gv2011.util.beans.TypeRegistry;
@@ -74,12 +75,13 @@ public class DefaultTypeRegistry implements TypeRegistry{
   private static final Logger LOG = getLogger(DefaultTypeRegistry.class);
 
   final JsonFactory jf;
+  final BeanFactory beanFactory = new BeanFactory();
 
   private final SoftIndex<Class<?>,AbstractType<?>> typeMap = createTypeMap();
 
   private SoftIndex<Class<?>, AbstractType<?>> createTypeMap() {
     return CacheUtils.softIndex(
-      c->Optional.of(createType(c)),
+      c->Optional.of(createType(c)), //TODO: cache info about not supported classes
       p->p.getValue().ifPresent(AbstractType::initialize)
     );
   }
@@ -92,81 +94,79 @@ public class DefaultTypeRegistry implements TypeRegistry{
   final AnnotationHandler annotationHandler = new DefaultAnnotationHandler();
 
   public DefaultTypeRegistry() {
-      this(ServiceLoaderUtils.loadService(JsonFactory.class));
+    this(ServiceLoaderUtils.loadService(JsonFactory.class));
   }
 
   public DefaultTypeRegistry(final JsonFactory jsonFactory) {
-      jf = jsonFactory;
-      final IList.Builder<ElementaryTypeHandlerFactory> b = listBuilder();
-      for(final ElementaryTypeHandlerFactory tf: ServiceLoader.load(ElementaryTypeHandlerFactory.class)) {
-          b.add(tf);
-      }
-      additionalTypeHandlerFactories = b.build();
-      stringType = type(String.class);
+    jf = jsonFactory;
+    final IList.Builder<ElementaryTypeHandlerFactory> b = listBuilder();
+    for(final ElementaryTypeHandlerFactory tf: ServiceLoader.load(ElementaryTypeHandlerFactory.class)) {
+      b.add(tf);
+    }
+    additionalTypeHandlerFactories = b.build();
+    stringType = type(String.class);
   }
 
   @Override
   public <T> DefaultBeanType<T> beanType(final Class<T> beanClass) {
-      return (DefaultBeanType<T>) type(beanClass);
+    return (DefaultBeanType<T>) type(beanClass);
   }
 
-  <T> PolymorphicAbstractBeanRootType<T>  abstractBeanType(final Class<T> abstractBeanClass) {
-      return (PolymorphicAbstractBeanRootType<T>) type(abstractBeanClass);
+  <T> AbstractPolymorphicBeanSupport<T> abstractBeanType(final Class<T> abstractBeanClass) {
+    return (AbstractPolymorphicBeanSupport<T>) type(abstractBeanClass);
   }
 
   public <E> AbstractElementaryType<E> elementaryType(final Class<E> elementaryClass) {
-      return (AbstractElementaryType<E>) type(elementaryClass);
+    return (AbstractElementaryType<E>) type(elementaryClass);
   }
-
 
   @SuppressWarnings("unchecked")
   public <T> AbstractType<T> type(final Class<T> clazz) {
     return (AbstractType<T>) typeMap.get(clazz);
   }
 
-
   @SuppressWarnings({ "unchecked", "rawtypes" })
   <T> AbstractType<T> type(final java.lang.reflect.Type genType) {
-      if(genType instanceof Class) return type((Class)genType);
-      else if(genType instanceof ParameterizedType) {
-          final ParameterizedType pType = (ParameterizedType)genType;
-          final Class rawType = (Class) pType.getRawType();
-          if(rawType.equals(ILIST)) {
-            return
-              (AbstractType<T>) type(single(pType.getActualTypeArguments()))
-              .collectionType(Structure.list())
-            ;
-          }
-          else if(rawType.equals(OPTIONAL)) {
-            return
-              (AbstractType<T>) type(single(pType.getActualTypeArguments()))
-              .collectionType(Structure.opt())
-            ;
-          }
-          else if(rawType.equals(ISET)) {
-            return
-              (AbstractType<T>) type(single(pType.getActualTypeArguments()))
-              .collectionType(Structure.set())
-            ;
-          }
-          else if(rawType.equals(ISORTEDSET)) {
-            return
-              (AbstractType<T>) type(single(pType.getActualTypeArguments()))
-              .collectionType(Structure.sortedSet())
-            ;
-          }
-          else if(rawType.equals(IMAP)||rawType.equals(ISORTEDMAP)) {
-            assert pType.getActualTypeArguments().length==2;
-            final AbstractType keyType = type(pType.getActualTypeArguments()[0]);
-            final AbstractType valueType = type(pType.getActualTypeArguments()[1]);
-            if(keyType.equals(stringType)) {
-              return keyType.mapType(Structure.stringMap(), valueType);
-            }
-            else return keyType.mapType(Structure.map(), valueType);
-          }
-          else throw new UnsupportedOperationException();
+    if(genType instanceof Class) return type((Class)genType);
+    else if(genType instanceof ParameterizedType) {
+      final ParameterizedType pType = (ParameterizedType)genType;
+      final Class rawType = (Class) pType.getRawType();
+      if(rawType.equals(ILIST)) {
+        return
+          (AbstractType<T>) type(single(pType.getActualTypeArguments()))
+          .collectionType(Structure.list())
+        ;
       }
-      else throw new UnsupportedOperationException(genType.toString());
+      else if(rawType.equals(OPTIONAL)) {
+        return
+          (AbstractType<T>) type(single(pType.getActualTypeArguments()))
+          .collectionType(Structure.opt())
+        ;
+      }
+      else if(rawType.equals(ISET)) {
+        return
+          (AbstractType<T>) type(single(pType.getActualTypeArguments()))
+          .collectionType(Structure.set())
+        ;
+      }
+      else if(rawType.equals(ISORTEDSET)) {
+        return
+          (AbstractType<T>) type(single(pType.getActualTypeArguments()))
+          .collectionType(Structure.sortedSet())
+        ;
+      }
+      else if(rawType.equals(IMAP)||rawType.equals(ISORTEDMAP)) {
+        assert pType.getActualTypeArguments().length==2;
+        final AbstractType keyType = type(pType.getActualTypeArguments()[0]);
+        final AbstractType valueType = type(pType.getActualTypeArguments()[1]);
+        if(keyType.equals(stringType)) {
+          return keyType.mapType(Structure.stringMap(), valueType);
+        }
+        else return keyType.mapType(Structure.map(), valueType);
+      }
+      else throw new UnsupportedOperationException();
+    }
+    else throw new UnsupportedOperationException(genType.toString());
   }
 
   @SuppressWarnings("unchecked")
@@ -174,24 +174,9 @@ public class DefaultTypeRegistry implements TypeRegistry{
     LOG.debug("Creating type for {}.", clazz);
     if(isCollectionType(clazz)) throw new UnsupportedOperationException();
     else if(isTypedStringType(clazz)) return createTypedStringType(clazz);
-    else if(isBeanClass(clazz)) return createBeanType(clazz);
+    else if(beanFactory.isBeanClass(clazz)) return beanFactory.createBeanType(clazz);
     else if(annotationHandler.isPolymorphicRoot(clazz)) return createAbstractBeanType(clazz);
     else return createElementaryType(clazz);
-  }
-
-  private <T> DefaultBeanType<T> createBeanType(final Class<T> clazz) {
-    assert !annotationHandler.declaredAsAbstract(clazz);
-    final Optional<Class<?>> superBean = ReflectionUtils.getAllInterfaces(clazz).parallelStream()
-      .filter(annotationHandler::isPolymorphicRoot).findAny()
-    ;
-    if(!superBean.isPresent()) return new DefaultBeanType<>(clazz, this);
-    else{
-      return new PolymorphicConcreteBeanType<>(clazz, this,
-        abstractBeanType(superBean.get()).hasDefaultTypeResolver()
-        ? PolymorphicAbstractBeanRootType.TYPE_PROPERTY
-        : ""
-      );
-    }
   }
 
   private <T> PolymorphicAbstractBeanRootType<T> createAbstractBeanType(final Class<T> clazz) {
@@ -204,15 +189,6 @@ public class DefaultTypeRegistry implements TypeRegistry{
 
   private boolean isCollectionType(final Class<?> clazz) {
     return COLLECTION_CLASSES.contains(clazz);
-  }
-
-  @SuppressWarnings("unused")
-  private boolean isElementaryType(final Class<?> clazz) {
-    return
-      !isCollectionType(clazz) &&
-      !isTypedStringType(clazz) &&
-      !isBeanClass(clazz)
-    ;
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -233,35 +209,6 @@ public class DefaultTypeRegistry implements TypeRegistry{
     );
   }
 
-  private boolean isBeanClass(final Class<?> clazz) {
-    final String notBeanReason;
-    if(!clazz.isInterface())
-        notBeanReason = "not an interface";
-    else if(clazz.getTypeParameters().length!=0)
-        notBeanReason = "parameterized class";
-    else if(annotationHandler.declaredAsAbstract(clazz))
-        notBeanReason = "annotated as abstract";
-    else if(Arrays.stream(clazz.getInterfaces()).anyMatch(this::isBeanClass))
-        notBeanReason = "is subclass of a bean class";
-    else if(!Arrays.stream(clazz.getMethods()).filter(this::isPropertyMethod).findAny().isPresent())
-        notBeanReason = "has no properties";
-    else {
-        notBeanReason = "";
-    }
-    if(notBeanReason.isEmpty()) {
-        LOG.trace("{} is a bean class.", clazz);
-        return true;
-    }
-    else {
-        LOG.trace("{} is not a bean class ({}).", clazz, notBeanReason);
-        return false;
-    }
-  }
-
-  private boolean isPropertyMethod(final Method m) {
-    assert m.getDeclaringClass().isInterface();
-    return m.getParameterCount()==0;
-  }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   public Type<?> getType(final Object beanOrElementary){
@@ -269,33 +216,13 @@ public class DefaultTypeRegistry implements TypeRegistry{
     else {
       final Class clazz = beanOrElementary.getClass();
       if(clazz.getTypeParameters().length!=0) throw new IllegalArgumentException();
-      return getBeanInterface(clazz)
+      return beanFactory.tryGetBeanInterface(clazz)
         .map(i->(Type)beanType(i))
         .orElseGet(()->type(clazz))
       ;
     }
   }
 
-  public Optional<Class<?>> getBeanInterface(final Class<?> clazz){
-    if(clazz.getTypeParameters().length!=0) return Optional.empty();
-    else {
-      final Optional<Class<?>> fromSuper = Optional.ofNullable(clazz.getSuperclass()).flatMap(this::getBeanInterface);
-      final Optional<Class<?>> fromSuperInterfaces = XStream.of(clazz.getInterfaces())
-        .flatOptional(i->getBeanInterface(i))
-        .toOptional()
-      ;
-      final Optional<Class<?>> combined =
-        XStream.fromOptional(fromSuper).concat(XStream.fromOptional(fromSuperInterfaces)).toOptional()
-      ;
-      if(combined.isPresent()) {
-        assert(!isBeanClass(clazz));
-        return combined;
-      }
-      else {
-        return isBeanClass(clazz) ? Optional.of(clazz) : Optional.empty();
-      }
-    }
-  }
 
   @Override
   public <S extends TypedString<S>> S typedString(final Class<S> clazz, final String value) {
@@ -304,13 +231,17 @@ public class DefaultTypeRegistry implements TypeRegistry{
 
   @Override
   public boolean isSupported(final Class<?> clazz) {
-    return
-      isCollectionType(clazz) ||
-      isBeanClass(clazz) ||
-      annotationHandler.isPolymorphicRoot(clazz) ||
-      defaultFactory.isSupported(clazz) ||
-      additionalTypeHandlerFactories.parallelStream().anyMatch(f->f.isSupported(clazz))
-    ;
+    return typeMap.getIfPresent(clazz)
+      .map(Optional::isPresent) //if there is information in the cache, use it
+      .orElseGet(()->{
+        return
+          isCollectionType(clazz) ||
+          beanFactory.isSupported(clazz) ||
+           defaultFactory.isSupported(clazz) ||
+          additionalTypeHandlerFactories.parallelStream().anyMatch(f->f.isSupported(clazz))
+        ;
+      }
+    );
   }
 
   @SuppressWarnings("unchecked")

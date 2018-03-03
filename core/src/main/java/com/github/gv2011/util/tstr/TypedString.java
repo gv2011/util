@@ -25,7 +25,7 @@ package com.github.gv2011.util.tstr;
  * THE SOFTWARE.
  * #L%
  */
-public interface TypedString<T extends TypedString<T>> extends Comparable<TypedString<?>>{
+public interface TypedString<T extends TypedString<T>> extends CharSequence, Comparable<TypedString<?>>{
 
   public static <T extends TypedString<T>> T create(final Class<T> clazz, final String value) {
     return TypedStringInvocationHandler.create(clazz, value);
@@ -34,6 +34,10 @@ public interface TypedString<T extends TypedString<T>> extends Comparable<TypedS
   T self();
 
   Class<T> clazz();
+
+  default boolean isEmpty() {
+      return canonical().isEmpty();
+  }
 
   default String canonical() {
     return toString();

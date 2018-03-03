@@ -39,6 +39,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
+import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.beans.BeanBuilder;
 import com.github.gv2011.util.beans.Partial;
 import com.github.gv2011.util.beans.Property;
@@ -57,23 +58,30 @@ final class BeanBuilderImp<T> implements BeanBuilder<T> {
 
     @Override
     public T build() {
-      //fill in fixed values:
+      //verify fixed values:
       for(final Property<?> p: beanType.properties().values()) {
           p.fixedValue().ifPresent(fv->{
               final String propName = p.name();
-              if(map.containsKey(propName)) verify(map.get(propName).equals(fv));
-              else map.put(p.name(), fv);
+              if(map.containsKey(propName)) {
+                verifyEqual(map.get(propName),fv, (e,a)->
+                  format("{}: The fixed value of property {} is {}, but the value {} was set.", beanType, p, e, a)
+                );
+              }
           });
       }
-      //fill in default values:
+      //remove default values:
       for(final Property<?> p: beanType.properties().values()) {
           p.defaultValue().ifPresent(dv->{
               final String propName = p.name();
-              if(!map.containsKey(propName)) map.put(p.name(), dv);
+              final @Nullable Object actual = map.get(propName);
+              if(actual!=null) {
+                  if(dv.equals(actual)) map.remove(propName);
+              }
           });
       }
-      //verify all properties are set:
+      //verify all other properties are set:
       final ISet<Property<?>> missing = beanType.properties().values().stream()
+          .filter(p->!p.defaultValue().isPresent())
           .filter(p->!map.keySet().contains(p.name()))
           .collect(toISet())
       ;
@@ -82,7 +90,7 @@ final class BeanBuilderImp<T> implements BeanBuilder<T> {
       return beanType.clazz.cast(Proxy.newProxyInstance(
           beanType.clazz.getClassLoader(),
           new Class<?>[] {beanType.clazz},
-          new BeanInvocationHandler(beanType.clazz, iCollections().copyOf(map))
+          new BeanInvocationHandler<>(beanType, iCollections().copyOf(map))
       ));
     }
 
@@ -131,9 +139,15 @@ final class BeanBuilderImp<T> implements BeanBuilder<T> {
       }
       @Override
       public BeanBuilder<T> to(final V value) {
+        notNull(value, ()->format("Trying to set {} to null.", property));
+        property.fixedValue().ifPresent(fv->{
+          verifyEqual(value, fv, (e,a)->
+          format("{}: Trying to set property {} to value {}, but it is fixed to value {}.", beanType, property, e, a)
+          );
+        });
         map.put(
-            property.name(),
-            property.type().cast(notNull(value, ()->format("Trying to set {} to null.", property)))
+          property.name(),
+          property.type().cast(value)
         );
         return BeanBuilderImp.this;
       }

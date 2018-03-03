@@ -36,7 +36,6 @@ import org.junit.Test;
 import com.github.gv2011.util.beans.Abstract;
 import com.github.gv2011.util.beans.FixedValue;
 import com.github.gv2011.util.beans.TypeName;
-import com.github.gv2011.util.icol.IList;
 
 
 public class PolymorphismTest {
@@ -53,32 +52,21 @@ public class PolymorphismTest {
   @Abstract(subClasses={BlackPea.class, ChickPea.class})
   public static interface Pea extends Sized, Coloured{
     String type();
-    IList<? extends Pea> neighbours();
   }
 
   public static interface BlackPea extends Pea{
-    @Override
-    IList<Pea> neighbours();
     String propA();
   }
 
   public static interface ChickPea extends Pea{
-    @Override
-    IList<Pea> neighbours();
     @Override
     @FixedValue("chicks")
     String type();
     String propB();
   }
 
-  @Abstract
-  public static interface SpecialPea extends Pea{
-    @Override
-    IList<SpecialPea> neighbours();
-  }
-
   @TypeName("saccharatum")
-  public static interface SnowPea extends SpecialPea{
+  public static interface SnowPea extends Pea{
     String propC();
   }
 
@@ -91,7 +79,7 @@ public class PolymorphismTest {
     final DefaultTypeRegistry reg = new DefaultTypeRegistry();
     reg.beanType(Pot.class);
 
-    final PolymorphicAbstractBeanRootType<Pea> peaType = reg.abstractBeanType(Pea.class);
+    final AbstractPolymorphicBeanSupport<Pea> peaType = reg.abstractBeanType(Pea.class);
     assertThat(peaType.isAbstractBean(), is(true));
     assertThat(peaType.isPolymorphic(), is(true));
 

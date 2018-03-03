@@ -553,5 +553,9 @@ public class CollectionUtils {
     return (ISortedMap)map;
   }
 
-
+  public static final <N> XStream<N> recursiveStream(
+    final N root, final Function<N,? extends Stream<? extends N>> children
+  ){
+    return XStream.of(root).concat(children.apply(root).flatMap(c->recursiveStream(c,children)));
+  }
 }

@@ -37,6 +37,7 @@ import static com.github.gv2011.util.ex.Exceptions.format;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -47,6 +48,7 @@ import org.slf4j.Logger;
 
 import com.github.gv2011.util.ReflectionUtils;
 import com.github.gv2011.util.ann.Nullable;
+import com.github.gv2011.util.beans.AnnotationHandler;
 import com.github.gv2011.util.beans.BeanBuilder;
 import com.github.gv2011.util.beans.BeanType;
 import com.github.gv2011.util.beans.Partial;
@@ -68,18 +70,23 @@ class DefaultBeanType<T> extends AbstractType<T> implements BeanType<T> {
   @SuppressWarnings("rawtypes")
   private static final Partial EMPTY_PARTIAL = createEmptyPartial();
 
-  final DefaultTypeRegistry registry;
+  final AnnotationHandler annotationHandler;
+  private final Function<Type,AbstractType<?>> registry;
 
   //recursion, init later
   private @Nullable ISortedMap<String, PropertyImp<?>> properties;
   //recursion, init later
   private @Nullable Optional<T> defaultValue;
-  //recursion, init later
-  //private @Nullable Optional<PolymorphicInfo<T>> polymorphicInfo;
 
 
-  DefaultBeanType(final Class<T> beanClass, final DefaultTypeRegistry registry) {
-    super(registry.jf, beanClass);
+  DefaultBeanType(
+    final Class<T> beanClass,
+    final JsonFactory jf,
+    final AnnotationHandler annotationHandler,
+    final Function<Type,AbstractType<?>> registry
+  ) {
+    super(jf, beanClass);
+    this.annotationHandler = annotationHandler;
     this.registry = registry;
     verify(beanClass.isInterface(), beanClass::toString);
   }
@@ -156,18 +163,18 @@ class DefaultBeanType<T> extends AbstractType<T> implements BeanType<T> {
 
   private <V> PropertyImp<V> createProperty(final Method m) {
     @SuppressWarnings("unchecked")
-    final AbstractType<V> type = (AbstractType<V>) registry.type(m.getGenericReturnType());
+    final AbstractType<V> type = (AbstractType<V>) registry.apply(m.getGenericReturnType());
     return createProperty(m, type);
   }
 
   <V> PropertyImp<V> createProperty(final Method m, final AbstractType<V> type) {
     final Optional<V> defaultValue =
-      registry.annotationHandler.defaultValue(m)
-      .map(v->type.parse(parseTolerant(type, registry.jf, v)))
+      annotationHandler.defaultValue(m)
+      .map(v->type.parse(parseTolerant(type, jf, v)))
     ;
     final Optional<V> fixedValue =
-      registry.annotationHandler.fixedValue(m)
-      .map(v->type.parse(parseTolerant(type, registry.jf, v)))
+      annotationHandler.fixedValue(m)
+      .map(v->type.parse(parseTolerant(type, jf, v)))
     ;
     verify(!(defaultValue.isPresent() && fixedValue.isPresent()));
     return new PropertyImp<>(m.getName(), type, defaultValue, fixedValue);

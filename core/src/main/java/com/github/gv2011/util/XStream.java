@@ -28,6 +28,7 @@ package com.github.gv2011.util;
 import static com.github.gv2011.util.CollectionUtils.iCollections;
 import static com.github.gv2011.util.CollectionUtils.pair;
 import static com.github.gv2011.util.CollectionUtils.toSingle;
+import static com.github.gv2011.util.ex.Exceptions.call;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -39,6 +40,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import com.github.gv2011.util.ex.ThrowingFunction;
 
 
 public interface XStream<E> extends Stream<E>, AutoCloseableNt{
@@ -76,6 +79,10 @@ public interface XStream<E> extends Stream<E>, AutoCloseableNt{
 
   @Override
   <R> XStream<R> map(Function<? super E, ? extends R> mapper);
+
+  default <R> XStream<R> mapThrowing(final ThrowingFunction<? super E, ? extends R> mapper){
+    return map(e->call(()->mapper.apply(e)));
+  }
 
   default <R> XStream<Pair<E,R>> enrich(final Function<? super E, ? extends R> mapper){
     return map(e->pair(e, mapper.apply(e)));

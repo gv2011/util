@@ -58,9 +58,14 @@ final class TypedStringInvocationHandler<S extends TypedString<S>> implements In
       final String name = notNull(method).getName();
       if(method.getParameterCount()==0) {
         if(name.equals("canonical")) result = value;
+        else if(name.equals("isEmpty")) result = value.isEmpty();
         else if(name.equals("toString")) result = value;
         else if(name.equals("hashCode")) result = AbstractTypedString.hashCode(clazz, value);
         else if(name.equals("clazz")) result = clazz;
+        else if(name.equals("self")) result = proxy;
+        else if(name.equals("chars")) result = value.chars();
+        else if(name.equals("codePoints")) result = value.codePoints();
+        else if(name.equals("length")) result = value.length();
         else if(name.equals("self")) result = proxy;
         else throw bug(()->name);
       }
@@ -71,7 +76,13 @@ final class TypedStringInvocationHandler<S extends TypedString<S>> implements In
         else if(name.equals("equals")) {
             result =  AbstractTypedString.equal((TypedString<?>) proxy, args[0]);
         }
+        else if(name.equals("charAt")) {
+            result =  value.charAt((Integer)args[0]);
+        }
         else throw bug();
+      }
+      else if(method.getParameterCount()==2 && name.equals("subSequence")) {
+          result =  value.subSequence((Integer)args[0], (Integer)args[1]);
       }
       else throw bug();
       return result;
