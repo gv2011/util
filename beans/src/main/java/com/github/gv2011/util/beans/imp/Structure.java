@@ -43,6 +43,7 @@ import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import com.github.gv2011.util.Nothing;
+import com.github.gv2011.util.XStream;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.IMap;
 import com.github.gv2011.util.icol.ISet;
@@ -50,6 +51,7 @@ import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
 import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
+import com.github.gv2011.util.json.JsonNodeType;
 import com.github.gv2011.util.json.JsonNull;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -123,16 +125,24 @@ abstract class Structure<C,K,E> {
   }
 
   final C create(
-      final JsonNode json, final CollectionType<C,K,E> collectionType, final Collector<E, ?, C> collector
+    final JsonNode json, final CollectionType<C,K,E> collectionType, final Collector<E, ?, C> collector
   ) {
     return
       (
-        ((json instanceof JsonNull)
-        ? Stream.<JsonNode>empty()
-        : json.asList().stream()).map(n->collectionType.elementType().parse(n))
+        ( (json instanceof JsonNull)
+          ? XStream.<JsonNode>empty()
+          : stream(json)
+        )
+        .map(n->collectionType.elementType().parse(n))
       )
       .collect(collector)
     ;
+  }
+
+  private final XStream<JsonNode> stream(final JsonNode n){
+    if(n.jsonNodeType().equals(JsonNodeType.LIST)) return n.asList().stream();
+    else if(n.jsonNodeType().equals(JsonNodeType.NULL)) return XStream.empty();
+    else return XStream.of(n);
   }
 
   private static final class OptStructure<E> extends Structure<Optional<E>,Nothing,E> {
