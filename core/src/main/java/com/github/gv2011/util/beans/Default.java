@@ -25,14 +25,18 @@ package com.github.gv2011.util.beans;
  * THE SOFTWARE.
  * #L%
  */
-import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation for enum fields.
+ * Defines default value.
+ */
 @Retention(RUNTIME)
-@Target(TYPE)
-public @interface Bean {
+@Target(FIELD)
+public @interface Default {
 
 }

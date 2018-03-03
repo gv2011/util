@@ -33,53 +33,23 @@ import java.util.Optional;
 
 import org.junit.Test;
 
-import com.github.gv2011.util.beans.Abstract;
-import com.github.gv2011.util.beans.FixedValue;
-import com.github.gv2011.util.beans.TypeName;
+import com.github.gv2011.util.beans.imp.TestModel.BlackPea;
+import com.github.gv2011.util.beans.imp.TestModel.ChickPea;
+import com.github.gv2011.util.beans.imp.TestModel.Pea;
+import com.github.gv2011.util.beans.imp.TestModel.Pot;
+import com.github.gv2011.util.beans.imp.TestModel.SnowPea;
 
 
 public class PolymorphismTest {
 
-  @Abstract
-  public static interface Sized{
-    int size();
-  }
-
-  public static interface Coloured{
-    String colour();
-  }
-
-  @Abstract(subClasses={BlackPea.class, ChickPea.class})
-  public static interface Pea extends Sized, Coloured{
-    String type();
-  }
-
-  public static interface BlackPea extends Pea{
-    String propA();
-  }
-
-  public static interface ChickPea extends Pea{
-    @Override
-    @FixedValue("chicks")
-    String type();
-    String propB();
-  }
-
-  @TypeName("saccharatum")
-  public static interface SnowPea extends Pea{
-    String propC();
-  }
-
-  public static interface Pot{
-    Pea content();
-  }
 
   @Test
   public void test() {
     final DefaultTypeRegistry reg = new DefaultTypeRegistry();
+    assertThat(reg.notSupportedReason(Pea.class), is(""));
     reg.beanType(Pot.class);
 
-    final AbstractPolymorphicBeanSupport<Pea> peaType = reg.abstractBeanType(Pea.class);
+    final AbstractPolymorphicSupport<Pea> peaType = reg.abstractBeanType(Pea.class);
     assertThat(peaType.isAbstractBean(), is(true));
     assertThat(peaType.isPolymorphic(), is(true));
 
@@ -91,8 +61,8 @@ public class PolymorphismTest {
     assertThat(blackPea.type(), is(BlackPea.class.getSimpleName()));
 
     final DefaultBeanType<ChickPea> chickPeaType = reg.beanType(ChickPea.class);
-    assertThat(chickPeaType.getClass(), is(PolymorphicConcreteBeanType.class));
-    final PropertyImp<String> typeProp = chickPeaType.getProperty(ChickPea::type);
+    assertThat(chickPeaType.getClass(), is(PolymorphicBeanType.class));
+    final PropertyImp<ChickPea,String> typeProp = chickPeaType.getProperty(ChickPea::type);
     assertThat(typeProp.fixedValue(), is(Optional.of("chicks")));
     final ChickPea chickPea = reg.createBuilder(ChickPea.class).build();
     assertThat(chickPea.type(), is("chicks"));

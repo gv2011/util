@@ -1,5 +1,7 @@
 package com.github.gv2011.util.beans.imp;
 
+import static com.github.gv2011.util.Verify.verifyEqual;
+
 /*-
  * #%L
  * util-beans
@@ -34,19 +36,25 @@ import com.github.gv2011.util.json.JsonFactory;
 
 public abstract class AbstractType<T> implements Type<T> {
 
-    public final Class<T> clazz;
-    final JsonFactory jf;
+    final Class<T> clazz;
 
-    AbstractType(final JsonFactory jf, final Class<T> clazz) {
-      this.jf = jf;
+    AbstractType(final Class<T> clazz) {
       this.clazz = clazz;
     }
 
     void initialize() {}
 
+    abstract JsonFactory jf();
+
     @Override
     public String name() {
         return clazz.getName();
+    }
+
+    @SuppressWarnings("unchecked")
+    <T2> AbstractType<T2> castTo(final Class<T2> clazz) {
+        verifyEqual(clazz, this.clazz);
+        return (AbstractType<T2>) this;
     }
 
     @Override

@@ -1,10 +1,10 @@
-package com.github.gv2011.util.beans;
+package com.github.gv2011.util.beans.imp;
 
 /*-
  * #%L
- * The MIT License (MIT)
+ * util-beans
  * %%
- * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +25,29 @@ package com.github.gv2011.util.beans;
  * THE SOFTWARE.
  * #L%
  */
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import com.github.gv2011.util.beans.TypeResolver;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+final class PolymorphicIntermediateType<B extends R, R> extends AbstractPolymorphicSupport<B>{
 
-@Retention(RUNTIME)
-@Target(TYPE)
-public @interface Bean {
+  private final PolymorphicRootType<R> rootType;
+
+  PolymorphicIntermediateType(
+    final DefaultTypeRegistry registry,
+    final PolymorphicRootType<R> rootType, final Class<B> clazz
+  ) {
+    super(registry, clazz);
+    this.rootType = rootType;
+  }
+
+
+  @Override
+  PolymorphicRootType<? super B> rootType() {
+    return rootType;
+  }
+
+  @Override
+  TypeResolver<? super B> typeResolver() {
+    return rootType().typeResolver();
+  }
 
 }

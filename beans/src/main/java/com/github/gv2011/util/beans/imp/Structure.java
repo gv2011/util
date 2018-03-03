@@ -114,7 +114,7 @@ abstract class Structure<C,K,E> {
   }
 
   JsonNode toJson(final CollectionType<C,K,E> collectionType, final C collection) {
-    final JsonFactory jf = collectionType.jf;
+    final JsonFactory jf = collectionType.jf();
     return stream(collection).map(e->collectionType.elementType().toJson(e)).collect(jf.toJsonList());
   }
 
@@ -153,7 +153,7 @@ abstract class Structure<C,K,E> {
 
     @Override
     JsonNode toJson(final CollectionType<Optional<E>,Nothing,E> collectionType, final Optional<E> opt) {
-      final JsonFactory jf = collectionType.jf;
+      final JsonFactory jf = collectionType.jf();
       return opt.map(e->collectionType.elementType().toJson(e)).orElseGet(jf::jsonNull);
     }
 
@@ -271,7 +271,7 @@ abstract class Structure<C,K,E> {
 
     @Override
     JsonNode toJson(final CollectionType<IMap<K,V>,K,V> mapType, final IMap<K,V> map) {
-      final JsonFactory jf = mapType.jf;
+      final JsonFactory jf = mapType.jf();
       final AbstractType<K> keyType = mapType.keyType().get();
       final AbstractType<V> valueType = mapType.elementType();
       return
@@ -327,7 +327,7 @@ abstract class Structure<C,K,E> {
 
     @Override
     JsonNode toJson(final CollectionType<ISortedMap<String,V>,String,V> mapType, final ISortedMap<String,V> map) {
-      final JsonFactory jf = mapType.jf;
+      final JsonFactory jf = mapType.jf();
       final AbstractType<V> valueType = mapType.elementType();
       return
         map.entrySet().stream()

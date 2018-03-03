@@ -1,10 +1,10 @@
-package com.github.gv2011.util.beans;
+package com.github.gv2011.util.beans.imp;
 
 /*-
  * #%L
- * The MIT License (MIT)
+ * util-beans
  * %%
- * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +25,23 @@ package com.github.gv2011.util.beans;
  * THE SOFTWARE.
  * #L%
  */
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static com.github.gv2011.testutil.Matchers.is;
+import static com.github.gv2011.testutil.Matchers.not;
+import static org.junit.Assert.*;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import org.junit.Test;
 
-@Retention(RUNTIME)
-@Target(TYPE)
-public @interface Bean {
+import com.github.gv2011.util.beans.imp.TestModel.Pea;
+
+public class BeanFactoryTest {
+
+  BeanFactory beanFactory = new DefaultTypeRegistry().beanFactory;
+
+  @Test
+  public void test() {
+    assertThat(beanFactory.notBeanReason(Pea.class), not(is("")));
+    assertThat(beanFactory.isBeanClass(Pea.class), is(false));
+    assertThat(beanFactory.notPolymorphicRootClassReason(Pea.class), is(""));
+  }
 
 }

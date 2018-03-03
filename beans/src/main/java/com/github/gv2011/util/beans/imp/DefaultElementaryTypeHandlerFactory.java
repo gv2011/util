@@ -36,11 +36,13 @@ import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Function;
 
 import com.github.gv2011.util.IsoDay;
 import com.github.gv2011.util.Nothing;
+import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.beans.ElementaryTypeHandler;
 import com.github.gv2011.util.beans.ElementaryTypeHandlerFactory;
 import com.github.gv2011.util.icol.ISortedSet;
@@ -72,11 +74,19 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     return clazz.isEnum() || SUPPORTED_CLASS_NAMES.contains(clazz.getName());
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public <T> ElementaryTypeHandler<T> getTypeHandler(final Class<T> clazz) {
-    AbstractElementaryTypeHandler<?> result;
-    if(clazz.isEnum()) result = new EnumType<>(clazz.asSubclass(Enum.class));
+    return tryGetTypeHandler(clazz)
+      .orElseThrow(()->
+        new NoSuchElementException(format("No handler for {}.", clazz))
+      )
+    ;
+  }
+
+  @SuppressWarnings("unchecked")
+  <T> Optional<ElementaryTypeHandler<T>> tryGetTypeHandler(final Class<T> clazz) {
+    @Nullable AbstractElementaryTypeHandler<?> result;
+    if(clazz.isEnum()) result = new EnumTypeHandler<>(clazz.asSubclass(Enum.class));
     else if(clazz.equals(String.class)) result = new StringType();
     else if(clazz.equals(Nothing.class)) result = new NothingType();
     else if(clazz.equals(Boolean.class)) result = new BooleanType();
@@ -90,9 +100,11 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     else if(clazz.equals(Duration.class)) result = new DurationType();
     else if(clazz.equals(IsoDay.class)) result = stringBasedType(IsoDay.class);
     else if(clazz.equals(InetSocketAddress.class)) result = new InetSocketAddressType();
-    else throw new UnsupportedOperationException(format("No handler for {}.", clazz));
-    return (ElementaryTypeHandler<T>) result;
+    else result = null;
+    return Optional.ofNullable((AbstractElementaryTypeHandler<T>) result);
   }
+
+
 
   private static <T> AbstractElementaryTypeHandler<T> stringBasedType(final Class<T> parseable) {
     final Method method = call(()->parseable.getMethod("parse", CharSequence.class));
@@ -118,25 +130,6 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
         return defaultValue;
       }
     };
-  }
-
-  private static class EnumType<E extends Enum<E>> extends AbstractElementaryTypeHandler<E> {
-    private final Class<E> enumClass;
-    private EnumType(final Class<E> enumClass) {
-      this.enumClass = enumClass;
-    }
-    @Override
-    public E fromJson(final JsonNode json) {
-      return Enum.valueOf(enumClass, json.asString());
-    }
-    @Override
-    public Optional<E> defaultValue() {
-      return Optional.empty();
-    }
-    @Override
-    public JsonNode toJson(final E enm, final JsonFactory jf) {
-      return jf.primitive(enm.name());
-    }
   }
 
   private static class StringType extends AbstractElementaryTypeHandler<String> {

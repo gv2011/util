@@ -1,10 +1,10 @@
-package com.github.gv2011.util.beans;
+package com.github.gv2011.util.beans.imp;
 
 /*-
  * #%L
- * The MIT License (MIT)
+ * util-beans
  * %%
- * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +25,51 @@ package com.github.gv2011.util.beans;
  * THE SOFTWARE.
  * #L%
  */
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import com.github.gv2011.util.beans.Abstract;
+import com.github.gv2011.util.beans.Default;
+import com.github.gv2011.util.beans.FixedValue;
+import com.github.gv2011.util.beans.Other;
+import com.github.gv2011.util.beans.TypeName;
 
-@Retention(RUNTIME)
-@Target(TYPE)
-public @interface Bean {
+
+public class TestModel {
+
+  @Abstract
+  public static interface Sized{
+    int size();
+  }
+
+  @Abstract
+  public static interface Coloured{
+    String colour();
+  }
+
+  @Abstract(subClasses={BlackPea.class, ChickPea.class})
+  public static interface Pea extends Sized, Coloured{
+    String type();
+  }
+
+  public static interface BlackPea extends Pea{
+    String propA();
+  }
+
+  public static interface ChickPea extends Pea{
+    @Override
+    @FixedValue("chicks")
+    String type();
+    String propB();
+  }
+
+  @TypeName("saccharatum")
+  public static interface SnowPea extends Pea{
+    String propC();
+  }
+
+  public static enum Colour{RED, @Default BLUE, @Other OTHER}
+
+  public static interface Pot{
+    Pea content();
+  }
 
 }

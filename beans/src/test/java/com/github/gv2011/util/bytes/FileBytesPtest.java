@@ -42,6 +42,7 @@ import java.time.Instant;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class FileBytesPtest {
@@ -83,6 +84,7 @@ public class FileBytesPtest {
 
 
   @Test
+  @Ignore("longrunning")
   public void testGetLong() {
     final Duration testDuration = Duration.ofSeconds(5);
     final Instant end = Instant.now().plus(testDuration);

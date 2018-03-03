@@ -59,7 +59,7 @@ final class BeanBuilderImp<T> implements BeanBuilder<T> {
     @Override
     public T build() {
       //verify fixed values:
-      for(final Property<?> p: beanType.properties().values()) {
+      for(final PropertyImp<T,?> p: beanType.properties().values()) {
           p.fixedValue().ifPresent(fv->{
               final String propName = p.name();
               if(map.containsKey(propName)) {
@@ -101,13 +101,13 @@ final class BeanBuilderImp<T> implements BeanBuilder<T> {
 
     @Override
     public BeanBuilder<T> setAll(final T bean) {
-        for(final PropertyImp<?> p: beanType.properties().values()) {
+        for(final PropertyImp<T,?> p: beanType.properties().values()) {
             copy(p, bean);
         }
         return this;
     }
 
-    private <V >void copy(final PropertyImp<V> p, final T bean) {
+    private <V >void copy(final PropertyImp<T,V> p, final T bean) {
         map.put(p.name(), beanType.get(bean, p));
     }
 
@@ -118,14 +118,14 @@ final class BeanBuilderImp<T> implements BeanBuilder<T> {
 
     @Override
     public <V> Setter<T,V> set(final Function<T, V> method) {
-      final PropertyImp<V> property = beanType.getProperty(method);
+      final PropertyImp<T,V> property = beanType.getProperty(method);
       return new SetterImp<>(property);
     }
 
     @SuppressWarnings("rawtypes")
     @Override
     public <V> Setter<T,V> setOpt(final Function<T, Optional<V>> method) {
-      final PropertyImp<Optional<V>> property = beanType.getProperty(method);
+      final PropertyImp<T,Optional<V>> property = beanType.getProperty(method);
       verify(property.type() instanceof CollectionType);
       final CollectionType optType = (CollectionType) property.type();
       verifyEqual(optType.structure, Structure.opt());
@@ -133,8 +133,8 @@ final class BeanBuilderImp<T> implements BeanBuilder<T> {
     }
 
     private class SetterImp<V> implements Setter<T,V> {
-      private final PropertyImp<V> property;
-      private SetterImp(final PropertyImp<V> property) {
+      private final PropertyImp<T,V> property;
+      private SetterImp(final PropertyImp<T,V> property) {
         this.property = property;
       }
       @Override
@@ -154,8 +154,8 @@ final class BeanBuilderImp<T> implements BeanBuilder<T> {
     }
 
     private class OptSetter<V> implements Setter<T,V> {
-      private final PropertyImp<Optional<V>> property;
-      private OptSetter(final PropertyImp<Optional<V>> property) {
+      private final PropertyImp<T,Optional<V>> property;
+      private OptSetter(final PropertyImp<T,Optional<V>> property) {
         this.property = property;
       }
       @SuppressWarnings("rawtypes")

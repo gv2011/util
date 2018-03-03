@@ -41,4 +41,6 @@ public interface BeanType<T> extends Type<T>{
 
     <V> V get(T bean, Property<V> property);
 
+    int hashCode(T bean);
+
 }

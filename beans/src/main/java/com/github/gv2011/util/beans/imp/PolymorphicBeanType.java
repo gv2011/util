@@ -39,18 +39,19 @@ import org.slf4j.Logger;
 
 import com.github.gv2011.util.beans.AnnotationHandler;
 import com.github.gv2011.util.beans.TypeNameStrategy;
+import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.json.JsonFactory;
 
-final class PolymorphicConcreteBeanType<T> extends DefaultBeanType<T> {
+final class PolymorphicBeanType<T> extends DefaultBeanType<T> {
 
   @SuppressWarnings("unused")
-  private static final Logger LOG = getLogger(PolymorphicConcreteBeanType.class);
+  private static final Logger LOG = getLogger(PolymorphicBeanType.class);
 
   private final Optional<String> typePropertyName;
   private final TypeNameStrategy typeNameStrategy;
 
 
-  PolymorphicConcreteBeanType(
+  PolymorphicBeanType(
     final Class<T> beanClass,
     final JsonFactory jf,
     final AnnotationHandler annotationHandler,
@@ -63,33 +64,13 @@ final class PolymorphicConcreteBeanType<T> extends DefaultBeanType<T> {
     this.typeNameStrategy = typeNameStrategy;
   }
 
-//  PolymorphicConcreteBeanType(
-//    final Class<T> beanClass,
-//    final DefaultTypeRegistry registry,
-//    final String typePropertyName,
-//    final Class<? super T> rootClass
-//  ) {
-//    super(beanClass, registry.jf, registry.annotationHandler, registry::type);
-//    this.typePropertyName = typePropertyName;
-//    this.typeNameStrategy = typeNameStrategy(registry.annotationHandler, rootClass);
-//  }
-//
-//  static TypeNameStrategy typeNameStrategy(final AnnotationHandler ah, final Class<?> rootClass){
-//      final Optional<Class<? extends TypeNameStrategy>> typeNameStrategyClass =
-//        ah.typeNameStrategy(rootClass)
-//      ;
-//      if(typeNameStrategyClass.isPresent()) return call(typeNameStrategyClass.get()::newInstance);
-//      else return Class::getSimpleName;
-//  }
-
-
   @Override
-  <V> PropertyImp<V> createProperty(final Method m, final AbstractType<V> type) {
+  <V> PropertyImp<T,V> createProperty(final Method m, final AbstractType<V> type) {
     if(!isTypeProperty(m)) return super.createProperty(m, type);
     else{
       verify(!annotationHandler.defaultValue(m).isPresent());
       final V fixedValue = type.parse(parseTolerant(
-        type, jf,
+        type, jf(),
         (
           atMostOne(
             annotationHandler.typeName(clazz),
@@ -98,8 +79,14 @@ final class PolymorphicConcreteBeanType<T> extends DefaultBeanType<T> {
           .orElseGet(()->typeNameStrategy.typeName(clazz))
         )
       ));
-      return new PropertyImp<>(typePropertyName.get(), type, Optional.empty(), Optional.of(fixedValue));
+      return new PropertyImp<>(this, m, typePropertyName.get(), type, Optional.empty(), Optional.of(fixedValue));
     }
+  }
+
+
+  @Override
+  void checkProperties(final ISortedMap<String, PropertyImp<T,?>> properties) {
+    typePropertyName.ifPresent(n->verify(properties.keySet().contains(n)));
   }
 
   private boolean isTypeProperty(final Method m) {
@@ -109,6 +96,11 @@ final class PolymorphicConcreteBeanType<T> extends DefaultBeanType<T> {
   @Override
   boolean isPolymorphic() {
     return true;
+  }
+
+  @Override
+  boolean isAbstractBean() {
+    return false;
   }
 
 }

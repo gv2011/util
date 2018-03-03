@@ -43,10 +43,13 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 
+import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.ReflectionUtils;
+import com.github.gv2011.util.XStream;
 import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.beans.AnnotationHandler;
 import com.github.gv2011.util.beans.BeanBuilder;
@@ -70,13 +73,15 @@ class DefaultBeanType<T> extends AbstractType<T> implements BeanType<T> {
   @SuppressWarnings("rawtypes")
   private static final Partial EMPTY_PARTIAL = createEmptyPartial();
 
+  private final JsonFactory jf;
   final AnnotationHandler annotationHandler;
   private final Function<Type,AbstractType<?>> registry;
 
   //recursion, init later
-  private @Nullable ISortedMap<String, PropertyImp<?>> properties;
+  private @Nullable ISortedMap<String, PropertyImp<T,?>> properties;
   //recursion, init later
   private @Nullable Optional<T> defaultValue;
+
 
 
   DefaultBeanType(
@@ -85,10 +90,17 @@ class DefaultBeanType<T> extends AbstractType<T> implements BeanType<T> {
     final AnnotationHandler annotationHandler,
     final Function<Type,AbstractType<?>> registry
   ) {
-    super(jf, beanClass);
+    super(beanClass);
+    this.jf = jf;
     this.annotationHandler = annotationHandler;
     this.registry = registry;
     verify(beanClass.isInterface(), beanClass::toString);
+  }
+
+
+  @Override
+  final JsonFactory jf() {
+    return jf;
   }
 
 
@@ -98,11 +110,40 @@ class DefaultBeanType<T> extends AbstractType<T> implements BeanType<T> {
       LOG.debug("Initializing {}.", this);
       verify(defaultValue==null);
       properties = createProperties();
+      checkProperties(properties);
       defaultValue = createDefaultValue();
       LOG.debug("{} initialized.", this);
     }
   }
 
+
+
+  @Override
+  public final int hashCode(final T bean) {
+    return hashCodeFromValues(getValues(bean));
+  }
+
+  final ISortedMap<String, Object> getValues(final T bean) {
+    return properties().values().stream()
+      .flatMap(p->{
+        Stream<Pair<String,Object>> result;
+        final Object value = p.getValue(bean);
+        if(p.defaultValue().map(dv->dv.equals(value)).orElse(false)){
+          result = XStream.empty(); //remove default values
+        }
+        else result = XStream.of(pair(p.name(),value));
+        return result;
+      })
+      .collect(toISortedMap())
+    ;
+  }
+
+  final int hashCodeFromValues(final ISortedMap<String, Object> values) {
+    return clazz.hashCode() * 31 + values.hashCode();
+  }
+
+
+  void checkProperties(final ISortedMap<String, PropertyImp<T,?>> properties) {}
 
   private Optional<T> createDefaultValue() {
     LOG.debug("Creating default value for {}.", this);
@@ -118,13 +159,13 @@ class DefaultBeanType<T> extends AbstractType<T> implements BeanType<T> {
       })
     ){
       final BeanBuilder<T> b = createBuilder();
-      for(final PropertyImp<?> p: properties().values()) setDefaultValue(b, p);
+      for(final PropertyImp<T,?> p: properties().values()) setDefaultValue(b, p);
       return Optional.of(b.build());
     }
     else return Optional.empty();
   }
 
-  private <V> void setDefaultValue(final BeanBuilder<T> b, final PropertyImp<V> p) {
+  private <V> void setDefaultValue(final BeanBuilder<T> b, final PropertyImp<T,V> p) {
     setValue(b, p, p.defaultValue().get());
   }
 
@@ -142,12 +183,12 @@ class DefaultBeanType<T> extends AbstractType<T> implements BeanType<T> {
 
 
   @Override
-  public final ISortedMap<String, PropertyImp<?>> properties() {
+  public final ISortedMap<String, PropertyImp<T,?>> properties() {
       initialize();
       return notNull(properties);
   }
 
-  private ISortedMap<String, PropertyImp<?>> createProperties() {
+  private ISortedMap<String, PropertyImp<T,?>> createProperties() {
     return Arrays.stream(clazz.getMethods())
     .filter(DefaultBeanType::isPropertyMethod)
     .map(this::createProperty)
@@ -161,13 +202,13 @@ class DefaultBeanType<T> extends AbstractType<T> implements BeanType<T> {
       return m.getParameterCount()>0 ? false : ! RESERVED.contains(m.getName());
   }
 
-  private <V> PropertyImp<V> createProperty(final Method m) {
+  private <V> PropertyImp<T,V> createProperty(final Method m) {
     @SuppressWarnings("unchecked")
     final AbstractType<V> type = (AbstractType<V>) registry.apply(m.getGenericReturnType());
     return createProperty(m, type);
   }
 
-  <V> PropertyImp<V> createProperty(final Method m, final AbstractType<V> type) {
+  <V> PropertyImp<T,V> createProperty(final Method m, final AbstractType<V> type) {
     final Optional<V> defaultValue =
       annotationHandler.defaultValue(m)
       .map(v->type.parse(parseTolerant(type, jf, v)))
@@ -177,7 +218,7 @@ class DefaultBeanType<T> extends AbstractType<T> implements BeanType<T> {
       .map(v->type.parse(parseTolerant(type, jf, v)))
     ;
     verify(!(defaultValue.isPresent() && fixedValue.isPresent()));
-    return new PropertyImp<>(m.getName(), type, defaultValue, fixedValue);
+    return new PropertyImp<>(this, m, m.getName(), type, defaultValue, fixedValue);
   }
 
 
@@ -217,7 +258,7 @@ class DefaultBeanType<T> extends AbstractType<T> implements BeanType<T> {
     final JsonObject obj = (JsonObject) json;
     verifyJsonHasNoAdditionalProperties(obj);
     final BeanBuilder<T> b = createBuilder();
-    for(final PropertyImp<?> p: properties().values()) {
+    for(final PropertyImp<T,?> p: properties().values()) {
       final Optional<JsonNode> childNode = obj.tryGet(p.name());
       if(childNode.isPresent()) {
         final JsonNode value = childNode.get();
@@ -274,11 +315,11 @@ class DefaultBeanType<T> extends AbstractType<T> implements BeanType<T> {
   }
 
 
-  private <V> boolean isDefault(final T bean, final PropertyImp<V> property) {
+  private <V> boolean isDefault(final T bean, final PropertyImp<T,V> property) {
     return property.type().isDefault(get(bean, property));
   }
 
-  private <V> Optional<JsonNode> toJson(final T bean, final PropertyImp<V> property) {
+  private <V> Optional<JsonNode> toJson(final T bean, final PropertyImp<T,V> property) {
     final V value = get(bean, property);
     final AbstractType<V> type = property.type();
     if(type.isDefault(value)) return Optional.empty();
@@ -303,11 +344,12 @@ class DefaultBeanType<T> extends AbstractType<T> implements BeanType<T> {
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  public final <V> PropertyImp<V> getProperty(final Function<T, V> method) {
+  public final <V> PropertyImp<T,V> getProperty(final Function<T, V> method) {
     final Method m = ReflectionUtils.method(clazz, method);
-    final PropertyImp<?> result = properties().get(m.getName());
+    final PropertyImp<T,?> result = properties().get(m.getName());
     verifyEqual(result.type().clazz, m.getReturnType());
     return (PropertyImp)result;
   }
+
 
 }

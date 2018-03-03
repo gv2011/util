@@ -27,6 +27,7 @@ package com.github.gv2011.util.beans.imp;
  */
 import java.util.Optional;
 
+import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
 
 final class CollectionType<C,K,E> extends AbstractType<C>{
@@ -50,76 +51,81 @@ final class CollectionType<C,K,E> extends AbstractType<C>{
   private CollectionType(
     final Structure<C,K,E> structure, final Optional<AbstractType<K>> keyType, final AbstractType<E> elementType
   ) {
-    super(elementType.jf, structure.clazz());
+    super(structure.clazz());
     this.structure = structure;
     this.keyType = keyType;
     this.elementType = elementType;
   }
 
-    @Override
-    public int hashCode() {
-        return 31*elementType.hashCode() + keyType.hashCode();
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        if(!(obj instanceof CollectionType)) return false;
-        else {
-          final CollectionType<?, ?, ?> other = (CollectionType<?,?,?>)obj;
-          return
-            elementType.equals(other.elementType()) &&
-            keyType.equals(other.keyType())
-          ;
-        }
-    }
-
-    public Optional<AbstractType<K>> keyType() {
-      return keyType;
+  @Override
+  JsonFactory jf() {
+    return elementType.jf();
   }
 
-    public AbstractType<E> elementType() {
-      return elementType;
+  @Override
+  public int hashCode() {
+    return 31*elementType.hashCode() + keyType.hashCode();
   }
 
-    @Override
-    public C parse(final JsonNode json) {
-      return structure.convert(json, this);
+  @Override
+  public boolean equals(final Object obj) {
+    if(!(obj instanceof CollectionType)) return false;
+    else {
+      final CollectionType<?, ?, ?> other = (CollectionType<?,?,?>)obj;
+      return
+        elementType.equals(other.elementType()) &&
+        keyType.equals(other.keyType())
+      ;
     }
+  }
 
-    @Override
-    public JsonNode toJson(final C object) {
-      return structure.toJson(this, object);
-    }
+  public Optional<AbstractType<K>> keyType() {
+    return keyType;
+  }
 
-    @Override
-    public boolean isDefault(final C obj) {
-      return structure.isEmpty(obj);
-    }
+  public AbstractType<E> elementType() {
+    return elementType;
+  }
 
-    @Override
-    public Optional<C> getDefault() {
-      return Optional.of(structure.empty());
-    }
+  @Override
+  public C parse(final JsonNode json) {
+    return structure.convert(json, this);
+  }
 
-    @Override
-    public String name() {
-      return super.name()+"<"+elementType.name()+">";
-    }
+  @Override
+  public JsonNode toJson(final C object) {
+    return structure.toJson(this, object);
+  }
 
-    @Override
-    public String toString() {
-      return super.toString()+"<"+elementType+">";
-    }
+  @Override
+  public boolean isDefault(final C obj) {
+    return structure.isEmpty(obj);
+  }
 
-    @Override
-    public boolean isCollectionType() {
-        return true;
-    }
+  @Override
+  public Optional<C> getDefault() {
+    return Optional.of(structure.empty());
+  }
 
-    @Override
-    boolean isOptional() {
-      return structure.equals(Structure.opt());
-    }
+  @Override
+  public String name() {
+    return super.name()+"<"+elementType.name()+">";
+  }
+
+  @Override
+  public String toString() {
+    return super.toString()+"<"+elementType+">";
+  }
+
+  @Override
+  public boolean isCollectionType() {
+      return true;
+  }
+
+  @Override
+  boolean isOptional() {
+    return structure.equals(Structure.opt());
+  }
 
 
 }

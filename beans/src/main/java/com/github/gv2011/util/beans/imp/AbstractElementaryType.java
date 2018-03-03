@@ -34,8 +34,16 @@ import com.github.gv2011.util.json.JsonNodeType;
 
 abstract class AbstractElementaryType<E> extends AbstractType<E>{
 
+  private final JsonFactory jf;
+
   AbstractElementaryType(final JsonFactory jf, final Class<E> clazz) {
-    super(jf, clazz);
+    super(clazz);
+    this.jf = jf;
+  }
+
+  @Override
+  final JsonFactory jf() {
+    return jf;
   }
 
   abstract ElementaryTypeHandler<E> handler();
@@ -47,7 +55,7 @@ abstract class AbstractElementaryType<E> extends AbstractType<E>{
 
   @Override
   public final JsonNode toJson(final E object) {
-    return handler().toJson(object, jf);
+    return handler().toJson(object, jf());
   }
 
   @Override

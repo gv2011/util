@@ -31,21 +31,21 @@ import static com.github.gv2011.util.CollectionUtils.single;
 import static com.github.gv2011.util.CollectionUtils.stream;
 import static com.github.gv2011.util.CollectionUtils.toISet;
 import static com.github.gv2011.util.CollectionUtils.toOptional;
+import static com.github.gv2011.util.ex.Exceptions.format;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 
-import com.github.gv2011.util.ReflectionUtils;
 import com.github.gv2011.util.ServiceLoaderUtils;
-import com.github.gv2011.util.XStream;
+import com.github.gv2011.util.ann.VisibleForTesting;
 import com.github.gv2011.util.beans.AnnotationHandler;
+import com.github.gv2011.util.beans.ElementaryTypeHandler;
 import com.github.gv2011.util.beans.ElementaryTypeHandlerFactory;
 import com.github.gv2011.util.beans.Type;
 import com.github.gv2011.util.beans.TypeRegistry;
@@ -74,14 +74,16 @@ public class DefaultTypeRegistry implements TypeRegistry{
 
   private static final Logger LOG = getLogger(DefaultTypeRegistry.class);
 
-  final JsonFactory jf;
-  final BeanFactory beanFactory = new BeanFactory();
+  private final JsonFactory jf;
+
+  @VisibleForTesting
+  final BeanFactory beanFactory;
 
   private final SoftIndex<Class<?>,AbstractType<?>> typeMap = createTypeMap();
 
   private SoftIndex<Class<?>, AbstractType<?>> createTypeMap() {
     return CacheUtils.softIndex(
-      c->Optional.of(createType(c)), //TODO: cache info about not supported classes
+      c->tryCreateType(c),
       p->p.getValue().ifPresent(AbstractType::initialize)
     );
   }
@@ -99,6 +101,7 @@ public class DefaultTypeRegistry implements TypeRegistry{
 
   public DefaultTypeRegistry(final JsonFactory jsonFactory) {
     jf = jsonFactory;
+    beanFactory = new BeanFactory(jf, annotationHandler, this);
     final IList.Builder<ElementaryTypeHandlerFactory> b = listBuilder();
     for(final ElementaryTypeHandlerFactory tf: ServiceLoader.load(ElementaryTypeHandlerFactory.class)) {
       b.add(tf);
@@ -112,8 +115,8 @@ public class DefaultTypeRegistry implements TypeRegistry{
     return (DefaultBeanType<T>) type(beanClass);
   }
 
-  <T> AbstractPolymorphicBeanSupport<T> abstractBeanType(final Class<T> abstractBeanClass) {
-    return (AbstractPolymorphicBeanSupport<T>) type(abstractBeanClass);
+  <T> AbstractPolymorphicSupport<T> abstractBeanType(final Class<T> abstractBeanClass) {
+    return (AbstractPolymorphicSupport<T>) type(abstractBeanClass);
   }
 
   public <E> AbstractElementaryType<E> elementaryType(final Class<E> elementaryClass) {
@@ -122,7 +125,9 @@ public class DefaultTypeRegistry implements TypeRegistry{
 
   @SuppressWarnings("unchecked")
   public <T> AbstractType<T> type(final Class<T> clazz) {
-    return (AbstractType<T>) typeMap.get(clazz);
+    return (AbstractType<T>) typeMap.tryGet(clazz)
+      .orElseThrow(()->new IllegalArgumentException(format("{} is not supported.", clazz)))
+    ;
   }
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -170,17 +175,19 @@ public class DefaultTypeRegistry implements TypeRegistry{
   }
 
   @SuppressWarnings("unchecked")
-  private <T> AbstractType<T> createType(final Class<T> clazz) {
+  private <T> Optional<AbstractType<T>> tryCreateType(final Class<T> clazz) {
+    Optional<AbstractType<T>> result;
     LOG.debug("Creating type for {}.", clazz);
-    if(isCollectionType(clazz)) throw new UnsupportedOperationException();
-    else if(isTypedStringType(clazz)) return createTypedStringType(clazz);
-    else if(beanFactory.isBeanClass(clazz)) return beanFactory.createBeanType(clazz);
-    else if(annotationHandler.isPolymorphicRoot(clazz)) return createAbstractBeanType(clazz);
-    else return createElementaryType(clazz);
-  }
-
-  private <T> PolymorphicAbstractBeanRootType<T> createAbstractBeanType(final Class<T> clazz) {
-    return new PolymorphicAbstractBeanRootType<>(this, clazz);
+    if(isCollectionType(clazz)) result = Optional.empty();
+    else if(isTypedStringType(clazz)) result = Optional.of(createTypedStringType(clazz));
+    else{
+      final Optional<AbstractType<T>> beanType = beanFactory.tryCreate(clazz);
+      if(beanType.isPresent()) result = beanType;
+      else result = tryCreateElementaryType(clazz).map(t->t);
+    }
+    if(result.isPresent()) LOG.debug("Created {} for {}.", result.get(), clazz);
+    else LOG.info("{} is not supported.", clazz);
+    return result;
   }
 
   private boolean isTypedStringType(final Class<?> clazz) {
@@ -197,22 +204,20 @@ public class DefaultTypeRegistry implements TypeRegistry{
   }
 
 
-  private <T> ElementaryTypeImp<T> createElementaryType(final Class<T> clazz) {
-    return new ElementaryTypeImp<>(
-      jf,
-      clazz,
-      ( additionalTypeHandlerFactories.parallelStream()
-        .flatMap(f->f.isSupported(clazz) ? Stream.of(f.getTypeHandler(clazz)) : Stream.empty())
-        .collect(toOptional())
-        .orElseGet(()->defaultFactory.getTypeHandler(clazz))
-      )
-    );
+  private <T> Optional<ElementaryTypeImp<T>> tryCreateElementaryType(final Class<T> clazz) {
+    Optional<ElementaryTypeHandler<T>> typeHandler = additionalTypeHandlerFactories.parallelStream()
+      .flatMap(f->f.isSupported(clazz) ? Stream.of(f.getTypeHandler(clazz)) : Stream.empty())
+      .collect(toOptional())
+    ;
+    if(!typeHandler.isPresent()) typeHandler = defaultFactory.tryGetTypeHandler(clazz);
+    return typeHandler.map(th->new ElementaryTypeImp<>(jf,clazz,th));
   }
 
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  public Type<?> getType(final Object beanOrElementary){
-    if(beanOrElementary instanceof IList) throw new IllegalArgumentException();
+  public Type<?> getTypeOfObject(final Object beanOrElementary){
+    if(beanOrElementary instanceof Collection) throw new IllegalArgumentException();
+    else if(beanOrElementary instanceof Optional) throw new IllegalArgumentException();
     else {
       final Class clazz = beanOrElementary.getClass();
       if(clazz.getTypeParameters().length!=0) throw new IllegalArgumentException();
@@ -234,14 +239,43 @@ public class DefaultTypeRegistry implements TypeRegistry{
     return typeMap.getIfPresent(clazz)
       .map(Optional::isPresent) //if there is information in the cache, use it
       .orElseGet(()->{
-        return
-          isCollectionType(clazz) ||
-          beanFactory.isSupported(clazz) ||
-           defaultFactory.isSupported(clazz) ||
-          additionalTypeHandlerFactories.parallelStream().anyMatch(f->f.isSupported(clazz))
-        ;
+        return notSupportedReason(clazz).isEmpty();
       }
     );
+  }
+
+  private boolean supported2(final Class<?> clazz) {
+    return isCollectionType(clazz) ||
+    beanFactory.isSupported(clazz) ||
+    defaultFactory.isSupported(clazz) ||
+    additionalTypeHandlerFactories.parallelStream().anyMatch(f->f.isSupported(clazz));
+  }
+
+  public String notSupportedReason(final Class<?> clazz) {
+    final String result;
+    if(isCollectionType(clazz)) result = "";
+    else{
+      final String reason = beanFactory.notSupportedReason(clazz);
+      if(!reason.isEmpty()){
+        if(
+          defaultFactory.isSupported(clazz) ||
+          additionalTypeHandlerFactories.parallelStream().anyMatch(f->f.isSupported(clazz))
+        ){
+          result = "";
+        }
+        else result = reason;
+      }
+      else result = reason;
+    }
+    assert result.isEmpty() == supported2(clazz);
+    return result;
+  }
+
+  <T> Optional<AbstractType<T>> getTypeIfCached(final Class<T> clazz){
+    return
+      typeMap.getIfPresent(clazz).orElse(Optional.empty())
+      .map(t->t.castTo(clazz))
+    ;
   }
 
   @SuppressWarnings("unchecked")
@@ -252,6 +286,10 @@ public class DefaultTypeRegistry implements TypeRegistry{
         if(types.size()==1) return Optional.of((AbstractType<? super T>) type(single(types)));
         else return Optional.empty();
     }
+  }
+
+  final JsonFactory jf() {
+    return jf;
   }
 
 }
