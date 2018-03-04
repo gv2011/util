@@ -38,6 +38,10 @@ public interface ISet<E> extends Set<E>, ICollection<E>{
 
   public static interface Builder<E> extends CollectionBuilder<ISet<E>,E,Builder<E>>{}
 
+  @SuppressWarnings("unchecked")
+  static <E> ISet<E> cast(final ISet<? extends E> set){return (ISet<E>) set;}
+
+
   @Override
   default boolean isEmpty() {
     return size()==0;

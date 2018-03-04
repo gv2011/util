@@ -33,16 +33,19 @@ import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.format;
 
 import java.lang.reflect.Proxy;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
+import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.beans.BeanBuilder;
 import com.github.gv2011.util.beans.Partial;
 import com.github.gv2011.util.beans.Property;
+import com.github.gv2011.util.icol.ICollection;
 import com.github.gv2011.util.icol.ISet;
 
 final class BeanBuilderImp<T> implements BeanBuilder<T> {
@@ -85,7 +88,7 @@ final class BeanBuilderImp<T> implements BeanBuilder<T> {
           .filter(p->!map.keySet().contains(p.name()))
           .collect(toISet())
       ;
-      verify(missing, Set::isEmpty);
+      verify(missing, Set::isEmpty, m->format("{}: The required properties {} have not been set.", beanType, m));
       //create proxy:
       return beanType.clazz.cast(Proxy.newProxyInstance(
           beanType.clazz.getClassLoader(),
@@ -120,6 +123,15 @@ final class BeanBuilderImp<T> implements BeanBuilder<T> {
     public <V> Setter<T,V> set(final Function<T, V> method) {
       final PropertyImp<T,V> property = beanType.getProperty(method);
       return new SetterImp<>(property);
+    }
+
+
+
+    @Override
+    public <C extends ICollection<E>, E> CollectionSetter<T, C, E> setC(final Function<T, C> method) {
+      final PropertyImp<T, C> property = beanType.getProperty(method);
+      verify(property.type() instanceof CollectionType);
+      return new CollectionSetterImp<>(property);
     }
 
     @SuppressWarnings("rawtypes")
@@ -169,4 +181,27 @@ final class BeanBuilderImp<T> implements BeanBuilder<T> {
       }
     }
 
+    private class CollectionSetterImp<C extends ICollection<E>,E> implements CollectionSetter<T,C,E>{
+      private final PropertyImp<T, C> property;
+      private CollectionSetterImp(final PropertyImp<T, C> property) {
+        this.property = property;
+      }
+      @SuppressWarnings("unchecked")
+      @Override
+      public BeanBuilder<T> to(final Collection<? extends E> collection) {
+        final CollectionType<C,Nothing,E> collectionType = (CollectionType<C, Nothing, E>) property.type();
+        final Class<C> rawCollectionClass = collectionType.clazz;
+        assert rawCollectionClass.equals(Optional.class) || ICollection.class.isAssignableFrom(rawCollectionClass);
+        final C value;
+        if(rawCollectionClass.isInstance(collection)) value = collectionType.cast(collection);
+        else{
+          value = collectionType.createCollection(collection);
+        }
+        map.put(
+          property.name(),
+          value
+        );
+        return BeanBuilderImp.this;
+      }
+    }
 }

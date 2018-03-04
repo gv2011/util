@@ -41,6 +41,10 @@ public interface IMap<K,V> extends Map<K,V>{
 
   public static interface Builder<K,V> extends MapBuilder<IMap<K,V>,K,V,Builder<K,V>>{}
 
+  @SuppressWarnings("unchecked")
+  static <K,V> IMap<K,V> cast(final IMap<? extends K, ? extends V> map){return (IMap<K, V>) map;}
+
+
   @Override
   ISet<K> keySet();
 

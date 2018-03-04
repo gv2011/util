@@ -39,6 +39,10 @@ public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, Na
 
   public static interface Builder<E extends Comparable<? super E>> extends CollectionBuilder<ISortedSet<E>,E,Builder<E>>{}
 
+  @SuppressWarnings("unchecked")
+  static <E extends Comparable<? super E>> ISortedSet<E>
+  cast(final ISortedSet<? extends E> set){return (ISortedSet<E>) set;}
+
   @Override
   @Deprecated
   @SuppressWarnings({ "unchecked", "rawtypes" })

@@ -38,6 +38,11 @@ public interface ISortedMap<K extends Comparable<? super K>,V> extends IMap<K,V>
   public static interface Builder<K extends Comparable<? super K>,V>
   extends MapBuilder<ISortedMap<K,V>,K,V,Builder<K,V>>{}
 
+  @SuppressWarnings("unchecked")
+  static <K extends Comparable<? super K>,V> ISortedMap<K,V>
+  cast(final ISortedMap<? extends K, ? extends V> map){return (ISortedMap<K, V>) map;}
+
+
   @Deprecated
   @Override
   default Comparator<? super K> comparator() {

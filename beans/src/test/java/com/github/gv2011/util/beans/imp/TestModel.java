@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -31,6 +31,8 @@ import com.github.gv2011.util.beans.Default;
 import com.github.gv2011.util.beans.FixedValue;
 import com.github.gv2011.util.beans.Other;
 import com.github.gv2011.util.beans.TypeName;
+import com.github.gv2011.util.icol.IList;
+import com.github.gv2011.util.icol.ISet;
 
 
 public class TestModel {
@@ -68,8 +70,20 @@ public class TestModel {
 
   public static enum Colour{RED, @Default BLUE, @Other OTHER}
 
+  @Abstract(subClasses={NormalPot.class, ChickPeaPot.class})
   public static interface Pot{
+    String type();
     Pea content();
+    IList<? extends Pea> moreContent();
+  }
+
+  public static interface NormalPot extends Pot{}
+
+  public static interface ChickPeaPot extends Pot{
+    @Override
+    ChickPea content();
+    @Override
+    IList<ChickPea> moreContent();
   }
 
 }

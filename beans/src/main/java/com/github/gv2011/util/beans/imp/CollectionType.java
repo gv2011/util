@@ -1,5 +1,6 @@
 package com.github.gv2011.util.beans.imp;
 
+import java.util.Collection;
 /*-
  * #%L
  * util-beans
@@ -125,6 +126,10 @@ final class CollectionType<C,K,E> extends AbstractType<C>{
   @Override
   boolean isOptional() {
     return structure.equals(Structure.opt());
+  }
+
+  C createCollection(final Collection<? extends E> collection) {
+    return structure.createCollection(collection);
   }
 
 

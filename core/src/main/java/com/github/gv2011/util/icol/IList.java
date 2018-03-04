@@ -40,6 +40,9 @@ public interface IList<E> extends List<E>, ICollection<E>{
 
   public static interface Builder<E> extends CollectionBuilder<IList<E>,E,Builder<E>>{}
 
+  @SuppressWarnings("unchecked")
+  static <E> IList<E> cast(final IList<? extends E> list){return (IList<E>) list;}
+
   @Override
   IList<E> subList(int fromIndex, int toIndex);
 

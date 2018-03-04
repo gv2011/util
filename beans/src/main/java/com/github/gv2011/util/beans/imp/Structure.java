@@ -1,5 +1,9 @@
 package com.github.gv2011.util.beans.imp;
 
+import static com.github.gv2011.util.CollectionUtils.atMostOne;
+import static com.github.gv2011.util.CollectionUtils.copyToIList;
+import static com.github.gv2011.util.CollectionUtils.copyToISet;
+import static com.github.gv2011.util.CollectionUtils.copyToISortedSet;
 /*-
  * #%L
  * util-beans
@@ -37,6 +41,7 @@ import static com.github.gv2011.util.CollectionUtils.toISortedMap;
 import static com.github.gv2011.util.CollectionUtils.toISortedSet;
 import static com.github.gv2011.util.ex.Exceptions.bug;
 
+import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collector;
@@ -145,6 +150,9 @@ abstract class Structure<C,K,E> {
     else return XStream.of(n);
   }
 
+  abstract C createCollection(final Collection<? extends E> collection);
+
+
   private static final class OptStructure<E> extends Structure<Optional<E>,Nothing,E> {
 
     private OptStructure() {
@@ -175,6 +183,11 @@ abstract class Structure<C,K,E> {
       ;
     }
 
+    @Override
+    Optional<E> createCollection(final Collection<? extends E> collection) {
+      return atMostOne(collection);
+    }
+
   }
 
 
@@ -202,6 +215,11 @@ abstract class Structure<C,K,E> {
     @Override
     Collector<E, ?, IList<E>> collector() {
       return toIList();
+    }
+
+    @Override
+    IList<E> createCollection(final Collection<? extends E> collection) {
+      return copyToIList(collection);
     }
   }
 
@@ -231,6 +249,11 @@ abstract class Structure<C,K,E> {
     Collector<E, ?, ISet<E>> collector() {
       return toISet();
     }
+
+    @Override
+    ISet<E> createCollection(final Collection<? extends E> collection) {
+      return copyToISet(collection);
+    }
   }
 
 
@@ -259,6 +282,10 @@ abstract class Structure<C,K,E> {
     @Override
     Collector<E, ?, ISortedSet<E>> collector() {
       return toISortedSet();
+    }
+    @Override
+    ISortedSet<E> createCollection(final Collection<? extends E> collection) {
+      return copyToISortedSet(collection);
     }
   }
 
@@ -317,6 +344,11 @@ abstract class Structure<C,K,E> {
       ;
     }
 
+    @Override
+    IMap<K, V> createCollection(final Collection<? extends V> collection) {
+      throw new UnsupportedOperationException();
+    }
+
   }
 
   private static final class StringMapStructure<V> extends Structure<ISortedMap<String,V>,String,V> {
@@ -366,6 +398,10 @@ abstract class Structure<C,K,E> {
       ;
     }
 
+    @Override
+    ISortedMap<String, V> createCollection(final Collection<? extends V> collection) {
+      throw new UnsupportedOperationException();
+    }
   }
 
 }

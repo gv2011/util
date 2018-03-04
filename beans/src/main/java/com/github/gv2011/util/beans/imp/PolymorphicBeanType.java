@@ -28,6 +28,7 @@ package com.github.gv2011.util.beans.imp;
 
 import static com.github.gv2011.util.CollectionUtils.atMostOne;
 import static com.github.gv2011.util.Verify.verify;
+import static com.github.gv2011.util.ex.Exceptions.format;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.Method;
@@ -86,7 +87,13 @@ final class PolymorphicBeanType<T> extends DefaultBeanType<T> {
 
   @Override
   void checkProperties(final ISortedMap<String, PropertyImp<T,?>> properties) {
-    typePropertyName.ifPresent(n->verify(properties.keySet().contains(n)));
+    typePropertyName.ifPresent(n->
+      verify(
+        properties.keySet(),
+        s->s.contains(n),
+        s->format("The type property \"{}\" is missing in {} (available properties are: {}).", n, clazz, s)
+      )
+    );
   }
 
   private boolean isTypeProperty(final Method m) {

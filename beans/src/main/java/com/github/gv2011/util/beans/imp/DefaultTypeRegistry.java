@@ -31,10 +31,12 @@ import static com.github.gv2011.util.CollectionUtils.single;
 import static com.github.gv2011.util.CollectionUtils.stream;
 import static com.github.gv2011.util.CollectionUtils.toISet;
 import static com.github.gv2011.util.CollectionUtils.toOptional;
+import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.WildcardType;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.ServiceLoader;
@@ -138,32 +140,32 @@ public class DefaultTypeRegistry implements TypeRegistry{
       final Class rawType = (Class) pType.getRawType();
       if(rawType.equals(ILIST)) {
         return
-          (AbstractType<T>) type(single(pType.getActualTypeArguments()))
+          (AbstractType<T>) type(filterWildCard(single(pType.getActualTypeArguments())))
           .collectionType(Structure.list())
         ;
       }
       else if(rawType.equals(OPTIONAL)) {
         return
-          (AbstractType<T>) type(single(pType.getActualTypeArguments()))
+          (AbstractType<T>) type(filterWildCard(single(pType.getActualTypeArguments())))
           .collectionType(Structure.opt())
         ;
       }
       else if(rawType.equals(ISET)) {
         return
-          (AbstractType<T>) type(single(pType.getActualTypeArguments()))
+          (AbstractType<T>) type(filterWildCard(single(pType.getActualTypeArguments())))
           .collectionType(Structure.set())
         ;
       }
       else if(rawType.equals(ISORTEDSET)) {
         return
-          (AbstractType<T>) type(single(pType.getActualTypeArguments()))
+          (AbstractType<T>) type(filterWildCard(single(pType.getActualTypeArguments())))
           .collectionType(Structure.sortedSet())
         ;
       }
       else if(rawType.equals(IMAP)||rawType.equals(ISORTEDMAP)) {
         assert pType.getActualTypeArguments().length==2;
-        final AbstractType keyType = type(pType.getActualTypeArguments()[0]);
-        final AbstractType valueType = type(pType.getActualTypeArguments()[1]);
+        final AbstractType keyType = type(filterWildCard(pType.getActualTypeArguments()[0]));
+        final AbstractType valueType = type(filterWildCard(pType.getActualTypeArguments()[1]));
         if(keyType.equals(stringType)) {
           return keyType.mapType(Structure.stringMap(), valueType);
         }
@@ -172,6 +174,17 @@ public class DefaultTypeRegistry implements TypeRegistry{
       else throw new UnsupportedOperationException();
     }
     else throw new UnsupportedOperationException(genType.toString());
+  }
+
+  private java.lang.reflect.Type filterWildCard(final java.lang.reflect.Type genType){
+    if(genType instanceof WildcardType){
+      final WildcardType wc = (WildcardType)genType;
+      if(wc.getLowerBounds().length>0) throw new UnsupportedOperationException(genType.toString());
+      final java.lang.reflect.Type[] upper = wc.getUpperBounds();
+      if(upper.length!=1) throw new UnsupportedOperationException(genType.toString());
+      return notNull(upper[0]);
+    }
+    else return genType;
   }
 
   @SuppressWarnings("unchecked")
