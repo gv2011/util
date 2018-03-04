@@ -1,11 +1,7 @@
 package com.github.gv2011.util.beans;
 
-import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Function;
-
-import com.github.gv2011.util.icol.ICollection;
-import com.github.gv2011.util.icol.IList;
 
 /*-
  * #%L
@@ -43,24 +39,12 @@ public interface BeanBuilder<T> {
 
     <V> Setter<T,V> set(Function<T,V> method);
 
-    <C extends ICollection<E>,E> CollectionSetter<T,C,E> setC(Function<T,C> method);
-
-    <E> ListSetter<T,E> setList(Function<T,IList<? extends E>> method);
-
     <V> Setter<T,V> setOpt(Function<T,Optional<V>> method);
 
     BeanBuilder<T> setAll(T bean);
 
     public interface Setter<T,V> {
       BeanBuilder<T> to(V value);
-    }
-
-    public interface CollectionSetter<T,C extends ICollection<E>,E> {
-      <C2 extends Collection<E2>, E2 extends E> BeanBuilder<T> to(C2 collection);
-    }
-
-    public interface ListSetter<T,E> {
-      <C2 extends Collection<E2>, E2 extends E> BeanBuilder<T> to(C2 collection);
     }
 
 }

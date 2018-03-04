@@ -32,7 +32,6 @@ import com.github.gv2011.util.beans.FixedValue;
 import com.github.gv2011.util.beans.Other;
 import com.github.gv2011.util.beans.TypeName;
 import com.github.gv2011.util.icol.IList;
-import com.github.gv2011.util.icol.ISet;
 
 
 public class TestModel {

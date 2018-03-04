@@ -27,27 +27,17 @@ package com.github.gv2011.util.beans.imp;
  */
 
 import static com.github.gv2011.testutil.Matchers.is;
-import static com.github.gv2011.util.CollectionUtils.listOf;
-import static com.github.gv2011.util.CollectionUtils.setOf;
 import static org.junit.Assert.assertThat;
 
-import java.util.Collection;
 import java.util.Optional;
-import java.util.function.Function;
 
 import org.junit.Test;
 
-import com.github.gv2011.util.beans.BeanBuilder.CollectionSetter;
-import com.github.gv2011.util.beans.BeanBuilder.ListSetter;
-import com.github.gv2011.util.beans.BeanBuilder.Setter;
 import com.github.gv2011.util.beans.imp.TestModel.BlackPea;
 import com.github.gv2011.util.beans.imp.TestModel.ChickPea;
 import com.github.gv2011.util.beans.imp.TestModel.NormalPot;
 import com.github.gv2011.util.beans.imp.TestModel.Pea;
-import com.github.gv2011.util.beans.imp.TestModel.Pot;
 import com.github.gv2011.util.beans.imp.TestModel.SnowPea;
-import com.github.gv2011.util.icol.IList;
-import com.github.gv2011.util.icol.ISet;
 
 
 public class PolymorphismTest {
@@ -81,31 +71,5 @@ public class PolymorphismTest {
     assertThat(snowPea.type(), is("saccharatum"));
 
   }
-
-  @Test
-  public void testPolySet() {
-    final DefaultTypeRegistry reg = new DefaultTypeRegistry();
-    final SnowPea snowPea1 = reg.createBuilder(SnowPea.class).build();
-    final SnowPea snowPea2 = reg.createBuilder(SnowPea.class)
-      .set(SnowPea::propC).to("snow2")
-      .build()
-    ;
-    final Function<Pot,IList<? extends Pea>> f = (Pot::moreContent);
-    final IList<SnowPea> list = listOf(snowPea2, snowPea2);
-    reg.createBuilder(Pot.class).<Pea>setList(Pot::moreContent).to(list);
-//    final IList<Object> lala = null;
-//    lala.cast();
-//    final Setter<NormalPot, ?> set = reg.createBuilder(NormalPot.class).set(Pot::moreContent);
-//
-//    final ISet<SnowPea> peas = setOf(snowPea1, snowPea2);
-//    final Collection<Pea> peas2;
-//    final CollectionSetter<NormalPot, ISet<? extends Pea>, ? extends Pea> setC = reg.createBuilder(NormalPot.class)
-//      .set(Pot::content).to(snowPea1)
-//      .setC(Pot::moreContent);
-//    setC.to(null)
-//      .build()
-//    ;
-  }
-
 
 }
