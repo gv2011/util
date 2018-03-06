@@ -69,12 +69,18 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     InetSocketAddress.class.getName()
   );
 
-  @Override
-  public boolean isSupported(final Class<?> clazz) {
-    return clazz.isEnum() || SUPPORTED_CLASS_NAMES.contains(clazz.getName());
-  }
+  private final AutoElementarySupport auto = new AutoElementarySupport();
 
   @Override
+  public boolean isSupported(final Class<?> clazz) {
+    return
+      clazz.isEnum() ||
+      SUPPORTED_CLASS_NAMES.contains(clazz.getName()) ||
+      auto.isSupported(clazz)
+    ;
+  }
+
+@Override
   public <T> ElementaryTypeHandler<T> getTypeHandler(final Class<T> clazz) {
     return tryGetTypeHandler(clazz)
       .orElseThrow(()->
@@ -100,6 +106,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     else if(clazz.equals(Duration.class)) result = new DurationType();
     else if(clazz.equals(IsoDay.class)) result = stringBasedType(IsoDay.class);
     else if(clazz.equals(InetSocketAddress.class)) result = new InetSocketAddressType();
+    else if(auto.isSupported(clazz)) result = auto.createType(clazz);
     else result = null;
     return Optional.ofNullable((AbstractElementaryTypeHandler<T>) result);
   }
@@ -117,7 +124,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     return stringBasedType(constructor, Optional.empty());
   }
 
-  private static <T> AbstractElementaryTypeHandler<T> stringBasedType(
+  static <T> AbstractElementaryTypeHandler<T> stringBasedType(
     final Function<? super String,T> constructor, final Optional<T> defaultValue
   ) {
     return new AbstractElementaryTypeHandler<T>() {

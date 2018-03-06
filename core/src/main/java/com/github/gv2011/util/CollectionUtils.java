@@ -174,6 +174,14 @@ public class CollectionUtils {
     return XStream.fromOptional(optional);
   }
 
+  public static <T> Optional<T> filter(final Optional<T> optional, final Predicate<? super T> predicate){
+    if(optional.isPresent()) {
+      if(predicate.test(optional.get())) return optional;
+      else return Optional.empty();
+    }
+    else return optional;
+  }
+
   public static <T> XStream<T> stream(final T[] array){
     return XStream.of(array);
   }

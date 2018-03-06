@@ -109,6 +109,7 @@ public class DefaultTypeRegistry implements TypeRegistry{
       b.add(tf);
     }
     additionalTypeHandlerFactories = b.build();
+    LOG.info("additionalTypeHandlerFactories:{}", additionalTypeHandlerFactories);
     stringType = type(String.class);
   }
 
@@ -128,7 +129,9 @@ public class DefaultTypeRegistry implements TypeRegistry{
   @SuppressWarnings("unchecked")
   public <T> AbstractType<T> type(final Class<T> clazz) {
     return (AbstractType<T>) typeMap.tryGet(clazz)
-      .orElseThrow(()->new IllegalArgumentException(format("{} is not supported.", clazz)))
+      .orElseThrow(()->
+        new IllegalArgumentException(format("{} is not supported.", clazz))
+      )
     ;
   }
 
