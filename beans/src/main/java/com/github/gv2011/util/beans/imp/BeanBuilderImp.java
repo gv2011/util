@@ -44,15 +44,16 @@ import com.github.gv2011.util.beans.BeanBuilder;
 import com.github.gv2011.util.beans.Partial;
 import com.github.gv2011.util.beans.Property;
 import com.github.gv2011.util.icol.ISet;
+import com.github.gv2011.util.icol.ISortedMap;
 
-final class BeanBuilderImp<T> implements BeanBuilder<T> {
+public class BeanBuilderImp<T> implements BeanBuilder<T> {
 
 
     private final Map<String,Object> map = new HashMap<>();
 
-    final DefaultBeanType<T> beanType;
+    protected final DefaultBeanType<T> beanType;
 
-    BeanBuilderImp(final DefaultBeanType<T> beanInfo) {
+    protected BeanBuilderImp(final DefaultBeanType<T> beanInfo) {
         this.beanType = beanInfo;
     }
 
@@ -87,10 +88,15 @@ final class BeanBuilderImp<T> implements BeanBuilder<T> {
       ;
       verify(missing, Set::isEmpty, m->format("{}: The required properties {} have not been set.", beanType, m));
       //create proxy:
+      final ISortedMap<String, Object> imap = iCollections().copyOf(map);
+      return create(imap);
+    }
+
+    protected T create(final ISortedMap<String, Object> imap) {
       return beanType.clazz.cast(Proxy.newProxyInstance(
           beanType.clazz.getClassLoader(),
           new Class<?>[] {beanType.clazz},
-          new BeanInvocationHandler<>(beanType, iCollections().copyOf(map))
+          new DefaultInvocationHandler<>(beanType, imap)
       ));
     }
 

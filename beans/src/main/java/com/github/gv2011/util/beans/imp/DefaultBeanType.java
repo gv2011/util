@@ -64,7 +64,7 @@ import com.github.gv2011.util.json.JsonNodeType;
 import com.github.gv2011.util.json.JsonObject;
 
 
-class DefaultBeanType<T> extends AbstractType<T> implements BeanType<T> {
+public class DefaultBeanType<T> extends AbstractType<T> implements BeanType<T> {
 
   private static final Logger LOG = getLogger(DefaultBeanType.class);
 

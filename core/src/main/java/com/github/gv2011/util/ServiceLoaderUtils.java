@@ -32,6 +32,8 @@ package com.github.gv2011.util;
 import static com.github.gv2011.util.Constants.softRefConstant;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 
+import java.util.Optional;
+
 import com.github.gv2011.util.serviceloader.RecursiveServiceLoader;
 
 public final class ServiceLoaderUtils {
@@ -40,6 +42,10 @@ public final class ServiceLoaderUtils {
 
   public static <T> T loadService(final Class<T> serviceClass){
     return RecursiveServiceLoader.service(serviceClass);
+  }
+
+  public static <T> Optional<T> tryGetService(final Class<T> serviceClass){
+    return RecursiveServiceLoader.tryGetService(serviceClass);
   }
 
   public static <T> Constant<T> lazyServiceLoader(final Class<T> service){

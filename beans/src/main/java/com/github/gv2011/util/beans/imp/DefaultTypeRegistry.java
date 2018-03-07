@@ -31,6 +31,7 @@ import static com.github.gv2011.util.CollectionUtils.single;
 import static com.github.gv2011.util.CollectionUtils.stream;
 import static com.github.gv2011.util.CollectionUtils.toISet;
 import static com.github.gv2011.util.CollectionUtils.toOptional;
+import static com.github.gv2011.util.ServiceLoaderUtils.tryGetService;
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -51,6 +52,7 @@ import com.github.gv2011.util.beans.ElementaryTypeHandler;
 import com.github.gv2011.util.beans.ElementaryTypeHandlerFactory;
 import com.github.gv2011.util.beans.Type;
 import com.github.gv2011.util.beans.TypeRegistry;
+import com.github.gv2011.util.beans.imp.DefaultBeanFactory.DefaultBeanFactoryBuilder;
 import com.github.gv2011.util.cache.CacheUtils;
 import com.github.gv2011.util.cache.SoftIndex;
 import com.github.gv2011.util.icol.IList;
@@ -59,6 +61,7 @@ import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
 import com.github.gv2011.util.json.JsonFactory;
+import com.github.gv2011.util.json.imp.JsonFactoryImp;
 import com.github.gv2011.util.tstr.TypedString;
 
 public class DefaultTypeRegistry implements TypeRegistry{
@@ -98,12 +101,16 @@ public class DefaultTypeRegistry implements TypeRegistry{
   final AnnotationHandler annotationHandler = new DefaultAnnotationHandler();
 
   public DefaultTypeRegistry() {
-    this(ServiceLoaderUtils.loadService(JsonFactory.class));
+    this(ServiceLoaderUtils.loadService(JsonFactory.class), new DefaultBeanFactoryBuilder());
   }
 
-  public DefaultTypeRegistry(final JsonFactory jsonFactory) {
+  public DefaultTypeRegistry(final JsonFactoryImp jsonFactory) {
+    this(jsonFactory, tryGetService(BeanFactoryBuilder.class).orElseGet(DefaultBeanFactoryBuilder::new));
+  }
+
+  public DefaultTypeRegistry(final JsonFactory jsonFactory, final BeanFactoryBuilder bfb) {
     jf = jsonFactory;
-    beanFactory = new BeanFactory(jf, annotationHandler, this);
+    beanFactory = bfb.build(jf, annotationHandler, this);
     final IList.Builder<ElementaryTypeHandlerFactory> b = listBuilder();
     for(final ElementaryTypeHandlerFactory tf: ServiceLoader.load(ElementaryTypeHandlerFactory.class)) {
       b.add(tf);

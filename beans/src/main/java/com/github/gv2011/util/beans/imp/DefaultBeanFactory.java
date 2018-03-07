@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,23 +25,47 @@ package com.github.gv2011.util.beans.imp;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.testutil.Matchers.is;
-import static com.github.gv2011.testutil.Matchers.not;
-import static org.junit.Assert.*;
 
-import org.junit.Test;
+import static org.slf4j.LoggerFactory.getLogger;
 
-import com.github.gv2011.util.beans.imp.TestModel.Pea;
+import java.lang.reflect.Method;
 
-public class BeanFactoryTest {
+import org.slf4j.Logger;
 
-  private final DefaultBeanFactory beanFactory = (DefaultBeanFactory) new DefaultTypeRegistry().beanFactory;
+import com.github.gv2011.util.beans.AnnotationHandler;
+import com.github.gv2011.util.json.JsonFactory;
 
-  @Test
-  public void test() {
-    assertThat(beanFactory.notBeanReason(Pea.class), not(is("")));
-    assertThat(beanFactory.isBeanClass(Pea.class), is(false));
-    assertThat(beanFactory.notPolymorphicRootClassReason(Pea.class), is(""));
+final class DefaultBeanFactory extends BeanFactory{
+
+  static final class DefaultBeanFactoryBuilder implements BeanFactoryBuilder{
+    @Override
+    public BeanFactory build(
+      final JsonFactory jf, final AnnotationHandler annotationHandler, final DefaultTypeRegistry registry
+    ) {
+      return new DefaultBeanFactory(jf, annotationHandler, registry);
+    }
+  }
+
+  @SuppressWarnings("unused")
+  private static final Logger LOG = getLogger(DefaultBeanFactory.class);
+
+  private DefaultBeanFactory(
+    final JsonFactory jf,
+    final AnnotationHandler annotationHandler,
+    final DefaultTypeRegistry registry
+  ) {
+    super(jf,annotationHandler,registry);
+  }
+
+  @Override
+  protected String isProxyable(final Class<?> clazz) {
+    return clazz.isInterface() ? "" : "not an interface";
+  }
+
+  @Override
+  protected boolean isPropertyMethod(final Method m) {
+    assert m.getDeclaringClass().isInterface();
+    return m.getParameterCount()==0;
   }
 
 }

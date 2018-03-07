@@ -1,8 +1,8 @@
-package com.github.gv2011.util.beans.imp;
+package com.github.gv2011.util.beans.cglib;
 
 /*-
  * #%L
- * util-beans
+ * util-beans-cglib
  * %%
  * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
  * %%
@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,23 +25,31 @@ package com.github.gv2011.util.beans.imp;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.testutil.Matchers.is;
-import static com.github.gv2011.testutil.Matchers.not;
-import static org.junit.Assert.*;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
-import org.junit.Test;
+import com.github.gv2011.util.beans.AnnotationHandler;
+import com.github.gv2011.util.beans.imp.BeanFactory;
+import com.github.gv2011.util.beans.imp.DefaultTypeRegistry;
+import com.github.gv2011.util.json.JsonFactory;
 
-import com.github.gv2011.util.beans.imp.TestModel.Pea;
+final class CglibBeanFactory extends BeanFactory {
 
-public class BeanFactoryTest {
-
-  private final DefaultBeanFactory beanFactory = (DefaultBeanFactory) new DefaultTypeRegistry().beanFactory;
-
-  @Test
-  public void test() {
-    assertThat(beanFactory.notBeanReason(Pea.class), not(is("")));
-    assertThat(beanFactory.isBeanClass(Pea.class), is(false));
-    assertThat(beanFactory.notPolymorphicRootClassReason(Pea.class), is(""));
+  CglibBeanFactory(
+    final JsonFactory jf, final AnnotationHandler annotationHandler, final DefaultTypeRegistry registry
+  ) {
+    super(jf, annotationHandler, registry);
   }
+
+  @Override
+  protected String isProxyable(final Class<?> clazz) {
+    return clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers()) ? "" : "not abstract";
+  }
+
+  @Override
+  protected boolean isPropertyMethod(final Method m) {
+    return m.getParameterCount()==0 && Modifier.isAbstract(m.getModifiers());
+  }
+
 
 }

@@ -1,5 +1,7 @@
 package com.github.gv2011.util.serviceloader;
 
+import static com.github.gv2011.util.CollectionUtils.atMostOne;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -12,10 +14,10 @@ package com.github.gv2011.util.serviceloader;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,7 +29,6 @@ package com.github.gv2011.util.serviceloader;
  */
 
 import static com.github.gv2011.util.Verify.verify;
-import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static java.util.stream.Collectors.toSet;
@@ -55,6 +56,10 @@ public final class RecursiveServiceLoader {
         return INSTANCE.get().getService(serviceClass);
     }
 
+    public static final <S> Optional<S> tryGetService(final Class<S> serviceClass) {
+        return INSTANCE.get().tryGetServiceInternal(serviceClass);
+    }
+
     private final Object lock = new Object();
 
     private final Map<Class<?>,Set<?>> services = new HashMap<>();
@@ -64,10 +69,17 @@ public final class RecursiveServiceLoader {
     }
 
     private <S> S getService(final Class<S> serviceClass) {
+      return tryGetServiceInternal(serviceClass)
+        .orElseThrow(()->new IllegalStateException(format("No implementation for {} found.", serviceClass))
+      );
+    }
+
+    private <S> Optional<S> tryGetServiceInternal(final Class<S> serviceClass) {
         final Set<S> services = getServices(serviceClass);
-        verify(!services.isEmpty(), ()->format("No implementation for {} found.", serviceClass));
-        verifyEqual(services.size(),1);
-        return services.iterator().next();
+        return atMostOne(
+          services,
+          ()->format("Multiple implementations for service {}: {}.", serviceClass, services)
+        );
     }
 
     @SuppressWarnings("unchecked")

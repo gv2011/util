@@ -51,16 +51,20 @@ import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
 
-final class BeanFactory {
+public abstract class BeanFactory{
 
-  private static final Logger LOG = getLogger(BeanFactory.class);
+  private static final Logger LOG = getLogger(DefaultBeanFactory.class);
 
   private final JsonFactory jf;
   private final AnnotationHandler annotationHandler;
   private final DefaultTypeRegistry registry;
 
 
-  BeanFactory(final JsonFactory jf, final AnnotationHandler annotationHandler, final DefaultTypeRegistry registry) {
+  protected BeanFactory(
+    final JsonFactory jf,
+    final AnnotationHandler annotationHandler,
+    final DefaultTypeRegistry registry
+  ) {
     this.jf = jf;
     this.annotationHandler = annotationHandler;
     this.registry = registry;
@@ -68,21 +72,20 @@ final class BeanFactory {
 
 
   private String isAbstractOrBeanClassCandidate(final Class<?> clazz) {
-    final String whyNot;
-    if(!clazz.isInterface())
-      whyNot = "not an interface";
-    else if(clazz.getTypeParameters().length!=0)
-      whyNot = "parameterized class";
-    else{
-      final Optional<Class<?>> beanSuper = getAllInterfaces(clazz).parallelStream().findAny(this::isBeanClass);
-      if(beanSuper.isPresent())
-        whyNot = format("{} is subclass of bean class {}.", clazz, beanSuper.get());
-      else {
-        whyNot = "";
+    String whyNot = isProxyable(clazz);
+    if(whyNot.isEmpty()){
+      if(clazz.getTypeParameters().length!=0)
+        whyNot = "parameterized class";
+      else{
+        final Optional<Class<?>> beanSuper = getAllInterfaces(clazz).parallelStream().findAny(this::isBeanClass);
+        if(beanSuper.isPresent()) whyNot = format("{} is subclass of bean class {}.", clazz, beanSuper.get());
       }
     }
     return whyNot;
   }
+
+  protected abstract String isProxyable(final Class<?> clazz);
+
 
   @VisibleForTesting
   final boolean isBeanClass(final Class<?> clazz) {
@@ -211,14 +214,14 @@ final class BeanFactory {
   }
 
 
-  boolean isSupported(final Class<?> clazz) {
+  public boolean isSupported(final Class<?> clazz) {
     return
       isBeanClass(clazz) ||
       isAbstractPolymorphicClass(clazz)
     ;
   }
 
-  String notSupportedReason(final Class<?> clazz) {
+  public String notSupportedReason(final Class<?> clazz) {
     String result;
     final String notCandidate = isAbstractOrBeanClassCandidate(clazz);
     if(!notCandidate.isEmpty()) result = notCandidate;
@@ -250,10 +253,7 @@ final class BeanFactory {
   }
 
 
-  private boolean isPropertyMethod(final Method m) {
-    assert m.getDeclaringClass().isInterface();
-    return m.getParameterCount()==0;
-  }
+  protected abstract boolean isPropertyMethod(final Method m);
 
 
   private final boolean isAbstractPolymorphicClass(final Class<?> clazz) {
@@ -264,7 +264,7 @@ final class BeanFactory {
   }
 
 
-  <B> Optional<AbstractType<B>> tryCreate(final Class<B> clazz) {
+  public <B> Optional<AbstractType<B>> tryCreate(final Class<B> clazz) {
     if(isBeanClass(clazz)){
       if(isRegularBeanClass(clazz)) return Optional.of(createRegularBean(clazz));
       else return Optional.of(createPolymorphicBean(clazz));
@@ -332,7 +332,7 @@ final class BeanFactory {
   }
 
 
-  Optional<Class<?>> tryGetBeanInterface(final Class<?> clazz) {
+  public Optional<Class<?>> tryGetBeanInterface(final Class<?> clazz) {
     return getAllInterfaces(clazz).parallelStream()
       .filter(this::isBeanClass)
       .collect(toOptional())

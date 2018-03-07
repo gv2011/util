@@ -129,7 +129,7 @@ final class PropertyImp<B,T> implements Property<T> {
       if(Proxy.isProxyClass(bean.getClass())){
         final InvocationHandler ih = Proxy.getInvocationHandler(bean);
         if(ih.getClass().equals(BeanInvocationHandler.class)){
-          result = Optional.of(((BeanInvocationHandler<?>)ih).values);
+          result = Optional.of(((BeanInvocationHandler<?,?>)ih).values);
         }
         else result = Optional.empty();
       }

@@ -36,7 +36,7 @@ import com.github.gv2011.util.json.JsonFactory;
 
 public abstract class AbstractType<T> implements Type<T> {
 
-    final Class<T> clazz;
+    public final Class<T> clazz;
 
     AbstractType(final Class<T> clazz) {
       this.clazz = clazz;
