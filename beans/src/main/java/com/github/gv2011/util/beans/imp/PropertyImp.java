@@ -37,7 +37,7 @@ import java.util.Optional;
 import com.github.gv2011.util.beans.Property;
 import com.github.gv2011.util.icol.ISortedMap;
 
-final class PropertyImp<B,T> implements Property<T> {
+public final class PropertyImp<B,T> implements Property<T> {
 
     private final Method method;
     private final String name;
@@ -46,7 +46,7 @@ final class PropertyImp<B,T> implements Property<T> {
     private final Optional<T> fixedValue;
 
     PropertyImp(
-      final DefaultBeanType<B> owner,
+      final BeanTypeSupport<B> owner,
       final Method method,
       final String name,
       final AbstractType<T> type,
@@ -128,8 +128,8 @@ final class PropertyImp<B,T> implements Property<T> {
       Optional<ISortedMap<String, Object>> result;
       if(Proxy.isProxyClass(bean.getClass())){
         final InvocationHandler ih = Proxy.getInvocationHandler(bean);
-        if(ih.getClass().equals(BeanInvocationHandler.class)){
-          result = Optional.of(((BeanInvocationHandler<?,?>)ih).values);
+        if(ih.getClass().equals(BeanInvocationHandlerSupport.class)){
+          result = Optional.of(((BeanInvocationHandlerSupport<?,?>)ih).values);
         }
         else result = Optional.empty();
       }

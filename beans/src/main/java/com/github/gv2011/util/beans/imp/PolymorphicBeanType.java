@@ -39,11 +39,12 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 
 import com.github.gv2011.util.beans.AnnotationHandler;
+import com.github.gv2011.util.beans.BeanBuilder;
 import com.github.gv2011.util.beans.TypeNameStrategy;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.json.JsonFactory;
 
-final class PolymorphicBeanType<T> extends DefaultBeanType<T> {
+final class PolymorphicBeanType<T> extends BeanTypeSupport<T> {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = getLogger(PolymorphicBeanType.class);
@@ -84,6 +85,10 @@ final class PolymorphicBeanType<T> extends DefaultBeanType<T> {
     }
   }
 
+  @Override
+  public BeanBuilder<T> createBuilder() {
+    return new DefaultBeanBuilder<T>(this);
+  }
 
   @Override
   void checkProperties(final ISortedMap<String, PropertyImp<T,?>> properties) {

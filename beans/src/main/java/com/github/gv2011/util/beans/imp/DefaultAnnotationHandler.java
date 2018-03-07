@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -138,7 +138,6 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
   ){
       verify(propertyMethod.getParameterCount()==0);
       final Class<?> clazz = propertyMethod.getDeclaringClass();
-      verify(clazz, Class::isInterface);
       return stream(clazz.getMethods())
         .filter(m->m.getParameterCount()==0)
         .filter(m->m.getName().equals(propertyMethod.getName()))

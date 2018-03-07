@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,9 +32,9 @@ import java.lang.reflect.Method;
 import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.icol.ISortedMap;
 
-public class DefaultInvocationHandler<B> extends BeanInvocationHandler<B,Nothing> implements InvocationHandler{
+public class DefaultInvocationHandler<B> extends BeanInvocationHandlerSupport<B,Nothing> implements InvocationHandler{
 
-  DefaultInvocationHandler(final DefaultBeanType<B> beanType, final ISortedMap<String, Object> values) {
+  DefaultInvocationHandler(final BeanTypeSupport<B> beanType, final ISortedMap<String, Object> values) {
     super(beanType, values);
   }
 

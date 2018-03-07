@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.cglib;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,16 +25,18 @@ package com.github.gv2011.util.beans.cglib;
  * THE SOFTWARE.
  * #L%
  */
-import com.github.gv2011.util.beans.imp.BeanBuilderImp;
-import com.github.gv2011.util.beans.imp.DefaultBeanType;
+import com.github.gv2011.util.beans.imp.BeanBuilderSupport;
+import com.github.gv2011.util.beans.imp.BeanTypeSupport;
 import com.github.gv2011.util.icol.ISortedMap;
 
 import net.sf.cglib.proxy.Enhancer;
 
-public class CglibBeanBuilder<B> extends BeanBuilderImp<B>{
+final class CglibBeanBuilder<B> extends BeanBuilderSupport<B>{
 
-  CglibBeanBuilder(final DefaultBeanType<B> beanInfo) {
-    super(beanInfo);
+  private final CglibBeanType<B> beanType;
+
+  CglibBeanBuilder(final CglibBeanType<B> beanType) {
+    this.beanType = beanType;
   }
 
   @Override
@@ -43,6 +45,11 @@ public class CglibBeanBuilder<B> extends BeanBuilderImp<B>{
     enhancer.setSuperclass(beanType.clazz);
     enhancer.setCallback(new CglibBeanInvocationHandler<>(beanType, imap));
     return beanType.clazz.cast(enhancer.create());
+  }
+
+  @Override
+  protected BeanTypeSupport<B> beanType() {
+    return beanType;
   }
 
 }

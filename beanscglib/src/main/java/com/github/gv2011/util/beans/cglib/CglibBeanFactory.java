@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.cglib;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,8 +27,11 @@ package com.github.gv2011.util.beans.cglib;
  */
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
+import java.util.function.Function;
 
 import com.github.gv2011.util.beans.AnnotationHandler;
+import com.github.gv2011.util.beans.imp.AbstractType;
 import com.github.gv2011.util.beans.imp.BeanFactory;
 import com.github.gv2011.util.beans.imp.DefaultTypeRegistry;
 import com.github.gv2011.util.json.JsonFactory;
@@ -51,5 +54,14 @@ final class CglibBeanFactory extends BeanFactory {
     return m.getParameterCount()==0 && Modifier.isAbstract(m.getModifiers());
   }
 
+  @Override
+  protected <B> AbstractType<B> createRegularBeanType(
+    final Class<B> clazz,
+    final JsonFactory jf,
+    final AnnotationHandler annotationHandler,
+    final Function<Type,AbstractType<?>> registry
+  ) {
+    return new CglibBeanType<>(clazz, jf, annotationHandler, registry);
+  }
 
 }

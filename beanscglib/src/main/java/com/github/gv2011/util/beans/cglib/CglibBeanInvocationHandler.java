@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.cglib;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,16 +29,15 @@ import static com.github.gv2011.util.ex.Exceptions.wrap;
 
 import java.lang.reflect.Method;
 
-import com.github.gv2011.util.beans.imp.BeanInvocationHandler;
-import com.github.gv2011.util.beans.imp.DefaultBeanType;
+import com.github.gv2011.util.beans.imp.BeanInvocationHandlerSupport;
 import com.github.gv2011.util.icol.ISortedMap;
 
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
-public class CglibBeanInvocationHandler<B> extends BeanInvocationHandler<B, MethodProxy> implements MethodInterceptor{
+final class CglibBeanInvocationHandler<B> extends BeanInvocationHandlerSupport<B, MethodProxy> implements MethodInterceptor{
 
-  CglibBeanInvocationHandler(final DefaultBeanType<B> beanType, final ISortedMap<String, Object> values) {
+  CglibBeanInvocationHandler(final CglibBeanType<B> beanType, final ISortedMap<String, Object> values) {
     super(beanType, values);
   }
 

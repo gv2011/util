@@ -36,14 +36,14 @@ import java.util.Optional;
 import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.icol.ISortedMap;
 
-public abstract class BeanInvocationHandler<B,P>  {
+public abstract class BeanInvocationHandlerSupport<B,P>  {
 
-  private final DefaultBeanType<B> beanType;
+  private final BeanTypeSupport<B> beanType;
   final ISortedMap<String, Object> values;
 
   private @Nullable Integer hashCode = null;
 
-  protected BeanInvocationHandler(final DefaultBeanType<B> beanType, final ISortedMap<String, Object> values) {
+  protected BeanInvocationHandlerSupport(final BeanTypeSupport<B> beanType, final ISortedMap<String, Object> values) {
     this.beanType = beanType;
     this.values = values;
   }
@@ -89,8 +89,8 @@ public abstract class BeanInvocationHandler<B,P>  {
       final B otherBean = beanType.clazz.cast(other);
       if(Proxy.isProxyClass(other.getClass())) {
         final InvocationHandler oih = Proxy.getInvocationHandler(other);
-        if(oih instanceof BeanInvocationHandler) {
-          final BeanInvocationHandler<?,?> obih = (BeanInvocationHandler<?,?>)oih;
+        if(oih instanceof BeanInvocationHandlerSupport) {
+          final BeanInvocationHandlerSupport<?,?> obih = (BeanInvocationHandlerSupport<?,?>)oih;
           assert obih.beanType.equals(beanType);
           if(getHashCode()!=other.hashCode()){
             result = false;

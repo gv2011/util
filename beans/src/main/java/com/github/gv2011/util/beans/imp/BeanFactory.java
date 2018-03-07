@@ -37,8 +37,10 @@ import static com.github.gv2011.util.ex.Exceptions.notYetImplementedException;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 
@@ -266,7 +268,7 @@ public abstract class BeanFactory{
 
   public <B> Optional<AbstractType<B>> tryCreate(final Class<B> clazz) {
     if(isBeanClass(clazz)){
-      if(isRegularBeanClass(clazz)) return Optional.of(createRegularBean(clazz));
+      if(isRegularBeanClass(clazz)) return Optional.of(createRegularBeanType(clazz));
       else return Optional.of(createPolymorphicBean(clazz));
     }
     else if(isPolymorphicRootClass(clazz)) return Optional.of(createPolymorphicRoot(clazz));
@@ -277,9 +279,14 @@ public abstract class BeanFactory{
     }
   }
 
-  private <B> AbstractType<B> createRegularBean(final Class<B> clazz) {
-    return new DefaultBeanType<>(clazz, jf, annotationHandler, registry::type);
+  private <B> AbstractType<B> createRegularBeanType(final Class<B> clazz) {
+    return createRegularBeanType(clazz, jf, annotationHandler, registry::type);
   }
+
+
+  protected abstract <B> AbstractType<B> createRegularBeanType(
+    Class<B> clazz, JsonFactory jf, AnnotationHandler annotationHandler, Function<Type,AbstractType<?>> registry
+  );
 
 
   private <B> AbstractType<B> createPolymorphicBean(final Class<B> clazz) {
