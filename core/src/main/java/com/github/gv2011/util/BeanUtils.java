@@ -12,10 +12,10 @@ package com.github.gv2011.util;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,9 +27,11 @@ package com.github.gv2011.util;
  */
 
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
+import static com.github.gv2011.util.json.JsonUtils.jsonFactory;
 
 import com.github.gv2011.util.beans.BeanBuilder;
 import com.github.gv2011.util.beans.TypeRegistry;
+import com.github.gv2011.util.json.JsonObject;
 
 public final class BeanUtils {
 
@@ -37,9 +39,19 @@ public final class BeanUtils {
 
   private BeanUtils(){staticClass();}
 
-  public static <B> BeanBuilder<B> beanBuilder(final Class<B> beanClass){
-      return TYPE_REGISTRY.get().createBuilder(beanClass);
+  public static TypeRegistry typeRegistry(){
+      return TYPE_REGISTRY.get();
   }
 
+  public static <B> BeanBuilder<B> beanBuilder(final Class<B> beanClass){
+      return typeRegistry().createBuilder(beanClass);
+  }
 
+  public static <B> B parse(final Class<B> beanClass, final JsonObject json) {
+      return typeRegistry().beanType(beanClass).parse(json);
+  }
+
+  public static <B> B parse(final Class<B> beanClass, final String json) {
+      return parse(beanClass, jsonFactory().deserialize(json).asObject());
+  }
 }

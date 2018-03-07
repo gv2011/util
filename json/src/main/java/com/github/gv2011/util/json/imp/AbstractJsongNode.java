@@ -114,7 +114,7 @@ abstract class AbstractJsongNode implements JsongNode{
   }
 
   static final BigDecimal asNumber(final JsongNode n) {
-    throw new ClassCastException(format("{} is not a Boolean node (actual class is {}).", n, n.getClass()));
+    throw new ClassCastException(format("{} is not a Number node (actual class is {}).", n, n.getClass()));
   }
 
   static final String toString(final JsongNode n) {
