@@ -80,14 +80,29 @@ final class JsonObjectImp extends AbstractISortedMap<String,JsonNode> implements
   @Override
   public void write(final JsonWriter out){
     out.beginObject();
+    //For better readability, write simple values first:
     for (final Entry<String, JsongNode> e : entries.entrySet()) {
-      out.name(e.getKey());
-      e.getValue().write(out);
+      final JsongNode value = e.getValue();
+      if(isSimple(value)) writeEntry(out, e.getKey(), value);
+    }
+    for (final Entry<String, JsongNode> e : entries.entrySet()) {
+      final JsongNode value = e.getValue();
+      if(!isSimple(value)) writeEntry(out, e.getKey(), value);
     }
     out.endObject();
   }
 
-  @Override
+  private void writeEntry(final JsonWriter out, final String key, final JsongNode value) {
+    out.name(key);
+    value.write(out);
+  }
+
+  private boolean isSimple(final JsongNode value) {
+    final JsonNodeType nodeType = value.jsonNodeType();
+    return !nodeType.equals(JsonNodeType.OBJECT) && !nodeType.equals(JsonNodeType.LIST);
+  }
+
+@Override
   public JsonNode filter(final String attribute) {
     return entries.tryGet(attribute).orElse(f.jsonNull);
     //    return entries.entrySet().stream()
