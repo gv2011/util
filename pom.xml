@@ -1,3 +1,4 @@
+
 <!--
   The MIT License (MIT)
 
@@ -31,7 +32,7 @@
   </parent>
 
   <artifactId>util-parent</artifactId>
-  <version>0.3.7-SNAPSHOT</version>
+  <version>0.3.8-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <description>General purpose utilities - parent.</description>
@@ -47,7 +48,6 @@
   <modules>
     <module>core</module>
     <module>beans</module>
-    <module>beanscglib</module>
     <module>gcol</module>
     <module>http</module>
     <module>jacksonadapter</module>
