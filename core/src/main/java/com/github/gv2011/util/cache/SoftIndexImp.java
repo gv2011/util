@@ -27,7 +27,6 @@ package com.github.gv2011.util.cache;
  */
 import static com.github.gv2011.util.CollectionUtils.pair;
 import static com.github.gv2011.util.Verify.notNull;
-import static com.github.gv2011.util.Verify.verifyEqual;
 import static java.util.stream.Collectors.toMap;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -122,21 +121,17 @@ final class SoftIndexImp<K,V> implements SoftIndex<K,V>{
       .filter(p->p.getKey().equals(key))
       .findAny();
       Optional<V> result;
-      final @Nullable Optional<V> created;
       if(!existing.isPresent()) {
-        created = function.apply(key).map(v->v);
+        result = function.apply(key).map(v->v);
         LOG.debug("Adding entry for {}.", key);
-        set.add(new WeakReference<>(pair(key, created)));
-        result = created;
+        set.add(new WeakReference<>(pair(key, result)));
+        index.put(key, result);
+        addedListener.accept(pair(key, result));
       }
       else {
         LOG.debug("There is already an entry for {}.", key);
-        created = null;
         result = existing.get().getValue();
-        verifyEqual(created, result);
       }
-      index.put(key, result);
-      if(created!=null) addedListener.accept(pair(key, created));
       return result;
     }
   }
