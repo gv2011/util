@@ -68,14 +68,15 @@ public abstract class BeanTypeSupport<T> extends AbstractType<T> implements Bean
 
   private static final Logger LOG = getLogger(BeanTypeSupport.class);
 
-  private static final ISet<String> RESERVED = setOf();
+  private static final ISet<String> RESERVED = setOf("getClass", "notify", "notifyAll", "wait");
 
   @SuppressWarnings("rawtypes")
   private static final Partial EMPTY_PARTIAL = createEmptyPartial();
 
   private final JsonFactory jf;
   final AnnotationHandler annotationHandler;
-  private final Function<Type,AbstractType<?>> registry;
+  //private final Function<Type,AbstractType<?>> registry;
+  private final BeanFactory beanFactory;
 
   //recursion, init later
   private @Nullable ISortedMap<String, PropertyImp<T,?>> properties;
@@ -88,12 +89,12 @@ public abstract class BeanTypeSupport<T> extends AbstractType<T> implements Bean
     final Class<T> beanClass,
     final JsonFactory jf,
     final AnnotationHandler annotationHandler,
-    final Function<Type,AbstractType<?>> registry
+    final BeanFactory beanFactory
   ) {
     super(beanClass);
     this.jf = jf;
     this.annotationHandler = annotationHandler;
-    this.registry = registry;
+    this.beanFactory = beanFactory;
   }
 
 
@@ -102,6 +103,9 @@ public abstract class BeanTypeSupport<T> extends AbstractType<T> implements Bean
     return jf;
   }
 
+  private final Function<Type,AbstractType<?>> registry(){
+    return beanFactory.registry();
+  }
 
   @Override
   final void initialize() {
@@ -110,6 +114,7 @@ public abstract class BeanTypeSupport<T> extends AbstractType<T> implements Bean
       verify(defaultValue==null);
       properties = createProperties();
       checkProperties(properties);
+      LOG.debug("Properties: {}", properties.keySet());
       defaultValue = createDefaultValue();
       LOG.debug("{} initialized.", this);
     }
@@ -182,7 +187,7 @@ public abstract class BeanTypeSupport<T> extends AbstractType<T> implements Bean
 
   private ISortedMap<String, PropertyImp<T,?>> createProperties() {
     return Arrays.stream(clazz.getMethods())
-    .filter(BeanTypeSupport::isPropertyMethod)
+    .filter(beanFactory::isPropertyMethod)
     .map(this::createProperty)
     .collect(toISortedMap(
         p->p.name(),
@@ -190,14 +195,18 @@ public abstract class BeanTypeSupport<T> extends AbstractType<T> implements Bean
     ));
   }
 
-  private static boolean isPropertyMethod(final Method m) {
-      return m.getParameterCount()>0 ? false : ! RESERVED.contains(m.getName());
-  }
+//  private static boolean isPropertyMethod(final Method m) {
+//      return m.getParameterCount()>0 ? false : ! RESERVED.contains(m.getName());
+//  }
 
   private <V> PropertyImp<T,V> createProperty(final Method m) {
-    @SuppressWarnings("unchecked")
-    final AbstractType<V> type = (AbstractType<V>) registry.apply(m.getGenericReturnType());
-    return createProperty(m, type);
+    try {
+      @SuppressWarnings("unchecked")
+      final AbstractType<V> type = (AbstractType<V>) registry().apply(m.getGenericReturnType());
+      return createProperty(m, type);
+    } catch (final RuntimeException e) {
+      throw new RuntimeException(format("Could not create property for method {}.", m), e);
+    }
   }
 
   <V> PropertyImp<T,V> createProperty(final Method m, final AbstractType<V> type) {
@@ -343,10 +352,15 @@ public abstract class BeanTypeSupport<T> extends AbstractType<T> implements Bean
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   public final <V> PropertyImp<T,V> getProperty(final Function<T, V> method) {
-    final Method m = ReflectionUtils.method(clazz, method);
+    final Method m = getMethod(method);
     final PropertyImp<T,?> result = properties().get(m.getName());
     verifyEqual(result.type().clazz, m.getReturnType());
     return (PropertyImp)result;
+  }
+
+
+  protected <V> Method getMethod(final Function<T, V> method) {
+    return ReflectionUtils.method(clazz, method);
   }
 
 

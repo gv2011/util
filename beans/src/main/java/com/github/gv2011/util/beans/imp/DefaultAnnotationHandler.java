@@ -45,6 +45,7 @@ import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.beans.Abstract;
 import com.github.gv2011.util.beans.AnnotationHandler;
 import com.github.gv2011.util.beans.Bean;
+import com.github.gv2011.util.beans.Computed;
 import com.github.gv2011.util.beans.DefaultValue;
 import com.github.gv2011.util.beans.FixedBooleanValue;
 import com.github.gv2011.util.beans.FixedValue;
@@ -115,6 +116,14 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
     final Optional<String> fixedBoolean = annotationValue(m, FixedBooleanValue.class, a->Boolean.toString(a.value()));
     return atMostOne(fixed, fixedBoolean);
   }
+
+  @Override
+  public boolean annotatedAsComputed(final Method m) {
+    verify(m.getParameterCount()==0);
+    return m.isAnnotationPresent(Computed.class);
+  }
+
+
 
   @Override
   public ISet<Class<?>> subClasses(final Class<?> clazz) {

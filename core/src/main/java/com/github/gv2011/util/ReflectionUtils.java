@@ -64,10 +64,23 @@ public final class ReflectionUtils {
   private ReflectionUtils(){staticClass();}
 
   public static final Method EQUALS = call(()->Object.class.getMethod("equals", Object.class));
+  public static final Method GET_CLASS = call(()->Object.class.getMethod("getClass"));
   public static final Method HASH_CODE = call(()->Object.class.getMethod("hashCode"));
+  public static final Method NOTIFY = call(()->Object.class.getMethod("notify"));
+  public static final Method NOTIFY_ALL = call(()->Object.class.getMethod("notifyAll"));
   public static final Method TO_STRING = call(()->Object.class.getMethod("toString"));
+  public static final Method WAIT = call(()->Object.class.getMethod("wait"));
+  public static final Method WAIT_LONG = call(()->Object.class.getMethod("wait", long.class));
+  public static final Method WAIT_LONG_INT = call(()->Object.class.getMethod("wait", long.class, int.class));
 
-  public static final ISet<Method> OBJECT_METHODS = iCollections().setOf(EQUALS,HASH_CODE,TO_STRING);
+  public static final ISet<Method> OBJECT_METHODS =
+    iCollections().setOf(EQUALS, GET_CLASS, HASH_CODE, NOTIFY = call(()->Object.class.getMethod("notify"));
+  public static final Method NOTIFY_ALL = call(()->Object.class.getMethod("notifyAll"));
+  public static final Method TO_STRING = call(()->Object.class.getMethod("toString"));
+  public static final Method WAIT = call(()->Object.class.getMethod("wait"));
+  public static final Method WAIT_LONG = call(()->Object.class.getMethod("wait", long.class));
+  public static final Method WAIT_LONG_INT)
+  ;
 
   public static <T> Method method(final Class<T> intf, final Function<T,?> methodFunction){
     return methodLookup(intf).method(notNull(methodFunction));

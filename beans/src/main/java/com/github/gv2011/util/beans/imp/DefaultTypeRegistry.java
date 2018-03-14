@@ -61,7 +61,6 @@ import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
 import com.github.gv2011.util.json.JsonFactory;
-import com.github.gv2011.util.json.imp.JsonFactoryImp;
 import com.github.gv2011.util.tstr.TypedString;
 
 public class DefaultTypeRegistry implements TypeRegistry{
@@ -104,7 +103,7 @@ public class DefaultTypeRegistry implements TypeRegistry{
     this(ServiceLoaderUtils.loadService(JsonFactory.class), new DefaultBeanFactoryBuilder());
   }
 
-  public DefaultTypeRegistry(final JsonFactoryImp jsonFactory) {
+  public DefaultTypeRegistry(final JsonFactory jsonFactory) {
     this(jsonFactory, tryGetService(BeanFactoryBuilder.class).orElseGet(DefaultBeanFactoryBuilder::new));
   }
 
@@ -121,8 +120,8 @@ public class DefaultTypeRegistry implements TypeRegistry{
   }
 
   @Override
-  public <T> DefaultBeanType<T> beanType(final Class<T> beanClass) {
-    return (DefaultBeanType<T>) type(beanClass);
+  public <T> BeanTypeSupport<T> beanType(final Class<T> beanClass) {
+    return (BeanTypeSupport<T>) type(beanClass);
   }
 
   <T> AbstractPolymorphicSupport<T> abstractBeanType(final Class<T> abstractBeanClass) {

@@ -44,6 +44,7 @@ import java.util.function.Function;
 
 import org.slf4j.Logger;
 
+import com.github.gv2011.util.ReflectionUtils;
 import com.github.gv2011.util.ann.VisibleForTesting;
 import com.github.gv2011.util.beans.AnnotationHandler;
 import com.github.gv2011.util.beans.TypeNameStrategy;
@@ -87,6 +88,10 @@ public abstract class BeanFactory{
   }
 
   protected abstract String isProxyable(final Class<?> clazz);
+
+  protected final AnnotationHandler annotationHandler(){
+    return annotationHandler;
+  }
 
 
   @VisibleForTesting
@@ -258,6 +263,12 @@ public abstract class BeanFactory{
   protected abstract boolean isPropertyMethod(final Method m);
 
 
+  protected final boolean isObjectMethod(final Method m){
+    verify(m.getParameterCount()==0);
+    ReflectionUtils.OBJECT_METHODS
+  }
+
+
   private final boolean isAbstractPolymorphicClass(final Class<?> clazz) {
     return
       isPolymorphicRootClass(clazz) ||
@@ -292,7 +303,7 @@ public abstract class BeanFactory{
   private <B> AbstractType<B> createPolymorphicBean(final Class<B> clazz) {
     final PolymorphicRootType<? super B> rootType = rootTypeForRootClass(tryGetRoot(clazz).get());
     return new PolymorphicBeanType<>(
-      clazz, jf, annotationHandler, registry::type, //same as DefaultBeanType
+      clazz, jf, annotationHandler, this, //same as DefaultBeanType
       rootType.typePropertyName(), rootType.typeNameStrategy()
     );
   }
@@ -366,6 +377,10 @@ public abstract class BeanFactory{
       verify(clazz.isAssignableFrom(result) && !clazz.equals(result) && result.isInterface());
       return (Class<? extends B>) result;
     }
+  }
+
+  public Function<Type, AbstractType<?>> registry() {
+    return registry::type;
   }
 
 }

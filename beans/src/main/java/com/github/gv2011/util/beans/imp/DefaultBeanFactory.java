@@ -1,5 +1,7 @@
 package com.github.gv2011.util.beans.imp;
 
+import static com.github.gv2011.util.Verify.verify;
+
 /*-
  * #%L
  * util-beans
@@ -67,7 +69,15 @@ final class DefaultBeanFactory extends BeanFactory{
   @Override
   protected boolean isPropertyMethod(final Method m) {
     assert m.getDeclaringClass().isInterface();
-    return m.getParameterCount()==0;
+    if(m.getParameterCount()!=0) return false;
+    else{
+      final Class<?> returnType = m.getReturnType();
+      if(returnType==void.class || returnType==Void.class) return false;
+      else{
+        verify(!annotationHandler().annotatedAsComputed(m));
+        return true;
+      }
+    }
   }
 
   @Override
@@ -77,7 +87,7 @@ final class DefaultBeanFactory extends BeanFactory{
     final AnnotationHandler annotationHandler,
     final Function<Type,AbstractType<?>> registry
   ) {
-    return new DefaultBeanType<>(clazz, jf, annotationHandler, registry);
+    return new DefaultBeanType<>(clazz, jf, annotationHandler, this);
   }
 
 }

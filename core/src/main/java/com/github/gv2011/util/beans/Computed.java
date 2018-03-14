@@ -1,10 +1,10 @@
-package com.github.gv2011.util.beans.imp;
+package com.github.gv2011.util.beans;
 
 /*-
  * #%L
- * util-beans
+ * The MIT License (MIT)
  * %%
- * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,34 +25,11 @@ package com.github.gv2011.util.beans.imp;
  * THE SOFTWARE.
  * #L%
  */
-import java.lang.reflect.Proxy;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import com.github.gv2011.util.icol.ISortedMap;
-
-final class DefaultBeanBuilder<B> extends BeanBuilderSupport<B>{
-
-  private final BeanTypeSupport<B> beanType;
-
-  DefaultBeanBuilder(final DefaultBeanType<B> beanType) {
-    this.beanType = beanType;
-  }
-
-  DefaultBeanBuilder(final PolymorphicBeanType<B> beanType) {
-    this.beanType = beanType;
-  }
-
-  @Override
-  protected BeanTypeSupport<B> beanType() {
-    return beanType;
-  }
-
-  @Override
-  protected B create(final ISortedMap<String, Object> imap) {
-    return beanType.clazz.cast(Proxy.newProxyInstance(
-        beanType.clazz.getClassLoader(),
-        new Class<?>[] {beanType.clazz},
-        new DefaultInvocationHandler<>(beanType, imap)
-    ));
-  }
-
-}
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Computed {}

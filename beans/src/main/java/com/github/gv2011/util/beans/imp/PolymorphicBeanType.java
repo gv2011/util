@@ -32,9 +32,7 @@ import static com.github.gv2011.util.ex.Exceptions.format;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.Optional;
-import java.util.function.Function;
 
 import org.slf4j.Logger;
 
@@ -57,11 +55,11 @@ final class PolymorphicBeanType<T> extends BeanTypeSupport<T> {
     final Class<T> beanClass,
     final JsonFactory jf,
     final AnnotationHandler annotationHandler,
-    final Function<Type, AbstractType<?>> registry,
+    final BeanFactory beanFactory,
     final Optional<String> typePropertyName,
     final TypeNameStrategy typeNameStrategy
   ) {
-    super(beanClass, jf, annotationHandler, registry);
+    super(beanClass, jf, annotationHandler, beanFactory);
     this.typePropertyName = typePropertyName;
     this.typeNameStrategy = typeNameStrategy;
   }
@@ -87,7 +85,7 @@ final class PolymorphicBeanType<T> extends BeanTypeSupport<T> {
 
   @Override
   public BeanBuilder<T> createBuilder() {
-    return new DefaultBeanBuilder<T>(this);
+    return new DefaultBeanBuilder<>(this);
   }
 
   @Override

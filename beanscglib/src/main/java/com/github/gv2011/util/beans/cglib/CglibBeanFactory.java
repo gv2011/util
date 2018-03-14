@@ -1,5 +1,7 @@
 package com.github.gv2011.util.beans.cglib;
 
+import static com.github.gv2011.util.Verify.verify;
+
 /*-
  * #%L
  * util-beans-cglib
@@ -51,7 +53,9 @@ final class CglibBeanFactory extends BeanFactory {
 
   @Override
   protected boolean isPropertyMethod(final Method m) {
-    return m.getParameterCount()==0 && Modifier.isAbstract(m.getModifiers());
+    final boolean isProperty = m.getParameterCount()==0 && Modifier.isAbstract(m.getModifiers());
+    if(isProperty) verify(!annotationHandler().annotatedAsComputed(m));
+    return isProperty;
   }
 
   @Override
@@ -61,7 +65,7 @@ final class CglibBeanFactory extends BeanFactory {
     final AnnotationHandler annotationHandler,
     final Function<Type,AbstractType<?>> registry
   ) {
-    return new CglibBeanType<>(clazz, jf, annotationHandler, registry);
+    return new CglibBeanType<>(clazz, jf, annotationHandler, this);
   }
 
 }

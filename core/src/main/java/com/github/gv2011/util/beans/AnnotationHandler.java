@@ -50,5 +50,7 @@ public interface AnnotationHandler {
 
   Optional<String> typeName(Class<?> clazz);
 
+  boolean annotatedAsComputed(Method m);
+
 
 }
