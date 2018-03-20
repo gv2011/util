@@ -30,7 +30,7 @@ import com.github.gv2011.util.beans.TypeResolver;
 import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
 
-abstract class AbstractPolymorphicSupport<B> extends AbstractType<B>{
+abstract class AbstractPolymorphicSupport<B> extends ObjectTypeSupport<B>{
 
 
   final DefaultTypeRegistry registry;
@@ -66,11 +66,12 @@ abstract class AbstractPolymorphicSupport<B> extends AbstractType<B>{
     return true;
   }
 
+  abstract TypeResolver<? super B> typeResolver();
+
   @Override
-  final boolean isAbstractBean() {
+  public final boolean isAbstract() {
     return true;
   }
 
-  abstract TypeResolver<? super B> typeResolver();
 
 }

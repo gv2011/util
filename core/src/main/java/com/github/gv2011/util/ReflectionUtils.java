@@ -1,12 +1,10 @@
 package com.github.gv2011.util;
 
-import static com.github.gv2011.util.CollectionUtils.copyToISet;
-
 /*-
  * #%L
  * The MIT License (MIT)
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -14,10 +12,10 @@ import static com.github.gv2011.util.CollectionUtils.copyToISet;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,12 +25,9 @@ import static com.github.gv2011.util.CollectionUtils.copyToISet;
  * THE SOFTWARE.
  * #L%
  */
-
-
-
-
-import static com.github.gv2011.util.CollectionUtils.iCollections;
+import static com.github.gv2011.util.CollectionUtils.copyToISet;
 import static com.github.gv2011.util.CollectionUtils.setBuilder;
+import static com.github.gv2011.util.CollectionUtils.setOf;
 import static com.github.gv2011.util.CollectionUtils.toISet;
 import static com.github.gv2011.util.CollectionUtils.toISortedSet;
 import static com.github.gv2011.util.Verify.notNull;
@@ -73,14 +68,14 @@ public final class ReflectionUtils {
   public static final Method WAIT_LONG = call(()->Object.class.getMethod("wait", long.class));
   public static final Method WAIT_LONG_INT = call(()->Object.class.getMethod("wait", long.class, int.class));
 
-  public static final ISet<Method> OBJECT_METHODS =
-    iCollections().setOf(EQUALS, GET_CLASS, HASH_CODE, NOTIFY = call(()->Object.class.getMethod("notify"));
-  public static final Method NOTIFY_ALL = call(()->Object.class.getMethod("notifyAll"));
-  public static final Method TO_STRING = call(()->Object.class.getMethod("toString"));
-  public static final Method WAIT = call(()->Object.class.getMethod("wait"));
-  public static final Method WAIT_LONG = call(()->Object.class.getMethod("wait", long.class));
-  public static final Method WAIT_LONG_INT)
-  ;
+  public static final ISet<Method> OBJECT_METHODS = setOf(
+    EQUALS, GET_CLASS, HASH_CODE, NOTIFY, NOTIFY_ALL, TO_STRING, WAIT, WAIT_LONG,WAIT_LONG_INT
+  );
+
+  public static final ISortedSet<String> OBJECT_PROPERTY_METHOD_NAMES = OBJECT_METHODS.stream()
+      .filter(m->m.getParameterCount()==0)
+      .map(Method::getName).collect(toISortedSet())
+    ;
 
   public static <T> Method method(final Class<T> intf, final Function<T,?> methodFunction){
     return methodLookup(intf).method(notNull(methodFunction));

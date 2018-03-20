@@ -41,7 +41,7 @@ public final class PropertyImp<B,T> implements Property<T> {
 
     private final Method method;
     private final String name;
-    private final AbstractType<T> type;
+    private final TypeSupport<T> type;
     private final Optional<T> defaultValue;
     private final Optional<T> fixedValue;
 
@@ -49,7 +49,7 @@ public final class PropertyImp<B,T> implements Property<T> {
       final BeanTypeSupport<B> owner,
       final Method method,
       final String name,
-      final AbstractType<T> type,
+      final TypeSupport<T> type,
       final Optional<T> defaultValue,
       final Optional<T> fixedValue
     ) {
@@ -67,7 +67,7 @@ public final class PropertyImp<B,T> implements Property<T> {
     }
 
     @Override
-    public AbstractType<T> type() {
+    public TypeSupport<T> type() {
         return type;
     }
 
@@ -79,7 +79,13 @@ public final class PropertyImp<B,T> implements Property<T> {
     @Override
     public Optional<T> defaultValue() {
       try {
-        return fixedValue.isPresent() ? fixedValue : defaultValue.isPresent() ? defaultValue : type.getDefault();
+        return fixedValue.isPresent()
+          ? fixedValue
+          : (defaultValue.isPresent()
+            ? defaultValue
+            : type.getDefault()
+          )
+        ;
       }catch(final RuntimeException e) {
           throw new IllegalStateException(format("Could not obtain default value of {}.", type), e);
       }

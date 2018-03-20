@@ -309,8 +309,8 @@ abstract class Structure<C,K,E> {
     @Override
     JsonNode toJson(final CollectionType<IMap<K,V>,K,V> mapType, final IMap<K,V> map) {
       final JsonFactory jf = mapType.jf();
-      final AbstractType<K> keyType = mapType.keyType().get();
-      final AbstractType<V> valueType = mapType.elementType();
+      final TypeSupport<K> keyType = mapType.keyType().get();
+      final TypeSupport<V> valueType = mapType.elementType();
       return
         map.entrySet().stream()
         .map(e->pair(
@@ -328,8 +328,8 @@ abstract class Structure<C,K,E> {
 
     @Override
     final IMap<K,V> convert(final JsonNode json, final CollectionType<IMap<K,V>,K,V> mapType) {
-      final AbstractType<K> keyType = mapType.keyType().get();
-      final AbstractType<V> valueType = mapType.elementType();
+      final TypeSupport<K> keyType = mapType.keyType().get();
+      final TypeSupport<V> valueType = mapType.elementType();
       final Stream<JsonNode> stream = (json instanceof JsonNull)
         ? Stream.<JsonNode>empty()
         : json.asList().stream()
@@ -370,7 +370,7 @@ abstract class Structure<C,K,E> {
     @Override
     JsonNode toJson(final CollectionType<ISortedMap<String,V>,String,V> mapType, final ISortedMap<String,V> map) {
       final JsonFactory jf = mapType.jf();
-      final AbstractType<V> valueType = mapType.elementType();
+      final TypeSupport<V> valueType = mapType.elementType();
       return
         map.entrySet().stream()
         .collect(jf.toJsonObject(
@@ -382,8 +382,8 @@ abstract class Structure<C,K,E> {
 
     @Override
     final ISortedMap<String,V> convert(final JsonNode json, final CollectionType<ISortedMap<String,V>,String,V> mapType) {
-      final AbstractType<String> keyType = mapType.keyType().get();
-      final AbstractType<V> valueType = mapType.elementType();
+      final TypeSupport<String> keyType = mapType.keyType().get();
+      final TypeSupport<V> valueType = mapType.elementType();
       final Stream<JsonNode> stream = (json instanceof JsonNull)
         ? Stream.<JsonNode>empty()
         : json.asList().stream()

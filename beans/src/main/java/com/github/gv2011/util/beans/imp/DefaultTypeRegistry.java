@@ -83,19 +83,19 @@ public class DefaultTypeRegistry implements TypeRegistry{
   @VisibleForTesting
   final BeanFactory beanFactory;
 
-  private final SoftIndex<Class<?>,AbstractType<?>> typeMap = createTypeMap();
+  private final SoftIndex<Class<?>,TypeSupport<?>> typeMap = createTypeMap();
 
-  private SoftIndex<Class<?>, AbstractType<?>> createTypeMap() {
+  private SoftIndex<Class<?>, TypeSupport<?>> createTypeMap() {
     return CacheUtils.softIndex(
       c->tryCreateType(c),
-      p->p.getValue().ifPresent(AbstractType::initialize)
+      p->p.getValue().ifPresent(TypeSupport::initialize)
     );
   }
 
   private final DefaultElementaryTypeHandlerFactory defaultFactory = new DefaultElementaryTypeHandlerFactory();
   private final IList<ElementaryTypeHandlerFactory> additionalTypeHandlerFactories;
 
-  private final AbstractType<String> stringType;
+  private final TypeSupport<String> stringType;
 
   final AnnotationHandler annotationHandler = new DefaultAnnotationHandler();
 
@@ -116,7 +116,7 @@ public class DefaultTypeRegistry implements TypeRegistry{
     }
     additionalTypeHandlerFactories = b.build();
     LOG.info("additionalTypeHandlerFactories:{}", additionalTypeHandlerFactories);
-    stringType = type(String.class);
+    stringType = (TypeSupport<String>) type(String.class);
   }
 
   @Override
@@ -133,8 +133,8 @@ public class DefaultTypeRegistry implements TypeRegistry{
   }
 
   @SuppressWarnings("unchecked")
-  public <T> AbstractType<T> type(final Class<T> clazz) {
-    return (AbstractType<T>) typeMap.tryGet(clazz)
+  public <T> TypeSupport<T> type(final Class<T> clazz) {
+    return (TypeSupport<T>) typeMap.tryGet(clazz)
       .orElseThrow(()->
         new IllegalArgumentException(format("{} is not supported.", clazz))
       )
@@ -142,39 +142,39 @@ public class DefaultTypeRegistry implements TypeRegistry{
   }
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
-  <T> AbstractType<T> type(final java.lang.reflect.Type genType) {
+  <T> TypeSupport<T> type(final java.lang.reflect.Type genType) {
     if(genType instanceof Class) return type((Class)genType);
     else if(genType instanceof ParameterizedType) {
       final ParameterizedType pType = (ParameterizedType)genType;
       final Class rawType = (Class) pType.getRawType();
       if(rawType.equals(ILIST)) {
         return
-          (AbstractType<T>) type(filterWildCard(single(pType.getActualTypeArguments())))
+          (TypeSupport<T>) type(filterWildCard(single(pType.getActualTypeArguments())))
           .collectionType(Structure.list())
         ;
       }
       else if(rawType.equals(OPTIONAL)) {
         return
-          (AbstractType<T>) type(filterWildCard(single(pType.getActualTypeArguments())))
+          (TypeSupport<T>) type(filterWildCard(single(pType.getActualTypeArguments())))
           .collectionType(Structure.opt())
         ;
       }
       else if(rawType.equals(ISET)) {
         return
-          (AbstractType<T>) type(filterWildCard(single(pType.getActualTypeArguments())))
+          (TypeSupport<T>) type(filterWildCard(single(pType.getActualTypeArguments())))
           .collectionType(Structure.set())
         ;
       }
       else if(rawType.equals(ISORTEDSET)) {
         return
-          (AbstractType<T>) type(filterWildCard(single(pType.getActualTypeArguments())))
+          (TypeSupport<T>) type(filterWildCard(single(pType.getActualTypeArguments())))
           .collectionType(Structure.sortedSet())
         ;
       }
       else if(rawType.equals(IMAP)||rawType.equals(ISORTEDMAP)) {
         assert pType.getActualTypeArguments().length==2;
-        final AbstractType keyType = type(filterWildCard(pType.getActualTypeArguments()[0]));
-        final AbstractType valueType = type(filterWildCard(pType.getActualTypeArguments()[1]));
+        final TypeSupport keyType = type(filterWildCard(pType.getActualTypeArguments()[0]));
+        final TypeSupport valueType = type(filterWildCard(pType.getActualTypeArguments()[1]));
         if(keyType.equals(stringType)) {
           return keyType.mapType(Structure.stringMap(), valueType);
         }
@@ -197,13 +197,13 @@ public class DefaultTypeRegistry implements TypeRegistry{
   }
 
   @SuppressWarnings("unchecked")
-  private <T> Optional<AbstractType<T>> tryCreateType(final Class<T> clazz) {
-    Optional<AbstractType<T>> result;
+  private <T> Optional<TypeSupport<T>> tryCreateType(final Class<T> clazz) {
+    Optional<TypeSupport<T>> result;
     LOG.debug("Creating type for {}.", clazz);
     if(isCollectionType(clazz)) result = Optional.empty();
     else if(isTypedStringType(clazz)) result = Optional.of(createTypedStringType(clazz));
     else{
-      final Optional<AbstractType<T>> beanType = beanFactory.tryCreate(clazz);
+      final Optional<TypeSupport<T>> beanType = beanFactory.tryCreate(clazz).map(t->t);
       if(beanType.isPresent()) result = beanType;
       else result = tryCreateElementaryType(clazz).map(t->t);
     }
@@ -293,7 +293,7 @@ public class DefaultTypeRegistry implements TypeRegistry{
     return result;
   }
 
-  <T> Optional<AbstractType<T>> getTypeIfCached(final Class<T> clazz){
+  <T> Optional<TypeSupport<T>> getTypeIfCached(final Class<T> clazz){
     return
       typeMap.getIfPresent(clazz).orElse(Optional.empty())
       .map(t->t.castTo(clazz))
@@ -301,11 +301,11 @@ public class DefaultTypeRegistry implements TypeRegistry{
   }
 
   @SuppressWarnings("unchecked")
-  public <T> Optional<AbstractType<? super T>> findTypeForInstanceClass(final Class<T> instanceClass) {
+  public <T> Optional<TypeSupport<? super T>> findTypeForInstanceClass(final Class<T> instanceClass) {
     if(isSupported(instanceClass)) return Optional.of(type(instanceClass));
     else {
         final ISet<Class<?>> types = stream(instanceClass.getInterfaces()).filter(i->isSupported(i)).collect(toISet());
-        if(types.size()==1) return Optional.of((AbstractType<? super T>) type(single(types)));
+        if(types.size()==1) return Optional.of((TypeSupport<? super T>) type(single(types)));
         else return Optional.empty();
     }
   }

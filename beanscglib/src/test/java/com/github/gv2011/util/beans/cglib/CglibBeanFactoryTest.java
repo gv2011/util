@@ -33,24 +33,37 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
+import com.github.gv2011.util.beans.cglib.PolymorphicTestModel.Elephant;
 import com.github.gv2011.util.beans.imp.BeanTypeSupport;
 import com.github.gv2011.util.beans.imp.DefaultTypeRegistry;
 
 public class CglibBeanFactoryTest {
 
+  private final DefaultTypeRegistry registry = new DefaultTypeRegistry(jsonFactory(), new CglibBeanFactoryBuilder());
+
   @Test
-  public void test() {
-    final DefaultTypeRegistry reg = new DefaultTypeRegistry(jsonFactory(), new CglibBeanFactoryBuilder());
-    final TestModel adder = reg.createBuilder(TestModel.class)
+  public void testModel() {
+    final TestModel adder = registry.createBuilder(TestModel.class)
       .set(TestModel::number1).to(1)
       .set(TestModel::number2).to(2L)
       .build()
     ;
     assertThat(adder.sum(), is(3L));
 
-    final BeanTypeSupport<TestModel> beanType = reg.beanType(TestModel.class);
+    final BeanTypeSupport<TestModel> beanType = registry.beanType(TestModel.class);
     assertThat(beanType, isA(CglibBeanType.class));
     assertThat(beanType.properties(), mapWithSize(2));
+  }
+
+  @Test
+  public void testPolymorphicModel() {
+    final BeanTypeSupport<Elephant> beanType = registry.beanType(Elephant.class);
+    beanType.isAbstract();
+    final Elephant elephant = registry.createBuilder(Elephant.class)
+      .build()
+    ;
+    assertThat(elephant.count(), is(0));
+
   }
 
 }

@@ -79,4 +79,9 @@ final class CglibBeanType<T> extends BeanTypeSupport<T>{
     return notNull(mRef.get());
     }
 
+  @Override
+  public final boolean isAbstract() {
+    return false;
+  }
+
 }

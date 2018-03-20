@@ -1,7 +1,5 @@
 package com.github.gv2011.util.beans.imp;
 
-import static com.github.gv2011.util.Verify.verify;
-
 /*-
  * #%L
  * util-beans
@@ -30,7 +28,6 @@ import static com.github.gv2011.util.Verify.verify;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.function.Function;
 
@@ -67,25 +64,11 @@ final class DefaultBeanFactory extends BeanFactory{
   }
 
   @Override
-  protected boolean isPropertyMethod(final Method m) {
-    assert m.getDeclaringClass().isInterface();
-    if(m.getParameterCount()!=0) return false;
-    else{
-      final Class<?> returnType = m.getReturnType();
-      if(returnType==void.class || returnType==Void.class) return false;
-      else{
-        verify(!annotationHandler().annotatedAsComputed(m));
-        return true;
-      }
-    }
-  }
-
-  @Override
-  protected <B> AbstractType<B> createRegularBeanType(
+  protected <B> ObjectTypeSupport<B> createRegularBeanType(
     final Class<B> clazz,
     final JsonFactory jf,
     final AnnotationHandler annotationHandler,
-    final Function<Type,AbstractType<?>> registry
+    final Function<Type,TypeSupport<?>> registry
   ) {
     return new DefaultBeanType<>(clazz, jf, annotationHandler, this);
   }

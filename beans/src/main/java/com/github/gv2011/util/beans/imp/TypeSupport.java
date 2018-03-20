@@ -34,11 +34,11 @@ import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.beans.Type;
 import com.github.gv2011.util.json.JsonFactory;
 
-public abstract class AbstractType<T> implements Type<T> {
+public abstract class TypeSupport<T> implements Type<T> {
 
     public final Class<T> clazz;
 
-    AbstractType(final Class<T> clazz) {
+    TypeSupport(final Class<T> clazz) {
       this.clazz = clazz;
     }
 
@@ -52,9 +52,9 @@ public abstract class AbstractType<T> implements Type<T> {
     }
 
     @SuppressWarnings("unchecked")
-    <T2> AbstractType<T2> castTo(final Class<T2> clazz) {
+    <T2> TypeSupport<T2> castTo(final Class<T2> clazz) {
         verifyEqual(clazz, this.clazz);
-        return (AbstractType<T2>) this;
+        return (TypeSupport<T2>) this;
     }
 
     @Override
@@ -71,7 +71,7 @@ public abstract class AbstractType<T> implements Type<T> {
       return new CollectionType<>(structure, this);
     }
 
-    public <C,V> CollectionType<C,T,V> mapType(final Structure<C,T,V> structure, final AbstractType<V> valueType) {
+    public <C,V> CollectionType<C,T,V> mapType(final Structure<C,T,V> structure, final TypeSupport<V> valueType) {
       return new CollectionType<>(structure, this, valueType);
     }
 
@@ -90,10 +90,6 @@ public abstract class AbstractType<T> implements Type<T> {
       return false;
     }
 
-    public Optional<T> getDefault() {
-      return Optional.empty();
-    }
-
     public boolean isCollectionType() {
         return false;
     }
@@ -106,8 +102,9 @@ public abstract class AbstractType<T> implements Type<T> {
       return false;
     }
 
-    boolean isAbstractBean(){
-      return false;
+    public Optional<T> getDefault() {
+      return Optional.empty();
     }
+
 
 }

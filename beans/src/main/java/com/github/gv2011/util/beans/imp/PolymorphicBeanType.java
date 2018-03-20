@@ -65,7 +65,7 @@ final class PolymorphicBeanType<T> extends BeanTypeSupport<T> {
   }
 
   @Override
-  <V> PropertyImp<T,V> createProperty(final Method m, final AbstractType<V> type) {
+  <V> PropertyImp<T,V> createProperty(final Method m, final TypeSupport<V> type) {
     if(!isTypeProperty(m)) return super.createProperty(m, type);
     else{
       verify(!annotationHandler.defaultValue(m).isPresent());
@@ -109,7 +109,7 @@ final class PolymorphicBeanType<T> extends BeanTypeSupport<T> {
   }
 
   @Override
-  boolean isAbstractBean() {
+  public boolean isAbstract() {
     return false;
   }
 

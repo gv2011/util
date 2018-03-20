@@ -1,7 +1,5 @@
 package com.github.gv2011.util.beans.cglib;
 
-import static com.github.gv2011.util.Verify.verify;
-
 /*-
  * #%L
  * util-beans-cglib
@@ -33,9 +31,10 @@ import java.lang.reflect.Type;
 import java.util.function.Function;
 
 import com.github.gv2011.util.beans.AnnotationHandler;
-import com.github.gv2011.util.beans.imp.AbstractType;
 import com.github.gv2011.util.beans.imp.BeanFactory;
 import com.github.gv2011.util.beans.imp.DefaultTypeRegistry;
+import com.github.gv2011.util.beans.imp.ObjectTypeSupport;
+import com.github.gv2011.util.beans.imp.TypeSupport;
 import com.github.gv2011.util.json.JsonFactory;
 
 final class CglibBeanFactory extends BeanFactory {
@@ -52,18 +51,16 @@ final class CglibBeanFactory extends BeanFactory {
   }
 
   @Override
-  protected boolean isPropertyMethod(final Method m) {
-    final boolean isProperty = m.getParameterCount()==0 && Modifier.isAbstract(m.getModifiers());
-    if(isProperty) verify(!annotationHandler().annotatedAsComputed(m));
-    return isProperty;
+  protected boolean isPropertyMethod2(final Method m) {
+    return Modifier.isAbstract(m.getModifiers());
   }
 
   @Override
-  protected <B> AbstractType<B> createRegularBeanType(
+  protected <B> ObjectTypeSupport<B> createRegularBeanType(
     final Class<B> clazz,
     final JsonFactory jf,
     final AnnotationHandler annotationHandler,
-    final Function<Type,AbstractType<?>> registry
+    final Function<Type,TypeSupport<?>> registry
   ) {
     return new CglibBeanType<>(clazz, jf, annotationHandler, this);
   }

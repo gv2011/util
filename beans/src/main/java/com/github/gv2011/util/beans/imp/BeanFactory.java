@@ -260,14 +260,30 @@ public abstract class BeanFactory{
   }
 
 
-  protected abstract boolean isPropertyMethod(final Method m);
+  public final boolean isPropertyMethod(final Method m) {
+    boolean result;
+    if(m.getParameterCount()!=0) result = false;
+    else if(isObjectMethod(m)) result = false;
+    else {
+      result = isPropertyMethod2(m);
+      if(result){
+        final Class<?> returnType = m.getReturnType();
+        verify(returnType!=void.class && returnType!=Void.class);
+        verify(!annotationHandler().annotatedAsComputed(m));
+      }
+    }
+    return result;
+  }
+
+  protected boolean isPropertyMethod2(final Method m){
+    return true;
+  }
 
 
   protected final boolean isObjectMethod(final Method m){
     verify(m.getParameterCount()==0);
-    ReflectionUtils.OBJECT_METHODS
+    return ReflectionUtils.OBJECT_PROPERTY_METHOD_NAMES.contains(m.getName());
   }
-
 
   private final boolean isAbstractPolymorphicClass(final Class<?> clazz) {
     return
@@ -276,8 +292,7 @@ public abstract class BeanFactory{
     ;
   }
 
-
-  public <B> Optional<AbstractType<B>> tryCreate(final Class<B> clazz) {
+  public <B> Optional<ObjectTypeSupport<B>> tryCreate(final Class<B> clazz) {
     if(isBeanClass(clazz)){
       if(isRegularBeanClass(clazz)) return Optional.of(createRegularBeanType(clazz));
       else return Optional.of(createPolymorphicBean(clazz));
@@ -290,17 +305,17 @@ public abstract class BeanFactory{
     }
   }
 
-  private <B> AbstractType<B> createRegularBeanType(final Class<B> clazz) {
+  private <B> ObjectTypeSupport<B> createRegularBeanType(final Class<B> clazz) {
     return createRegularBeanType(clazz, jf, annotationHandler, registry::type);
   }
 
 
-  protected abstract <B> AbstractType<B> createRegularBeanType(
-    Class<B> clazz, JsonFactory jf, AnnotationHandler annotationHandler, Function<Type,AbstractType<?>> registry
+  protected abstract <B> ObjectTypeSupport<B> createRegularBeanType(
+    Class<B> clazz, JsonFactory jf, AnnotationHandler annotationHandler, Function<Type,TypeSupport<?>> registry
   );
 
 
-  private <B> AbstractType<B> createPolymorphicBean(final Class<B> clazz) {
+  protected <B> ObjectTypeSupport<B> createPolymorphicBean(final Class<B> clazz) {
     final PolymorphicRootType<? super B> rootType = rootTypeForRootClass(tryGetRoot(clazz).get());
     return new PolymorphicBeanType<>(
       clazz, jf, annotationHandler, this, //same as DefaultBeanType
@@ -316,7 +331,7 @@ public abstract class BeanFactory{
   }
 
 
-  private <B> AbstractType<B> createPolymorphicRoot(final Class<B> clazz) {
+  private <B> ObjectTypeSupport<B> createPolymorphicRoot(final Class<B> clazz) {
     final TypeNameStrategy typeNameStrategy = annotationHandler.typeNameStrategy(clazz)
       .map(s->(TypeNameStrategy)call(s::newInstance))
       .orElse(Class::getSimpleName)
@@ -344,7 +359,7 @@ public abstract class BeanFactory{
   }
 
 
-  private <B> AbstractType<B> createPolymorphicIntermediate(final Class<B> clazz) {
+  private <B> ObjectTypeSupport<B> createPolymorphicIntermediate(final Class<B> clazz) {
     // TODO Auto-generated method stub
     throw notYetImplementedException();
   }
@@ -379,7 +394,7 @@ public abstract class BeanFactory{
     }
   }
 
-  public Function<Type, AbstractType<?>> registry() {
+  public Function<Type, TypeSupport<?>> registry() {
     return registry::type;
   }
 

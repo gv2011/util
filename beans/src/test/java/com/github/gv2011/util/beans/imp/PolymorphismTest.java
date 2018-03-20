@@ -50,11 +50,11 @@ public class PolymorphismTest {
     reg.beanType(NormalPot.class);
 
     final AbstractPolymorphicSupport<Pea> peaType = reg.abstractBeanType(Pea.class);
-    assertThat(peaType.isAbstractBean(), is(true));
+    assertThat(peaType.isAbstract(), is(true));
     assertThat(peaType.isPolymorphic(), is(true));
 
     final BeanTypeSupport<BlackPea> blackPeaType = reg.beanType(BlackPea.class);
-    assertThat(blackPeaType.isAbstractBean(), is(false));
+    assertThat(blackPeaType.isAbstract(), is(false));
     assertThat(blackPeaType.isPolymorphic(), is(true));
 
     final BlackPea blackPea = reg.createBuilder(BlackPea.class).build();

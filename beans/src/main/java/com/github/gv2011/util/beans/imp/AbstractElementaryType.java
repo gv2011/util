@@ -32,7 +32,7 @@ import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonNodeType;
 
-abstract class AbstractElementaryType<E> extends AbstractType<E>{
+abstract class AbstractElementaryType<E> extends TypeSupport<E>{
 
   private final JsonFactory jf;
 

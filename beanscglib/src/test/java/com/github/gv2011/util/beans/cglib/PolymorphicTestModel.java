@@ -1,8 +1,13 @@
-package com.github.gv2011.util.beans.imp;
+package com.github.gv2011.util.beans.cglib;
+
+import java.math.BigDecimal;
+
+import com.github.gv2011.util.icol.IList;
+import com.github.gv2011.util.tstr.TypedString;
 
 /*-
  * #%L
- * util-beans
+ * util-beans-cglib
  * %%
  * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
  * %%
@@ -25,40 +30,29 @@ package com.github.gv2011.util.beans.imp;
  * THE SOFTWARE.
  * #L%
  */
+public final class PolymorphicTestModel {
 
-import static com.github.gv2011.util.Verify.verify;
-import static org.slf4j.LoggerFactory.getLogger;
+  public static interface Subtype extends TypedString<Subtype>{}
 
-import org.slf4j.Logger;
-
-import com.github.gv2011.util.beans.AnnotationHandler;
-import com.github.gv2011.util.beans.BeanBuilder;
-import com.github.gv2011.util.json.JsonFactory;
-
-
-public class DefaultBeanType<T> extends BeanTypeSupport<T>{
-
-  @SuppressWarnings("unused")
-  private static final Logger LOG = getLogger(DefaultBeanType.class);
-
-  DefaultBeanType(
-    final Class<T> beanClass,
-    final JsonFactory jf,
-    final AnnotationHandler annotationHandler,
-    final BeanFactory beanFactory
-  ) {
-    super(beanClass, jf, annotationHandler, beanFactory);
-    verify(beanClass.isInterface(), beanClass::toString);
+  public static abstract class Animal{
+    public abstract Subtype type();
+    public abstract Animal bestFriend();
+    public abstract IList<? extends Animal> contacts();
+    public Integer count(){
+      return contacts().size()+1;
+    }
   }
 
-  @Override
-  public BeanBuilder<T> createBuilder() {
-    return new DefaultBeanBuilder<>(this);
+  public static abstract class Elephant extends Animal{
+    public abstract BigDecimal volume();
+    @Override
+    public abstract Shark bestFriend();
+
   }
 
-  @Override
-  public final boolean isAbstract() {
-    return false;
+  public static abstract class Shark extends Animal{
+    public abstract BigDecimal volume();
+    @Override
+    public abstract IList<Elephant> contacts();
   }
-
 }
