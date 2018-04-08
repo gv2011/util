@@ -28,9 +28,8 @@ package com.github.gv2011.util.icol.guava;
 
 import java.util.Iterator;
 import java.util.NavigableSet;
-import java.util.Optional;
-
 import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.icol.Opt;
 import com.google.common.collect.ImmutableSortedSet;
 
 final class ISortedSetWrapper<E extends Comparable<? super E>>
@@ -114,28 +113,28 @@ implements ISortedSet<E>{
   }
 
   @Override
-  public Optional<E> tryGetLast() {
-    return isEmpty()?Optional.empty():Optional.of(delegate.last());
+  public Opt<E> tryGetLast() {
+    return isEmpty()?Opt.empty():Opt.of(delegate.last());
   }
 
   @Override
-  public Optional<E> tryGetLower(final E e) {
-    return Optional.ofNullable(delegate.lower(e));
+  public Opt<E> tryGetLower(final E e) {
+    return Opt.ofNullable(delegate.lower(e));
   }
 
   @Override
-  public Optional<E> tryGetFloor(final E e) {
-    return Optional.ofNullable(delegate.floor(e));
+  public Opt<E> tryGetFloor(final E e) {
+    return Opt.ofNullable(delegate.floor(e));
   }
 
   @Override
-  public Optional<E> tryGetCeiling(final E e) {
-    return Optional.ofNullable(delegate.ceiling(e));
+  public Opt<E> tryGetCeiling(final E e) {
+    return Opt.ofNullable(delegate.ceiling(e));
   }
 
   @Override
-  public Optional<E> tryGetHigher(final E e) {
-    return Optional.ofNullable(delegate.higher(e));
+  public Opt<E> tryGetHigher(final E e) {
+    return Opt.ofNullable(delegate.higher(e));
   }
 
 }

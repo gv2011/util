@@ -32,7 +32,6 @@ package com.github.gv2011.util.icol;
 import static com.github.gv2011.util.CollectionUtils.pair;
 import static com.github.gv2011.util.CollectionUtils.toISortedMap;
 
-import java.util.Optional;
 
 public abstract class AbstractISortedMap<K extends Comparable<? super K>, V>
 extends AbstractIMap<K,V>
@@ -43,62 +42,62 @@ implements ISortedMap<K,V>{
 
 
   @Override
-  public Optional<Entry<K, V>> tryGetLowerEntry(final K key) {
+  public Opt<Entry<K, V>> tryGetLowerEntry(final K key) {
     return keySet().tryGetLower(key).map(k->(Entry<K,V>)pair(k, get(k)));
   }
 
   @Override
-  public Optional<K> tryGetLowerKey(final K key) {
+  public Opt<K> tryGetLowerKey(final K key) {
     return keySet().tryGetLower(key);
   }
 
   @Override
-  public Optional<Entry<K, V>> tryGetFloorEntry(final K key) {
+  public Opt<Entry<K, V>> tryGetFloorEntry(final K key) {
     return keySet().tryGetFloor(key).map(k->(Entry<K,V>)pair(k, get(k)));
   }
 
   @Override
-  public Optional<K> tryGetFloorKey(final K key) {
+  public Opt<K> tryGetFloorKey(final K key) {
     return keySet().tryGetFloor(key);
   }
 
   @Override
-  public Optional<K> tryGetFirstKey() {
+  public Opt<K> tryGetFirstKey() {
     return keySet().tryGetFirst();
   }
 
   @Override
-  public Optional<K> tryGetLastKey() {
+  public Opt<K> tryGetLastKey() {
     return keySet().tryGetLast();
   }
 
   @Override
-  public Optional<Entry<K, V>> tryGetCeilingEntry(final K key) {
+  public Opt<Entry<K, V>> tryGetCeilingEntry(final K key) {
     return keySet().tryGetCeiling(key).map(k->(Entry<K,V>)pair(k, get(k)));
   }
 
   @Override
-  public Optional<K> tryGetCeilingKey(final K key) {
+  public Opt<K> tryGetCeilingKey(final K key) {
     return keySet().tryGetCeiling(key);
   }
 
   @Override
-  public Optional<Entry<K, V>> tryGetHigherEntry(final K key) {
+  public Opt<Entry<K, V>> tryGetHigherEntry(final K key) {
     return keySet().tryGetHigher(key).map(k->(Entry<K,V>)pair(k, get(k)));
   }
 
   @Override
-  public Optional<K> tryGetHigherKey(final K key) {
+  public Opt<K> tryGetHigherKey(final K key) {
     return keySet().tryGetHigher(key);
   }
 
   @Override
-  public Optional<Entry<K, V>> tryGetFirstEntry() {
+  public Opt<Entry<K, V>> tryGetFirstEntry() {
     return keySet().tryGetFirst().map(k->(Entry<K,V>)pair(k, get(k)));
   }
 
   @Override
-  public Optional<Entry<K, V>> tryGetLastEntry() {
+  public Opt<Entry<K, V>> tryGetLastEntry() {
     return keySet().tryGetLast().map(k->(Entry<K,V>)pair(k, get(k)));
   }
 
@@ -111,7 +110,7 @@ implements ISortedMap<K,V>{
         return reversed;
       }
       @Override
-      public Optional<V> tryGet(final Object key) {
+      public Opt<V> tryGet(final Object key) {
         return AbstractISortedMap.this.tryGet(key);
       }
     };

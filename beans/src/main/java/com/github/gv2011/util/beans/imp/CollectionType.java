@@ -28,6 +28,7 @@ import java.util.Collection;
  */
 import java.util.Optional;
 
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
 
@@ -46,7 +47,7 @@ final class CollectionType<C,K,E> extends TypeSupport<C>{
 
   CollectionType(final Structure<C,K,E> structure, final TypeSupport<K> keyType, final TypeSupport<E> elementType) {
     this(structure, Optional.of(keyType), elementType);
-    assert structure.equals(Structure.map());
+    assert structure.equals(Structure.map()) || structure.equals(Structure.stringMap());
   }
 
   private CollectionType(
@@ -104,8 +105,8 @@ final class CollectionType<C,K,E> extends TypeSupport<C>{
   }
 
   @Override
-  public Optional<C> getDefault() {
-    return Optional.of(structure.empty());
+  public Opt<C> getDefault() {
+    return Opt.of(structure.empty());
   }
 
   @Override
@@ -125,7 +126,7 @@ final class CollectionType<C,K,E> extends TypeSupport<C>{
 
   @Override
   boolean isOptional() {
-    return structure.equals(Structure.opt());
+    return structure.equals(Structure.opt()) || structure.equals(Structure.optional());
   }
 
   C createCollection(final Collection<? extends E> collection) {

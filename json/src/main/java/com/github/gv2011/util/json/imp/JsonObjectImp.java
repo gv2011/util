@@ -35,13 +35,13 @@ import static com.github.gv2011.util.CollectionUtils.upcast;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.github.gv2011.util.Comparison;
 import com.github.gv2011.util.icol.AbstractISortedMap;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonList;
 import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonNodeType;
@@ -52,7 +52,7 @@ import com.github.gv2011.util.json.JsonWriter;
 
 final class JsonObjectImp extends AbstractISortedMap<String,JsonNode> implements JsongNode, JsonObject{
 
-  private static final Comparator<Optional<JsonNode>> OPTIONAL_COMPARATOR = Comparison.optionalComparator();
+  private static final Comparator<Opt<JsonNode>> OPT_COMPARATOR = Comparison.optComparator();
 
   private final JsonFactoryImp f;
   private final ISortedMap<String,JsongNode> entries;
@@ -73,7 +73,7 @@ final class JsonObjectImp extends AbstractISortedMap<String,JsonNode> implements
   }
 
   @Override
-  public Optional<JsonNode> tryGet(final Object key) {
+  public Opt<JsonNode> tryGet(final Object key) {
     return upcast(entries.tryGet(key));
   }
 
@@ -171,7 +171,7 @@ final class JsonObjectImp extends AbstractISortedMap<String,JsonNode> implements
           obj2.keySet().parallelStream()
         )
         .collect(toISortedSet()).stream()
-        .mapToInt(k->OPTIONAL_COMPARATOR.compare(tryGet(k), obj2.tryGet(k)))
+        .mapToInt(k->OPT_COMPARATOR.compare(tryGet(k), obj2.tryGet(k)))
         .filter(i->i!=0)
         .findFirst().orElse(0)
       ;

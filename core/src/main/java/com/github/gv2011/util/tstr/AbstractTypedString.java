@@ -1,7 +1,5 @@
 package com.github.gv2011.util.tstr;
 
-import java.util.Comparator;
-
 /*-
  * #%L
  * The MIT License (MIT)
@@ -43,18 +41,6 @@ implements TypedString<T>{
   public static final int hashCode(final Class<? extends TypedString<?>> clazz, final String canonical) {
     return clazz.hashCode() * 31 + canonical.hashCode();
   }
-
-  public static final Comparator<TypedString<?>> COMPARATOR = (s1,s2)->{
-    int result;
-    if(s1==s2) result = 0;
-    else {
-      result = s1.clazz().getName().compareTo(s2.clazz().getName());
-      if(result==0) {
-        result = s1.canonical().compareTo(s2.canonical());
-      }
-    }
-    return result;
-  };
 
   public static final boolean equal(final TypedString<?> s, final Object obj) {
     return Equal.equal(s, obj, TypedString.class, o->{

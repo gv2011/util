@@ -38,12 +38,12 @@ import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 
 import java.net.URL;
-import java.util.Optional;
 import java.util.function.Function;
 
 import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.bytes.Bytes;
 import com.github.gv2011.util.icol.ISet;
+import com.github.gv2011.util.icol.Opt;
 
 public class ResourceUtils {
 
@@ -55,7 +55,7 @@ public class ResourceUtils {
     ;
   }
 
-  public static final Optional<URL> tryGetResourceUrl(final String resourceName){
+  public static final Opt<URL> tryGetResourceUrl(final String resourceName){
     return atMostOne(
       asIterator(
         call(()->Thread.currentThread().getContextClassLoader().getResources(resourceName))
@@ -68,7 +68,7 @@ public class ResourceUtils {
     return getResourceUrl(resolveRelativeName(refClass, relativeName));
   }
 
-  public static final Optional<URL> tryGetResourceUrl(final Class<?> refClass, final String relativeName){
+  public static final Opt<URL> tryGetResourceUrl(final Class<?> refClass, final String relativeName){
     return tryGetResourceUrl(resolveRelativeName(refClass, relativeName));
   }
 

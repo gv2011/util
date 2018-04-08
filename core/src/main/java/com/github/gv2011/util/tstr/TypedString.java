@@ -1,5 +1,7 @@
 package com.github.gv2011.util.tstr;
 
+import java.util.Comparator;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -46,5 +48,39 @@ public interface TypedString<T extends TypedString<T>> extends CharSequence, Com
   default int compareWithOtherOfSameType(final T o) {
     return canonical().compareTo(o.canonical());
   }
+
+  @Override
+  default int compareTo(final TypedString<?> o) {
+    return COMPARATOR.compare(this, o);
+  }
+
+  @Override
+  default int length() {
+    return canonical().length();
+  }
+
+  @Override
+  default char charAt(final int index) {
+    return canonical().charAt(index);
+  }
+
+  @Override
+  default CharSequence subSequence(final int start, final int end) {
+    return canonical().subSequence(start, end);
+  }
+
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  public static final Comparator<TypedString<?>> COMPARATOR = (s1,s2)->{
+    int result;
+    if(s1==s2) result = 0;
+    else {
+      result = s1.clazz().getName().compareTo(s2.clazz().getName());
+      if(result==0) {
+        result = ((TypedString)s1).compareWithOtherOfSameType(((TypedString)s2));
+      }
+    }
+    return result;
+  };
+
 
 }

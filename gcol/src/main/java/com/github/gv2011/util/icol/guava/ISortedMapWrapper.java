@@ -28,11 +28,11 @@ package com.github.gv2011.util.icol.guava;
 
 import java.util.NavigableMap;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.icol.Opt;
 import com.google.common.collect.ImmutableSortedMap;
 
 final class ISortedMapWrapper<K extends Comparable<? super K>,V>
@@ -166,63 +166,63 @@ implements ISortedMap<K,V>{
   }
 
   @Override
-  public Optional<Entry<K, V>> tryGetLowerEntry(final K key) {
-    return Optional.ofNullable(delegate.lowerEntry(key));
+  public Opt<Entry<K, V>> tryGetLowerEntry(final K key) {
+    return Opt.ofNullable(delegate.lowerEntry(key));
   }
 
   @Override
-  public Optional<K> tryGetLowerKey(final K key) {
-    return Optional.ofNullable(delegate.lowerKey(key));
+  public Opt<K> tryGetLowerKey(final K key) {
+    return Opt.ofNullable(delegate.lowerKey(key));
   }
 
   @Override
-  public Optional<Entry<K, V>> tryGetFloorEntry(final K key) {
-    return Optional.ofNullable(delegate.floorEntry(key));
+  public Opt<Entry<K, V>> tryGetFloorEntry(final K key) {
+    return Opt.ofNullable(delegate.floorEntry(key));
   }
 
   @Override
-  public Optional<K> tryGetFloorKey(final K key) {
-    return Optional.ofNullable(delegate.floorKey(key));
+  public Opt<K> tryGetFloorKey(final K key) {
+    return Opt.ofNullable(delegate.floorKey(key));
   }
 
   @Override
-  public Optional<K> tryGetFirstKey() {
-    return isEmpty()?Optional.empty():Optional.of(delegate.firstKey());
+  public Opt<K> tryGetFirstKey() {
+    return isEmpty()?Opt.empty():Opt.of(delegate.firstKey());
   }
 
   @Override
-  public Optional<K> tryGetLastKey() {
-    return isEmpty()?Optional.empty():Optional.of(delegate.lastKey());
+  public Opt<K> tryGetLastKey() {
+    return isEmpty()?Opt.empty():Opt.of(delegate.lastKey());
   }
 
   @Override
-  public Optional<Entry<K, V>> tryGetCeilingEntry(final K key) {
-    return Optional.ofNullable(delegate.ceilingEntry(key));
+  public Opt<Entry<K, V>> tryGetCeilingEntry(final K key) {
+    return Opt.ofNullable(delegate.ceilingEntry(key));
   }
 
   @Override
-  public Optional<K> tryGetCeilingKey(final K key) {
-    return Optional.ofNullable(delegate.ceilingKey(key));
+  public Opt<K> tryGetCeilingKey(final K key) {
+    return Opt.ofNullable(delegate.ceilingKey(key));
   }
 
   @Override
-  public Optional<Entry<K, V>> tryGetHigherEntry(final K key) {
-    return Optional.ofNullable(delegate.higherEntry(key));
+  public Opt<Entry<K, V>> tryGetHigherEntry(final K key) {
+    return Opt.ofNullable(delegate.higherEntry(key));
   }
 
   @Override
-  public Optional<K> tryGetHigherKey(final K key) {
-    return Optional.ofNullable(delegate.higherKey(key));
+  public Opt<K> tryGetHigherKey(final K key) {
+    return Opt.ofNullable(delegate.higherKey(key));
   }
 
   @Override
-  public Optional<Entry<K, V>> tryGetFirstEntry() {
-    return Optional.ofNullable(delegate.firstEntry());
+  public Opt<Entry<K, V>> tryGetFirstEntry() {
+    return Opt.ofNullable(delegate.firstEntry());
   }
 
   @Override
-  public Optional<Entry<K, V>> tryGetLastEntry() {
-    return Optional.ofNullable(delegate.lastEntry());
+  public Opt<Entry<K, V>> tryGetLastEntry() {
+    return Opt.ofNullable(delegate.lastEntry());
   }
 
   @Override

@@ -48,8 +48,8 @@ import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.Deserializers;
 import com.fasterxml.jackson.databind.ser.Serializers;
-import com.github.gv2011.util.beans.imp.ConcreteTypeSupport;
 import com.github.gv2011.util.beans.imp.DefaultTypeRegistry;
+import com.github.gv2011.util.beans.imp.TypeSupport;
 import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.imp.Adapter;
 import com.github.gv2011.util.json.imp.JsonFactoryImp;
@@ -95,7 +95,7 @@ public final class ImmutableBeansModule extends Module{
             return typeRegistry.findTypeForInstanceClass(clazz).map(this::createSerializer).orElse(null);
         }
 
-        private <T> JsonSerializer<T> createSerializer(final ConcreteTypeSupport<T> type) {
+        private <T> JsonSerializer<T> createSerializer(final TypeSupport<T> type) {
             return new JsonSerializer<T>() {
                 @Override
                 public void serialize(
@@ -127,7 +127,7 @@ public final class ImmutableBeansModule extends Module{
         }
 
         private <T> JsonDeserializer<T> createDeserializer(final Class<T> clazz) {
-            final ConcreteTypeSupport<T> type = typeRegistry.type(clazz);
+            final TypeSupport<T> type = typeRegistry.type(clazz);
             return new JsonDeserializer<T>() {
                 @Override
                 public T deserialize(

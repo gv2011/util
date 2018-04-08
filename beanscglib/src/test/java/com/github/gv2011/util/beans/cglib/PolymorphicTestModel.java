@@ -3,6 +3,7 @@ package com.github.gv2011.util.beans.cglib;
 import java.math.BigDecimal;
 
 import com.github.gv2011.util.icol.IList;
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.tstr.TypedString;
 
 /*-
@@ -36,17 +37,20 @@ public final class PolymorphicTestModel {
 
   public static abstract class Animal{
     public abstract Subtype type();
-    public abstract Animal bestFriend();
+    public abstract Opt<? extends Animal> bestFriend();
     public abstract IList<? extends Animal> contacts();
     public Integer count(){
-      return contacts().size()+1;
+      return bestFriend()
+        .map(b->contacts().contains(b) ? contacts().size() : contacts().size()+1)
+        .orElse(contacts().size())
+      ;
     }
   }
 
   public static abstract class Elephant extends Animal{
     public abstract BigDecimal volume();
     @Override
-    public abstract Shark bestFriend();
+    public abstract Opt<Shark> bestFriend();
 
   }
 

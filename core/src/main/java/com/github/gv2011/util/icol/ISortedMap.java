@@ -26,12 +26,9 @@ package com.github.gv2011.util.icol;
  * #L%
  */
 
-
-
-
 import java.util.Comparator;
 import java.util.NavigableMap;
-import java.util.Optional;
+
 
 public interface ISortedMap<K extends Comparable<? super K>,V> extends IMap<K,V>, NavigableMap<K,V>{
 
@@ -60,82 +57,82 @@ public interface ISortedMap<K extends Comparable<? super K>,V> extends IMap<K,V>
     return tryGetLowerEntry(key).get();
   }
 
-  Optional<Entry<K, V>> tryGetLowerEntry(final K key);
+  Opt<Entry<K, V>> tryGetLowerEntry(final K key);
 
   @Override
   default K lowerKey(final K key) {
     return tryGetLowerKey(key).get();
   }
 
-  Optional<K> tryGetLowerKey(final K key);
+  Opt<K> tryGetLowerKey(final K key);
 
   @Override
   default Entry<K, V> floorEntry(final K key) {
     return tryGetFloorEntry(key).get();
   }
 
-  Optional<Entry<K, V>> tryGetFloorEntry(final K key);
+  Opt<Entry<K, V>> tryGetFloorEntry(final K key);
 
   @Override
   default K floorKey(final K key) {
     return tryGetFloorKey(key).get();
   }
 
-  Optional<K> tryGetFloorKey(final K key);
+  Opt<K> tryGetFloorKey(final K key);
 
   @Override
   default K firstKey(){
     return tryGetFirstKey().get();
   }
-  Optional<K> tryGetFirstKey();
+  Opt<K> tryGetFirstKey();
 
   @Override
   default K lastKey(){
     return tryGetLastKey().get();
   }
-  Optional<K> tryGetLastKey();
+  Opt<K> tryGetLastKey();
 
   @Override
   default Entry<K, V> ceilingEntry(final K key) {
     return tryGetCeilingEntry(key).get();
   }
 
-  Optional<Entry<K, V>> tryGetCeilingEntry(final K key);
+  Opt<Entry<K, V>> tryGetCeilingEntry(final K key);
 
   @Override
   default K ceilingKey(final K key) {
     return tryGetCeilingKey(key).get();
   }
 
-  Optional<K> tryGetCeilingKey(final K key);
+  Opt<K> tryGetCeilingKey(final K key);
 
   @Override
   default Entry<K, V> higherEntry(final K key) {
     return tryGetHigherEntry(key).get();
   }
 
-  Optional<Entry<K, V>> tryGetHigherEntry(final K key);
+  Opt<Entry<K, V>> tryGetHigherEntry(final K key);
 
   @Override
   default K higherKey(final K key) {
     return tryGetHigherKey(key).get();
   }
 
-  Optional<K> tryGetHigherKey(final K key);
+  Opt<K> tryGetHigherKey(final K key);
 
   @Override
   default Entry<K, V> firstEntry() {
     return tryGetFirstEntry().get();
   }
 
-  Optional<Entry<K, V>> tryGetFirstEntry();
+  Opt<Entry<K, V>> tryGetFirstEntry();
 
   @Override
   default Entry<K, V> lastEntry() {
     return tryGetLastEntry().get();
   }
 
-  Optional<Entry<K, V>> tryGetLastEntry();
+  Opt<Entry<K, V>> tryGetLastEntry();
 
   @Deprecated
   @Override

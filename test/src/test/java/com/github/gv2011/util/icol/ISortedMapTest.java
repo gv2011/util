@@ -1,12 +1,8 @@
-package com.github.gv2011.util.beans;
-
-import java.util.function.Function;
-
-import com.github.gv2011.util.icol.Opt;
+package com.github.gv2011.util.icol;
 
 /*-
  * #%L
- * The MIT License (MIT)
+ * util-test
  * %%
  * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
  * %%
@@ -16,10 +12,10 @@ import com.github.gv2011.util.icol.Opt;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,23 +25,21 @@ import com.github.gv2011.util.icol.Opt;
  * THE SOFTWARE.
  * #L%
  */
-public interface BeanBuilder<T> {
+import static com.github.gv2011.testutil.Matchers.is;
+import static com.github.gv2011.util.CollectionUtils.iCollections;
+import static org.junit.Assert.assertThat;
 
+import org.junit.Test;
 
-    T build();
+public class ISortedMapTest {
 
-    Partial<T> buildPartial();
-
-    <V> void set(Property<V> p, V value);
-
-    <V> Setter<T,V> set(Function<T,V> method);
-
-    <V> Setter<T,V> setOpt(Function<T,Opt<V>> method);
-
-    BeanBuilder<T> setAll(T bean);
-
-    public interface Setter<T,V> {
-      BeanBuilder<T> to(V value);
-    }
+  @Test
+  public void test() {
+    final ISortedMap.Builder<String,String> b = iCollections().sortedMapBuilder();
+    b.put("b", "lala");
+    b.put("a", "lulu");
+    final ISortedMap<String, String> map = b.build();
+    assertThat(map.toString(), is("{a=lulu, b=lala}"));
+  }
 
 }

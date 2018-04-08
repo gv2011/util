@@ -1,7 +1,5 @@
 package com.github.gv2011.util.beans.imp;
 
-import static com.github.gv2011.util.CollectionUtils.iCollections;
-
 /*-
  * #%L
  * util-beans
@@ -29,7 +27,6 @@ import static com.github.gv2011.util.CollectionUtils.iCollections;
  */
 
 import static com.github.gv2011.util.CollectionUtils.pair;
-import static com.github.gv2011.util.CollectionUtils.stream;
 import static com.github.gv2011.util.CollectionUtils.toISortedMap;
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verify;
@@ -42,7 +39,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -59,6 +55,7 @@ import com.github.gv2011.util.beans.BeanType;
 import com.github.gv2011.util.beans.Partial;
 import com.github.gv2011.util.beans.Property;
 import com.github.gv2011.util.icol.ISortedMap;
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonNodeType;
@@ -66,12 +63,6 @@ import com.github.gv2011.util.json.JsonObject;
 
 
 public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements BeanType<T> {
-
-  @SuppressWarnings({ "rawtypes" })
-  private static final ISortedMap INITIALIZING = iCollections().emptySortedMap();
-
-  @SuppressWarnings({ "unchecked" })
-  private final ISortedMap<String, PropertyImp<T, ?>> initializing() {return INITIALIZING;}
 
   private static final Logger LOG = getLogger(BeanTypeSupport.class);
 
@@ -86,9 +77,7 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   //recursion, init later
   private @Nullable ISortedMap<String, PropertyImp<T,?>> properties;
   //recursion, init later
-  private @Nullable Optional<T> defaultValue;
-
-
+  private @Nullable Opt<T> defaultValue;
 
   protected BeanTypeSupport(
     final Class<T> beanClass,
@@ -102,7 +91,6 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
     this.beanFactory = beanFactory;
   }
 
-
   @Override
   final JsonFactory jf() {
     return jf;
@@ -114,24 +102,34 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
 
   @Override
   final void initialize() {
-    if(properties==null) {
-      LOG.debug("{}: initializing properties.", this);
-      properties = initializing(); //Recursion guard
+    if(!isInitialized()) {
+      verify(properties==null);
       verify(defaultValue==null);
+      LOG.debug("{}: initializing properties.", this);
       properties = createProperties();
-      verify(!properties.equals(initializing())); //Recursion guard
       checkProperties(properties);
       LOG.debug("{}: initialized properties: {}.", this, properties.keySet());
       LOG.debug("{}: initializing default value.", this);
       defaultValue = createDefaultValue(properties);
       LOG.debug("{} initialized default value.", this);
     }
-    else verify(!properties.equals(initializing())); //Recursion guard
+    else{
+      verify(properties!=null);
+      verify(defaultValue!=null);
+    }
+  }
+
+  @Override
+  protected final boolean isInitialized() {
+    return defaultValue!=null;
   }
 
   @Override
   public final int hashCode(final T bean) {
-    return hashCodeFromValues(getValues(bean));
+    return clazz.hashCode() * 31 + properties.values().stream()
+      .mapToInt(p->p.name().hashCode() ^ p.getValue(bean).hashCode())
+      .sum()
+    ;
   }
 
   final ISortedMap<String, Object> getValues(final T bean) {
@@ -149,18 +147,13 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
     ;
   }
 
-  final int hashCodeFromValues(final ISortedMap<String, Object> values) {
-    return clazz.hashCode() * 31 + values.hashCode();
-  }
-
-
   void checkProperties(final ISortedMap<String, PropertyImp<T,?>> properties) {}
 
-  private Optional<T> createDefaultValue(final ISortedMap<String, PropertyImp<T,?>> properties) {
+  private Opt<T> createDefaultValue(final ISortedMap<String, PropertyImp<T,?>> properties) {
     LOG.debug("Creating default value for {}.", this);
     if(properties.values().stream()
       .allMatch(p->{
-        Optional<?> defaultValue;
+        Opt<?> defaultValue;
         try {
           defaultValue = p.defaultValue();
         } catch (final Exception e) {
@@ -170,36 +163,10 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
       })
     ){
       final BeanBuilder<T> b = createBuilder();
-      for(final PropertyImp<T,?> p: properties.values()) setDefaultValue(b, p);
-      return Optional.of(b.build());
+      return Opt.of(b.build());
     }
-    else return Optional.empty();
+    else return Opt.empty();
   }
-
-  private Optional<T> createDefaultValue(final DefaultCollector c) {
-    LOG.debug("Creating default value for {}.", this);
-    if(properties.values().stream()
-      .allMatch(p->{
-        Optional<?> defaultValue;
-        try {
-          defaultValue = p.defaultValue();
-        } catch (final Exception e) {
-          throw new IllegalStateException(format("Could not get default value of {} of {}.", p, this), e);
-        }
-        return defaultValue.isPresent();
-      })
-    ){
-      final BeanBuilder<T> b = createBuilder();
-      for(final PropertyImp<T,?> p: properties.values()) setDefaultValue(b, p);
-      return Optional.of(b.build());
-    }
-    else return Optional.empty();
-  }
-
-  private <V> void setDefaultValue(final BeanBuilder<T> b, final PropertyImp<T,V> p) {
-    setValue(b, p, p.defaultValue().get());
-  }
-
 
   @SuppressWarnings("unchecked")
   @Override
@@ -207,10 +174,9 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
       return EMPTY_PARTIAL;
   }
 
-
   @Override
   public final ISortedMap<String, PropertyImp<T,?>> properties() {
-      initialize();
+      if(properties==null) initialize();
       return notNull(properties);
   }
 
@@ -239,24 +205,25 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   }
 
   <V> PropertyImp<T,V> createProperty(final Method m, final TypeSupport<V> type) {
-    final Optional<V> defaultValue =
-      annotationHandler.defaultValue(m)
-      .map(v->type.parse(parseTolerant(type, jf, v)))
-    ;
-    final Optional<V> fixedValue =
+    final Opt<V> fixedValue =
       annotationHandler.fixedValue(m)
       .map(v->type.parse(parseTolerant(type, jf, v)))
     ;
-    verify(!(defaultValue.isPresent() && fixedValue.isPresent()));
-    return createProperty(m, type, defaultValue, fixedValue);
+    final Opt<V> annotatedDefaultValue =
+      annotationHandler.defaultValue(m)
+      .map(v->type.parse(parseTolerant(type, jf, v)))
+    ;
+    if(fixedValue.isPresent()) {
+      if(annotatedDefaultValue.isPresent()) verifyEqual(annotatedDefaultValue, fixedValue);
+      return PropertyImp.createFixed(this, m, m.getName(), type, fixedValue.get());
+    }
+    else{
+      final Opt<V> defaultValue = annotatedDefaultValue
+        .or(()->type.isInitialized() ? type.getDefault() : Opt.empty())
+      ;
+      return PropertyImp.create(this, m, type, defaultValue);
+    }
   }
-
-
-  private final <V> PropertyImp<T, V> createProperty(final Method m, final TypeSupport<V> type, final Optional<V> defaultValue,
-      final Optional<V> fixedValue) {
-    return new PropertyImp<>(this, m, m.getName(), type, defaultValue, fixedValue);
-  }
-
 
   static final JsonNode parseTolerant(final TypeSupport<?> type, final JsonFactory jf, final String string) {
     try {
@@ -295,7 +262,7 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
     verifyJsonHasNoAdditionalProperties(obj);
     final BeanBuilder<T> b = createBuilder();
     for(final PropertyImp<T,?> p: properties().values()) {
-      final Optional<JsonNode> childNode = obj.tryGet(p.name());
+      final Opt<JsonNode> childNode = obj.tryGet(p.name());
       if(childNode.isPresent()) {
         final JsonNode value = childNode.get();
         try {
@@ -332,7 +299,7 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   @Override
   public final JsonObject toJson(final T object) {
     return properties().values().stream()
-      .flatMap(p->stream(toJson(object, p).map(j->pair(p.name(), j))))
+      .flatOpt(p->toJson(object, p).map(j->pair(p.name(), j)))
       .collect(jf.toJsonObject())
     ;
   }
@@ -345,7 +312,7 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
 
 
   @Override
-  public final Optional<T> getDefault() {
+  public final Opt<T> getDefault() {
     initialize();
     return notNull(defaultValue, ()->clazz.toString());
   }
@@ -355,11 +322,11 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
     return property.type().isDefault(get(bean, property));
   }
 
-  private <V> Optional<JsonNode> toJson(final T bean, final PropertyImp<T,V> property) {
+  private <V> Opt<JsonNode> toJson(final T bean, final PropertyImp<T,V> property) {
     final V value = get(bean, property);
     final TypeSupport<V> type = property.type();
-    if(type.isDefault(value)) return Optional.empty();
-    else return Optional.of(type.toJson(value));
+    if(type.isDefault(value)) return Opt.empty();
+    else return Opt.of(type.toJson(value));
   }
 
   @Override

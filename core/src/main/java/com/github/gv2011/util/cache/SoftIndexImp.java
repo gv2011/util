@@ -34,34 +34,34 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.slf4j.Logger;
 
+import com.github.gv2011.util.FConsumer;
 import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.ann.Nullable;
+import com.github.gv2011.util.icol.Opt;
 
 final class SoftIndexImp<K,V> implements SoftIndex<K,V>{
 
   private static final Logger LOG = getLogger(SoftIndexImp.class);
 
-  private final Function<K, Optional<? extends V>> function;
+  private final Function<K, Opt<? extends V>> function;
   private final Object lock = new Object();
-  private SoftReference<Set<WeakReference<Pair<K,Optional<V>>>>> data = new SoftReference<>(null);
-  private SoftReference<Map<K,Optional<V>>> index = new SoftReference<>(null);
+  private SoftReference<Set<WeakReference<Pair<K,Opt<V>>>>> data = new SoftReference<>(null);
+  private SoftReference<Map<K,Opt<V>>> index = new SoftReference<>(null);
 
-  private final Consumer<Pair<K,Optional<V>>> addedListener;
+  private final FConsumer<Pair<K,Opt<V>>> addedListener;
 
-  SoftIndexImp(final Function<K, Optional<? extends V>> function, final Consumer<Pair<K,Optional<V>>> addedListener) {
+  SoftIndexImp(final Function<K, Opt<? extends V>> function, final FConsumer<Pair<K,Opt<V>>> addedListener) {
     this.function = function;
     this.addedListener = addedListener;
   }
 
-  private Set<WeakReference<Pair<K,Optional<V>>>> data(){
-    @Nullable Set<WeakReference<Pair<K,Optional<V>>>> result = data.get();
+  private Set<WeakReference<Pair<K,Opt<V>>>> data(){
+    @Nullable Set<WeakReference<Pair<K,Opt<V>>>> result = data.get();
     if(result==null) {
       synchronized(lock) {
         result = data.get();
@@ -74,14 +74,14 @@ final class SoftIndexImp<K,V> implements SoftIndex<K,V>{
     return notNull(result);
   }
 
-  private Map<K,Optional<V>> index(){
-    @Nullable Map<K, Optional<V>> result = index.get();
+  private Map<K,Opt<V>> index(){
+    @Nullable Map<K, Opt<V>> result = index.get();
     if(result==null) {
       synchronized(lock) {
         result = index.get();
         if(result==null) {
           @Nullable
-          final Set<WeakReference<Pair<K, Optional<V>>>> set = data();
+          final Set<WeakReference<Pair<K, Opt<V>>>> set = data();
           result =
             set.stream()
             .map(WeakReference::get)
@@ -96,10 +96,10 @@ final class SoftIndexImp<K,V> implements SoftIndex<K,V>{
   }
 
   @Override
-  public Optional<V> tryGet(final K key) {
-    final Optional<V> result;
-    final Map<K, Optional<V>> index = index();
-    @Nullable final Optional<V> current = index.get(key);
+  public Opt<V> tryGet(final K key) {
+    final Opt<V> result;
+    final Map<K, Opt<V>> index = index();
+    @Nullable final Opt<V> current = index.get(key);
     if(current==null) {
       result = tryAddSync(key, index);
     }
@@ -108,25 +108,26 @@ final class SoftIndexImp<K,V> implements SoftIndex<K,V>{
   }
 
   @Override
-  public Optional<Optional<V>> getIfPresent(final K key) {
-    return Optional.ofNullable(index().get(key));
+  public Opt<Opt<V>> getIfPresent(final K key) {
+    return Opt.ofNullable(index().get(key));
   }
 
-  private Optional<V> tryAddSync(final K key, final Map<K, Optional<V>> index) {
+  private Opt<V> tryAddSync(final K key, final Map<K, Opt<V>> index) {
     synchronized(lock) {
-      final Set<WeakReference<Pair<K, Optional<V>>>> set = data();
-      final Optional<Pair<K, Optional<V>>> existing = set.parallelStream()
-      .map(WeakReference::get)
-      .filter(p->p!=null)
-      .filter(p->p.getKey().equals(key))
-      .findAny();
-      Optional<V> result;
+      final Set<WeakReference<Pair<K, Opt<V>>>> set = data();
+      final Opt<Pair<K, Opt<V>>> existing = Opt.ofOptional(set.parallelStream()
+        .map(WeakReference::get)
+        .filter(p->p!=null)
+        .filter(p->p.getKey().equals(key))
+        .findAny()
+      );
+      Opt<V> result;
       if(!existing.isPresent()) {
         result = function.apply(key).map(v->v);
         LOG.debug("Adding entry for {}.", key);
         set.add(new WeakReference<>(pair(key, result)));
         index.put(key, result);
-        addedListener.accept(pair(key, result));
+        addedListener.apply(pair(key, result));
       }
       else {
         LOG.debug("There is already an entry for {}.", key);
