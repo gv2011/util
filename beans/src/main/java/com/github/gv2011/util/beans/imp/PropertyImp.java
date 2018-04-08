@@ -35,28 +35,49 @@ import java.lang.reflect.Proxy;
 import java.util.Optional;
 
 import com.github.gv2011.util.beans.Property;
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.icol.ISortedMap;
 
-final class PropertyImp<B,T> implements Property<T> {
+public final class PropertyImp<B,T> implements Property<T> {
 
     private final Method method;
     private final String name;
-    private final AbstractType<T> type;
-    private final Optional<T> defaultValue;
-    private final Optional<T> fixedValue;
+    private final TypeSupport<T> type;
+    private final Opt<T> defaultValue;
+    private final Opt<T> fixedValue;
 
-    PropertyImp(
-      final DefaultBeanType<B> owner,
+    static <B,T> PropertyImp<B,T> create(
+      final BeanTypeSupport<B> owner,
+      final Method method,
+      final TypeSupport<T> type,
+      final Opt<T> defaultValue
+    ) {
+      return new PropertyImp<>(owner, method, method.getName(), type, defaultValue, Opt.empty());
+    }
+
+    static <B,T> PropertyImp<B,T> createFixed(
+      final BeanTypeSupport<B> owner,
       final Method method,
       final String name,
-      final AbstractType<T> type,
-      final Optional<T> defaultValue,
-      final Optional<T> fixedValue
+      final TypeSupport<T> type,
+      final T fixedValue
+    ) {
+      final Opt<T> fixed = Opt.of(fixedValue);
+      return new PropertyImp<>(owner, method, name, type, fixed, fixed);
+    }
+
+    private PropertyImp(
+      final BeanTypeSupport<B> owner,
+      final Method method,
+      final String name,
+      final TypeSupport<T> type,
+      final Opt<T> defaultValue,
+      final Opt<T> fixedValue
     ) {
       this.method = method;
       this.name = name;
       this.type = type;
-      assert !(defaultValue.isPresent() && fixedValue.isPresent());
+      assert fixedValue.isPresent() ? defaultValue.get().equals(fixedValue.get()) : true;
       this.defaultValue = defaultValue;
       this.fixedValue = fixedValue;
     }
@@ -67,7 +88,7 @@ final class PropertyImp<B,T> implements Property<T> {
     }
 
     @Override
-    public AbstractType<T> type() {
+    public TypeSupport<T> type() {
         return type;
     }
 
@@ -77,16 +98,12 @@ final class PropertyImp<B,T> implements Property<T> {
     }
 
     @Override
-    public Optional<T> defaultValue() {
-      try {
-        return fixedValue.isPresent() ? fixedValue : defaultValue.isPresent() ? defaultValue : type.getDefault();
-      }catch(final RuntimeException e) {
-          throw new IllegalStateException(format("Could not obtain default value of {}.", type), e);
-      }
+    public Opt<T> defaultValue() {
+      return defaultValue;
     }
 
     @Override
-    public Optional<T> fixedValue() {
+    public Opt<T> fixedValue() {
        return fixedValue;
     }
 
@@ -128,8 +145,8 @@ final class PropertyImp<B,T> implements Property<T> {
       Optional<ISortedMap<String, Object>> result;
       if(Proxy.isProxyClass(bean.getClass())){
         final InvocationHandler ih = Proxy.getInvocationHandler(bean);
-        if(ih.getClass().equals(BeanInvocationHandler.class)){
-          result = Optional.of(((BeanInvocationHandler<?>)ih).values);
+        if(ih.getClass().equals(BeanInvocationHandlerSupport.class)){
+          result = Optional.of(((BeanInvocationHandlerSupport<?,?>)ih).values);
         }
         else result = Optional.empty();
       }

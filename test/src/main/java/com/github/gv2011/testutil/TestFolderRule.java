@@ -36,7 +36,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -50,6 +49,7 @@ import com.github.gv2011.util.Zipper;
 import com.github.gv2011.util.ex.ThrowingRunnable;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.IList.Builder;
+import com.github.gv2011.util.icol.Opt;
 
 public class TestFolderRule implements TestRule{
 
@@ -131,7 +131,7 @@ public class TestFolderRule implements TestRule{
 
   private void prepareTestFolder(final Path testFolder) {
     final Class<?> testClass = testDescription.get().getTestClass();
-    final Optional<URL> zip = tryGetResourceUrl(testClass, testClass.getSimpleName()+".zip");
+    final Opt<URL> zip = tryGetResourceUrl(testClass, testClass.getSimpleName()+".zip");
     zip.ifPresent(url->{
       final Builder<Path> pathCollector = iCollections().listBuilder();
       Zipper.newZipper().unZip(url::openStream, testFolder, pathCollector::add);

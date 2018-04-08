@@ -33,7 +33,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NavigableSet;
 import java.util.NoSuchElementException;
-import java.util.Optional;
+
 
 public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, NavigableSet<E>{
 
@@ -90,7 +90,7 @@ public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, Na
   }
 
 
-  Optional<E> tryGetLast();
+  Opt<E> tryGetLast();
 
   @Override
   default E first(){
@@ -112,7 +112,7 @@ public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, Na
   /**
    * Returns the greatest element in this set strictly less than the given element.
    */
-  Optional<E> tryGetLower(E e);
+  Opt<E> tryGetLower(E e);
 
   @Override
   default E floor(final E e) {
@@ -122,7 +122,7 @@ public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, Na
   /**
    * Returns the greatest element in this set less than or equal to the given element.
    */
-  Optional<E> tryGetFloor(E e);
+  Opt<E> tryGetFloor(E e);
 
   @Override
   default E ceiling(final E e) {
@@ -132,7 +132,7 @@ public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, Na
   /**
    * Returns the least element in this set greater than or equal to the given element.
    */
-  Optional<E> tryGetCeiling(E e);
+  Opt<E> tryGetCeiling(E e);
 
   @Override
   default E higher(final E e) {
@@ -142,7 +142,7 @@ public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, Na
   /**
    * Returns the least element in this set strictly greater than the given element.
    */
-  Optional<E> tryGetHigher(E e);
+  Opt<E> tryGetHigher(E e);
 
   @Deprecated
   @Override

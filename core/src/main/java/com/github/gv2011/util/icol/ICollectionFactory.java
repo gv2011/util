@@ -40,7 +40,17 @@ import com.github.gv2011.util.XStream;
 
 public interface ICollectionFactory {
 
-  <T> IList<T> emptyList();
+  @SuppressWarnings("rawtypes")
+  public static final Opt EMPTY = IEmpty.INSTANCE;
+
+  public static <E> Opt<E> single(final E element){
+    return new Single<>(element);
+  };
+
+  @SuppressWarnings("unchecked")
+  default <T> Opt<T> emptyList(){
+    return EMPTY;
+  }
 
   <T> ISet<T> emptySet();
 
@@ -50,7 +60,9 @@ public interface ICollectionFactory {
 
   <K extends Comparable<? super K>,V> ISortedMap<K,V> emptySortedMap();
 
-  <T> IList<T> listOf(final T element);
+  default <T> Opt<T> listOf(final T element){
+    return single(element);
+  }
 
   <T> IList<T> listFrom(final Collection<? extends T> collection);
 
@@ -74,7 +86,7 @@ public interface ICollectionFactory {
 
   <K,V> IMap<K,V> mapOf(final K key, V value);
 
-  default <T> IList<T> ofOptional(final Optional<? extends T> optional){
+  default <T> Opt<T> ofOptional(final Optional<? extends T> optional){
     return optional.map(e->listOf((T)e)).orElse(emptyList());
   }
 

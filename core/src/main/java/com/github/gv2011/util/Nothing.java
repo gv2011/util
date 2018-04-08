@@ -43,4 +43,8 @@ public final class Nothing implements Parsable{
 
   private Nothing() {}
 
+  public static final Nothing nothing(){
+    return INSTANCE;
+  }
+
 }

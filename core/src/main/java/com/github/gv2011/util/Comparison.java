@@ -28,19 +28,17 @@ import static com.github.gv2011.util.CollectionUtils.pair;
  * #L%
  */
 
-
-
-
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.IntStream;
+
+import com.github.gv2011.util.icol.Opt;
 
 public final class Comparison {
 
@@ -50,15 +48,15 @@ public final class Comparison {
   private static final Comparator LIST_COMPARATOR = listComparator(Comparator.naturalOrder());
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  private static final Comparator OPTIONAL_COMPARATOR = (opt1,opt2)->{
+  private static final Comparator OPT_COMPARATOR = (opt1,opt2)->{
     return (int)
-      ((Optional)opt1)
+      ((Opt)opt1)
       .map(o1->
-        ((Optional)opt2)
+        ((Opt)opt2)
         .map(o2->((Comparable)o1).compareTo(o2))
         .orElse(1)
       )
-      .orElseGet(()->((Optional)opt2).isPresent() ? -1 : 0)
+      .orElseGet(()->((Opt)opt2).isPresent() ? -1 : 0)
     ;
   };
 
@@ -75,8 +73,8 @@ public final class Comparison {
   }
 
   @SuppressWarnings("unchecked")
-  public static <C extends Comparable<? super C>> Comparator<Optional<C>> optionalComparator(){
-    return OPTIONAL_COMPARATOR;
+  public static <C extends Comparable<? super C>> Comparator<Opt<C>> optComparator(){
+    return OPT_COMPARATOR;
   }
 
   @SuppressWarnings("unchecked")

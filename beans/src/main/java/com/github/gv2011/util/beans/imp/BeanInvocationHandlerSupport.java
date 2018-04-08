@@ -31,46 +31,54 @@ import static com.github.gv2011.util.Verify.notNull;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Optional;
 
 import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.icol.ISortedMap;
 
-final class BeanInvocationHandler<B> implements InvocationHandler {
+public abstract class BeanInvocationHandlerSupport<B,P>  {
 
-    private final DefaultBeanType<B> beanType;
-    final ISortedMap<String, Object> values;
+  private final BeanTypeSupport<B> beanType;
+  final ISortedMap<String, Object> values;
 
-    private @Nullable Integer hashCode = null;
+  private @Nullable Integer hashCode = null;
 
-    BeanInvocationHandler(final DefaultBeanType<B> beanType, final ISortedMap<String, Object> values) {
-      this.beanType = beanType;
-      this.values = values;
-    }
+  protected BeanInvocationHandlerSupport(final BeanTypeSupport<B> beanType, final ISortedMap<String, Object> values) {
+    this.beanType = beanType;
+    this.values = values;
+  }
 
-  @Override
-  public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+  protected final Object handle(final Object proxy, final Method method, final Object[] args, final P x) throws Throwable {
     Object result;
     final String name = method.getName();
     if(method.getParameterCount()==0) {
-      if(name.equals("hashCode")) result = getHashCode();
+      if(name.equals("hashCode")) result = getHashCode(proxy);
       else if(name.equals("toString")) result = beanType.clazz.getSimpleName()+values;
-      else result = getValue(name);
+      else result = tryGetValue(name).orElseGet(()->handleOther(proxy, method, args, x));
     }
     else if(name.equals("equals") && method.getParameterCount()==1){
       result = handleEquals(proxy, notNull(args[0]));
     }
-    else throw new UnsupportedOperationException(method.toString());
+    else return handleOther(proxy, method, args, x);
     return result;
   }
 
-  private int getHashCode() {
-    if(hashCode==null) hashCode = beanType.hashCodeFromValues(values);
+  protected abstract Object handleOther(
+     final Object proxy, final Method method, final Object[] args, P x
+  );
+
+  private int getHashCode(final Object proxy) {
+    if(hashCode==null) hashCode = beanType.hashCode(beanType.cast(proxy));
     return hashCode.intValue();
   }
 
-  private Object getValue(final String property) {
-    assert beanType.properties().containsKey(property);
-    return values.tryGet(property).orElseGet(()->beanType.properties().get(property).defaultValue().get());
+  private Optional<Object> tryGetValue(final String property) {
+    if(beanType.properties().containsKey(property)){
+      return Optional.of(
+        values.tryGet(property).orElseGet(()->beanType.properties().get(property).defaultValue().get())
+      );
+    }
+    else return Optional.empty();
   }
 
   private boolean handleEquals(final Object proxy, final Object other){
@@ -81,10 +89,10 @@ final class BeanInvocationHandler<B> implements InvocationHandler {
       final B otherBean = beanType.clazz.cast(other);
       if(Proxy.isProxyClass(other.getClass())) {
         final InvocationHandler oih = Proxy.getInvocationHandler(other);
-        if(oih.getClass().equals(BeanInvocationHandler.class)) {
-          final BeanInvocationHandler<?> obih = (BeanInvocationHandler<?>)oih;
+        if(oih instanceof BeanInvocationHandlerSupport) {
+          final BeanInvocationHandlerSupport<?,?> obih = (BeanInvocationHandlerSupport<?,?>)oih;
           assert obih.beanType.equals(beanType);
-          if(getHashCode()!=other.hashCode()){
+          if(getHashCode(proxy)!=other.hashCode()){
             result = false;
             assert result == equals1(otherBean);
           }
@@ -102,7 +110,7 @@ final class BeanInvocationHandler<B> implements InvocationHandler {
 
   private boolean equals1(final B other) {
     return beanType.properties().values().stream()
-      .allMatch(p->getValue(p.name()).equals(p.getValue(other)))
+      .allMatch(p->tryGetValue(p.name()).get().equals(p.getValue(other)))
     ;
   }
 

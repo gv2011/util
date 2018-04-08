@@ -1,7 +1,8 @@
 package com.github.gv2011.util.beans;
 
-import java.util.Optional;
 import java.util.function.Function;
+
+import com.github.gv2011.util.icol.Opt;
 
 /*-
  * #%L
@@ -39,7 +40,7 @@ public interface BeanBuilder<T> {
 
     <V> Setter<T,V> set(Function<T,V> method);
 
-    <V> Setter<T,V> setOpt(Function<T,Optional<V>> method);
+    <V> Setter<T,V> setOpt(Function<T,Opt<V>> method);
 
     BeanBuilder<T> setAll(T bean);
 

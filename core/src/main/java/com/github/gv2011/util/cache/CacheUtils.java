@@ -1,5 +1,7 @@
 package com.github.gv2011.util.cache;
 
+import static com.github.gv2011.util.Nothing.nothing;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -31,12 +33,12 @@ package com.github.gv2011.util.cache;
 
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 
-import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import com.github.gv2011.util.FConsumer;
 import com.github.gv2011.util.Pair;
+import com.github.gv2011.util.icol.Opt;
 
 public final class CacheUtils {
 
@@ -46,12 +48,12 @@ public final class CacheUtils {
     return new SoftRefCache<>(supplier)::get;
   }
 
-  public static <K,V> SoftIndex<K,V> softIndex(final Function<K,Optional<? extends V>> constantFunction){
-    return new SoftIndexImp<>(constantFunction, p->{});
+  public static <K,V> SoftIndex<K,V> softIndex(final Function<K,Opt<? extends V>> constantFunction){
+    return new SoftIndexImp<>(constantFunction, p->nothing());
   }
 
   public static <K,V> SoftIndex<K,V> softIndex(
-    final Function<K,Optional<? extends V>> constantFunction, final Consumer<Pair<K,Optional<V>>> addedListener
+    final Function<K,Opt<? extends V>> constantFunction, final FConsumer<Pair<K,Opt<V>>> addedListener
   ){
     return new SoftIndexImp<>(constantFunction, addedListener);
   }

@@ -28,7 +28,7 @@ package com.github.gv2011.util.beans.imp;
 import static com.github.gv2011.util.CollectionUtils.atMostOne;
 import static com.github.gv2011.util.CollectionUtils.toIMap;
 import static com.github.gv2011.util.CollectionUtils.toISet;
-import static com.github.gv2011.util.CollectionUtils.toOptional;
+import static com.github.gv2011.util.CollectionUtils.toOpt;
 import static com.github.gv2011.util.ReflectionUtils.getAllInterfaces;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
@@ -37,30 +37,37 @@ import static com.github.gv2011.util.ex.Exceptions.notYetImplementedException;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.Arrays;
-import java.util.Optional;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 
+import com.github.gv2011.util.ReflectionUtils;
 import com.github.gv2011.util.ann.VisibleForTesting;
 import com.github.gv2011.util.beans.AnnotationHandler;
 import com.github.gv2011.util.beans.TypeNameStrategy;
 import com.github.gv2011.util.beans.TypeResolver;
 import com.github.gv2011.util.icol.IMap;
 import com.github.gv2011.util.icol.ISet;
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
 
-final class BeanFactory {
+public abstract class BeanFactory{
 
-  private static final Logger LOG = getLogger(BeanFactory.class);
+  private static final Logger LOG = getLogger(DefaultBeanFactory.class);
 
   private final JsonFactory jf;
   private final AnnotationHandler annotationHandler;
   private final DefaultTypeRegistry registry;
 
 
-  BeanFactory(final JsonFactory jf, final AnnotationHandler annotationHandler, final DefaultTypeRegistry registry) {
+  protected BeanFactory(
+    final JsonFactory jf,
+    final AnnotationHandler annotationHandler,
+    final DefaultTypeRegistry registry
+  ) {
     this.jf = jf;
     this.annotationHandler = annotationHandler;
     this.registry = registry;
@@ -68,21 +75,24 @@ final class BeanFactory {
 
 
   private String isAbstractOrBeanClassCandidate(final Class<?> clazz) {
-    final String whyNot;
-    if(!clazz.isInterface())
-      whyNot = "not an interface";
-    else if(clazz.getTypeParameters().length!=0)
-      whyNot = "parameterized class";
-    else{
-      final Optional<Class<?>> beanSuper = getAllInterfaces(clazz).parallelStream().findAny(this::isBeanClass);
-      if(beanSuper.isPresent())
-        whyNot = format("{} is subclass of bean class {}.", clazz, beanSuper.get());
-      else {
-        whyNot = "";
+    String whyNot = isProxyable(clazz);
+    if(whyNot.isEmpty()){
+      if(clazz.getTypeParameters().length!=0)
+        whyNot = "parameterized class";
+      else{
+        final Opt<Class<?>> beanSuper = getAllInterfaces(clazz).parallelStream().tryFindAny(this::isBeanClass);
+        if(beanSuper.isPresent()) whyNot = format("{} is subclass of bean class {}.", clazz, beanSuper.get());
       }
     }
     return whyNot;
   }
+
+  protected abstract String isProxyable(final Class<?> clazz);
+
+  protected final AnnotationHandler annotationHandler(){
+    return annotationHandler;
+  }
+
 
   @VisibleForTesting
   final boolean isBeanClass(final Class<?> clazz) {
@@ -196,7 +206,7 @@ final class BeanFactory {
   }
 
   @SuppressWarnings("unchecked")
-  private <B> Optional<Class<? super B>> tryGetRoot(final Class<B> clazz) {
+  private <B> Opt<Class<? super B>> tryGetRoot(final Class<B> clazz) {
     final ISet<Class<?>> roots = getAllInterfaces(clazz).parallelStream()
       .filter(this::isPolymorphicRootClass)
       .collect(toISet())
@@ -211,14 +221,14 @@ final class BeanFactory {
   }
 
 
-  boolean isSupported(final Class<?> clazz) {
+  public boolean isSupported(final Class<?> clazz) {
     return
       isBeanClass(clazz) ||
       isAbstractPolymorphicClass(clazz)
     ;
   }
 
-  String notSupportedReason(final Class<?> clazz) {
+  public String notSupportedReason(final Class<?> clazz) {
     String result;
     final String notCandidate = isAbstractOrBeanClassCandidate(clazz);
     if(!notCandidate.isEmpty()) result = notCandidate;
@@ -250,11 +260,30 @@ final class BeanFactory {
   }
 
 
-  private boolean isPropertyMethod(final Method m) {
-    assert m.getDeclaringClass().isInterface();
-    return m.getParameterCount()==0;
+  public final boolean isPropertyMethod(final Method m) {
+    boolean result;
+    if(m.getParameterCount()!=0) result = false;
+    else if(isObjectMethod(m)) result = false;
+    else {
+      result = isPropertyMethod2(m);
+      if(result){
+        final Class<?> returnType = m.getReturnType();
+        verify(returnType!=void.class && returnType!=Void.class);
+        verify(!annotationHandler().annotatedAsComputed(m));
+      }
+    }
+    return result;
   }
 
+  protected boolean isPropertyMethod2(final Method m){
+    return true;
+  }
+
+
+  protected final boolean isObjectMethod(final Method m){
+    verify(m.getParameterCount()==0);
+    return ReflectionUtils.OBJECT_PROPERTY_METHOD_NAMES.contains(m.getName());
+  }
 
   private final boolean isAbstractPolymorphicClass(final Class<?> clazz) {
     return
@@ -263,29 +292,33 @@ final class BeanFactory {
     ;
   }
 
-
-  <B> Optional<AbstractType<B>> tryCreate(final Class<B> clazz) {
+  public <B> Opt<ObjectTypeSupport<B>> tryCreate(final Class<B> clazz) {
     if(isBeanClass(clazz)){
-      if(isRegularBeanClass(clazz)) return Optional.of(createRegularBean(clazz));
-      else return Optional.of(createPolymorphicBean(clazz));
+      if(isRegularBeanClass(clazz)) return Opt.of(createRegularBeanType(clazz));
+      else return Opt.of(createPolymorphicBean(clazz));
     }
-    else if(isPolymorphicRootClass(clazz)) return Optional.of(createPolymorphicRoot(clazz));
-    else if(isPolymorphicIntermediateClass(clazz)) return Optional.of(createPolymorphicIntermediate(clazz));
+    else if(isPolymorphicRootClass(clazz)) return Opt.of(createPolymorphicRoot(clazz));
+    else if(isPolymorphicIntermediateClass(clazz)) return Opt.of(createPolymorphicIntermediate(clazz));
     else{
       assert !isSupported(clazz);
-      return Optional.empty();
+      return Opt.empty();
     }
   }
 
-  private <B> AbstractType<B> createRegularBean(final Class<B> clazz) {
-    return new DefaultBeanType<>(clazz, jf, annotationHandler, registry::type);
+  private <B> ObjectTypeSupport<B> createRegularBeanType(final Class<B> clazz) {
+    return createRegularBeanType(clazz, jf, annotationHandler, registry::type);
   }
 
 
-  private <B> AbstractType<B> createPolymorphicBean(final Class<B> clazz) {
+  protected abstract <B> ObjectTypeSupport<B> createRegularBeanType(
+    Class<B> clazz, JsonFactory jf, AnnotationHandler annotationHandler, Function<Type,TypeSupport<?>> registry
+  );
+
+
+  protected <B> ObjectTypeSupport<B> createPolymorphicBean(final Class<B> clazz) {
     final PolymorphicRootType<? super B> rootType = rootTypeForRootClass(tryGetRoot(clazz).get());
     return new PolymorphicBeanType<>(
-      clazz, jf, annotationHandler, registry::type, //same as DefaultBeanType
+      clazz, jf, annotationHandler, this, //same as DefaultBeanType
       rootType.typePropertyName(), rootType.typeNameStrategy()
     );
   }
@@ -298,7 +331,7 @@ final class BeanFactory {
   }
 
 
-  private <B> AbstractType<B> createPolymorphicRoot(final Class<B> clazz) {
+  private <B> ObjectTypeSupport<B> createPolymorphicRoot(final Class<B> clazz) {
     final TypeNameStrategy typeNameStrategy = annotationHandler.typeNameStrategy(clazz)
       .map(s->(TypeNameStrategy)call(s::newInstance))
       .orElse(Class::getSimpleName)
@@ -309,7 +342,7 @@ final class BeanFactory {
     return new PolymorphicRootType<>(registry, clazz, typeResolver, typeNameStrategy);
   }
 
-  private <B> Optional<TypeResolver<B>> getAnnotatedTypeResolver(final Class<B> clazz) {
+  private <B> Opt<TypeResolver<B>> getAnnotatedTypeResolver(final Class<B> clazz) {
     return annotationHandler.typeResolver(clazz)
       .map(c->new TypeResolverWrapper<>(clazz, call(c::newInstance)))
     ;
@@ -326,16 +359,16 @@ final class BeanFactory {
   }
 
 
-  private <B> AbstractType<B> createPolymorphicIntermediate(final Class<B> clazz) {
+  private <B> ObjectTypeSupport<B> createPolymorphicIntermediate(final Class<B> clazz) {
     // TODO Auto-generated method stub
     throw notYetImplementedException();
   }
 
 
-  Optional<Class<?>> tryGetBeanInterface(final Class<?> clazz) {
+  public Opt<Class<?>> tryGetBeanInterface(final Class<?> clazz) {
     return getAllInterfaces(clazz).parallelStream()
       .filter(this::isBeanClass)
-      .collect(toOptional())
+      .collect(toOpt())
     ;
   }
 
@@ -359,6 +392,10 @@ final class BeanFactory {
       verify(clazz.isAssignableFrom(result) && !clazz.equals(result) && result.isInterface());
       return (Class<? extends B>) result;
     }
+  }
+
+  public Function<Type, TypeSupport<?>> registry() {
+    return registry::type;
   }
 
 }

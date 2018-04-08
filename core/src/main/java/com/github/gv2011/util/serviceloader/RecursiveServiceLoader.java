@@ -1,5 +1,7 @@
 package com.github.gv2011.util.serviceloader;
 
+import static com.github.gv2011.util.CollectionUtils.atMostOne;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -12,10 +14,10 @@ package com.github.gv2011.util.serviceloader;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,7 +29,6 @@ package com.github.gv2011.util.serviceloader;
  */
 
 import static com.github.gv2011.util.Verify.verify;
-import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static java.util.stream.Collectors.toSet;
@@ -38,11 +39,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
+
 import java.util.Set;
 
 import com.github.gv2011.util.CachedConstant;
 import com.github.gv2011.util.Constants;
+import com.github.gv2011.util.icol.Opt;
 
 
 public final class RecursiveServiceLoader {
@@ -55,6 +57,10 @@ public final class RecursiveServiceLoader {
         return INSTANCE.get().getService(serviceClass);
     }
 
+    public static final <S> Opt<S> tryGetService(final Class<S> serviceClass) {
+        return INSTANCE.get().tryGetServiceInternal(serviceClass);
+    }
+
     private final Object lock = new Object();
 
     private final Map<Class<?>,Set<?>> services = new HashMap<>();
@@ -64,21 +70,28 @@ public final class RecursiveServiceLoader {
     }
 
     private <S> S getService(final Class<S> serviceClass) {
+      return tryGetServiceInternal(serviceClass)
+        .orElseThrow(()->new IllegalStateException(format("No implementation for {} found.", serviceClass))
+      );
+    }
+
+    private <S> Opt<S> tryGetServiceInternal(final Class<S> serviceClass) {
         final Set<S> services = getServices(serviceClass);
-        verify(!services.isEmpty(), ()->format("No implementation for {} found.", serviceClass));
-        verifyEqual(services.size(),1);
-        return services.iterator().next();
+        return atMostOne(
+          services,
+          ()->format("Multiple implementations for service {}: {}.", serviceClass, services)
+        );
     }
 
     @SuppressWarnings("unchecked")
     private <S> Set<S> getServices(final Class<S> serviceClass) {
-        Optional<Set<?>> entry = Optional.ofNullable(services.get(serviceClass));
+        Opt<Set<?>> entry = Opt.ofNullable(services.get(serviceClass));
         if(!entry.isPresent()) {
             synchronized(lock) {
-                entry = Optional.ofNullable(services.get(serviceClass));
+                entry = Opt.ofNullable(services.get(serviceClass));
                 if(!entry.isPresent()) {
                     loadServices(serviceClass);
-                    entry = Optional.of(services.get(serviceClass));
+                    entry = Opt.of(services.get(serviceClass));
                 }
             }
         }

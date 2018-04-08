@@ -4,7 +4,7 @@ package com.github.gv2011.util.xml;
  * #%L
  * The MIT License (MIT)
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -12,10 +12,10 @@ package com.github.gv2011.util.xml;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,8 +25,7 @@ package com.github.gv2011.util.xml;
  * THE SOFTWARE.
  * #L%
  */
-
-import static com.github.gv2011.util.CollectionUtils.toOptional;
+import static com.github.gv2011.util.CollectionUtils.toOpt;
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
@@ -35,7 +34,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.ByteArrayOutputStream;
 import java.util.AbstractList;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -56,6 +54,8 @@ import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
+
+import com.github.gv2011.util.icol.Opt;
 
 public final class DomUtils {
 
@@ -105,19 +105,19 @@ public final class DomUtils {
 
   public static void setChild(final Element e, final Element child) {
     final String tag = child.getTagName();
-    final Optional<Element> previous = getChild(e, tag);
+    final Opt<Element> previous = getChild(e, tag);
     if(previous.isPresent()){
       e.replaceChild(child, previous.get());
     }
     else e.appendChild(child);
   }
 
-  public static Optional<Element> getChild(final Element e, final String tag) {
+  public static Opt<Element> getChild(final Element e, final String tag) {
     return stream(e.getChildNodes())
       .filter(n->n.getNodeType()==Node.ELEMENT_NODE)
       .map(n->(Element)n)
       .filter(ce->ce.getTagName().equals(tag))
-      .collect(toOptional())
+      .collect(toOpt())
     ;
   }
 

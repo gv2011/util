@@ -35,7 +35,6 @@ import static com.github.gv2011.util.CollectionUtils.toISet;
 import static java.util.stream.Collectors.joining;
 
 import java.util.Map;
-import java.util.Optional;
 
 import com.github.gv2011.util.Equal;
 
@@ -45,7 +44,7 @@ public abstract class AbstractIMap<K, V> implements IMap<K,V>{
   public abstract ISet<K> keySet();
 
   @Override
-  public abstract Optional<V> tryGet(final Object key);
+  public abstract Opt<V> tryGet(final Object key);
 
   @Override
   public ISet<Entry<K, V>> entrySet() {

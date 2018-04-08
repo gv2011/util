@@ -28,10 +28,10 @@ package com.github.gv2011.util.beans.imp;
 
 import static com.github.gv2011.util.Verify.verify;
 
-import java.util.Optional;
 
 import com.github.gv2011.util.beans.TypeNameStrategy;
 import com.github.gv2011.util.beans.TypeResolver;
+import com.github.gv2011.util.icol.Opt;
 
 final class PolymorphicRootType<B> extends AbstractPolymorphicSupport<B> {
 
@@ -61,9 +61,9 @@ final class PolymorphicRootType<B> extends AbstractPolymorphicSupport<B> {
     return typeNameStrategy;
   }
 
-  final Optional<String> typePropertyName() {
+  final Opt<String> typePropertyName() {
     final boolean hasDefaultTypeResolver = typeResolver().getClass().equals(DefaultTypeResolver.class);
-    return hasDefaultTypeResolver ? Optional.of(DefaultTypeResolver.TYPE_PROPERTY) : Optional.empty();
+    return hasDefaultTypeResolver ? Opt.of(DefaultTypeResolver.TYPE_PROPERTY) : Opt.empty();
   }
 
 

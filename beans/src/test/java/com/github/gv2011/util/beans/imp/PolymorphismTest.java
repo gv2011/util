@@ -29,8 +29,6 @@ package com.github.gv2011.util.beans.imp;
 import static com.github.gv2011.testutil.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import java.util.Optional;
-
 import org.junit.Test;
 
 import com.github.gv2011.util.beans.imp.TestModel.BlackPea;
@@ -38,6 +36,7 @@ import com.github.gv2011.util.beans.imp.TestModel.ChickPea;
 import com.github.gv2011.util.beans.imp.TestModel.NormalPot;
 import com.github.gv2011.util.beans.imp.TestModel.Pea;
 import com.github.gv2011.util.beans.imp.TestModel.SnowPea;
+import com.github.gv2011.util.icol.Opt;
 
 
 public class PolymorphismTest {
@@ -50,20 +49,20 @@ public class PolymorphismTest {
     reg.beanType(NormalPot.class);
 
     final AbstractPolymorphicSupport<Pea> peaType = reg.abstractBeanType(Pea.class);
-    assertThat(peaType.isAbstractBean(), is(true));
+    assertThat(peaType.isAbstract(), is(true));
     assertThat(peaType.isPolymorphic(), is(true));
 
-    final DefaultBeanType<BlackPea> blackPeaType = reg.beanType(BlackPea.class);
-    assertThat(blackPeaType.isAbstractBean(), is(false));
+    final BeanTypeSupport<BlackPea> blackPeaType = reg.beanType(BlackPea.class);
+    assertThat(blackPeaType.isAbstract(), is(false));
     assertThat(blackPeaType.isPolymorphic(), is(true));
 
     final BlackPea blackPea = reg.createBuilder(BlackPea.class).build();
     assertThat(blackPea.type(), is(BlackPea.class.getSimpleName()));
 
-    final DefaultBeanType<ChickPea> chickPeaType = reg.beanType(ChickPea.class);
+    final BeanTypeSupport<ChickPea> chickPeaType = reg.beanType(ChickPea.class);
     assertThat(chickPeaType.getClass(), is(PolymorphicBeanType.class));
     final PropertyImp<ChickPea,String> typeProp = chickPeaType.getProperty(ChickPea::type);
-    assertThat(typeProp.fixedValue(), is(Optional.of("chicks")));
+    assertThat(typeProp.fixedValue(), is(Opt.of("chicks")));
     final ChickPea chickPea = reg.createBuilder(ChickPea.class).build();
     assertThat(chickPea.type(), is("chicks"));
 

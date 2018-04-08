@@ -33,7 +33,7 @@ import static com.github.gv2011.util.ex.Exceptions.format;
 
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
+
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -59,7 +59,7 @@ public interface IMap<K,V> extends Map<K,V>{
     return tryGet(key).orElseThrow(()->new NoSuchElementException(format("No entry for key {}.", key)));
   }
 
-  Optional<V> tryGet(Object key);
+  Opt<V> tryGet(Object key);
 
   @Override
   default V getOrDefault(final Object key, final V defaultValue) {
@@ -73,9 +73,9 @@ public interface IMap<K,V> extends Map<K,V>{
     else return entrySet().iterator().next();
   }
 
-  default Optional<Entry<K, V>> tryGetFirst(){
-    if(isEmpty()) return Optional.empty();
-    else return Optional.of(entrySet().iterator().next());
+  default Opt<Entry<K, V>> tryGetFirst(){
+    if(isEmpty()) return Opt.empty();
+    else return Opt.of(entrySet().iterator().next());
   }
 
   @Override

@@ -28,29 +28,30 @@ import java.util.Collection;
  */
 import java.util.Optional;
 
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
 
-final class CollectionType<C,K,E> extends AbstractType<C>{
+final class CollectionType<C,K,E> extends TypeSupport<C>{
 
-  private final Optional<AbstractType<K>> keyType;
+  private final Optional<TypeSupport<K>> keyType;
 
-  private final AbstractType<E> elementType;
+  private final TypeSupport<E> elementType;
 
   final Structure<C,K,E> structure;
 
-  CollectionType(final Structure<C,K,E> structure, final AbstractType<E> elementType) {
+  CollectionType(final Structure<C,K,E> structure, final TypeSupport<E> elementType) {
     this(structure, Optional.empty(), elementType);
     assert !structure.equals(Structure.map());
   }
 
-  CollectionType(final Structure<C,K,E> structure, final AbstractType<K> keyType, final AbstractType<E> elementType) {
+  CollectionType(final Structure<C,K,E> structure, final TypeSupport<K> keyType, final TypeSupport<E> elementType) {
     this(structure, Optional.of(keyType), elementType);
-    assert structure.equals(Structure.map());
+    assert structure.equals(Structure.map()) || structure.equals(Structure.stringMap());
   }
 
   private CollectionType(
-    final Structure<C,K,E> structure, final Optional<AbstractType<K>> keyType, final AbstractType<E> elementType
+    final Structure<C,K,E> structure, final Optional<TypeSupport<K>> keyType, final TypeSupport<E> elementType
   ) {
     super(structure.clazz());
     this.structure = structure;
@@ -80,11 +81,11 @@ final class CollectionType<C,K,E> extends AbstractType<C>{
     }
   }
 
-  public Optional<AbstractType<K>> keyType() {
+  public Optional<TypeSupport<K>> keyType() {
     return keyType;
   }
 
-  public AbstractType<E> elementType() {
+  public TypeSupport<E> elementType() {
     return elementType;
   }
 
@@ -104,8 +105,8 @@ final class CollectionType<C,K,E> extends AbstractType<C>{
   }
 
   @Override
-  public Optional<C> getDefault() {
-    return Optional.of(structure.empty());
+  public Opt<C> getDefault() {
+    return Opt.of(structure.empty());
   }
 
   @Override
@@ -125,7 +126,7 @@ final class CollectionType<C,K,E> extends AbstractType<C>{
 
   @Override
   boolean isOptional() {
-    return structure.equals(Structure.opt());
+    return structure.equals(Structure.opt()) || structure.equals(Structure.optional());
   }
 
   C createCollection(final Collection<? extends E> collection) {

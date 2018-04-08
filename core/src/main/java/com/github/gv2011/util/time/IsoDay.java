@@ -1,4 +1,4 @@
-package com.github.gv2011.util;
+package com.github.gv2011.util.time;
 
 /*-
  * #%L
@@ -26,9 +26,6 @@ package com.github.gv2011.util;
  * #L%
  */
 
-
-
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,8 +46,7 @@ public class IsoDay implements Comparable<IsoDay>{
 
   private final String isoDay;
 
-  @Deprecated
-  public IsoDay(final String isoDay) {
+  private IsoDay(final String isoDay) {
     if(!PATTERN.matcher(isoDay).matches()) throw new IllegalArgumentException(isoDay);
     this.isoDay = isoDay;
     final byte d = day();
