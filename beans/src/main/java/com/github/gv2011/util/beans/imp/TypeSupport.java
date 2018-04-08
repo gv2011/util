@@ -1,7 +1,5 @@
 package com.github.gv2011.util.beans.imp;
 
-import static com.github.gv2011.util.Verify.verifyEqual;
-
 /*-
  * #%L
  * util-beans
@@ -14,10 +12,10 @@ import static com.github.gv2011.util.Verify.verifyEqual;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,11 +25,12 @@ import static com.github.gv2011.util.Verify.verifyEqual;
  * THE SOFTWARE.
  * #L%
  */
-import java.util.Optional;
+import static com.github.gv2011.util.Verify.verifyEqual;
 
 import com.github.gv2011.util.Equal;
 import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.beans.Type;
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonFactory;
 
 public abstract class TypeSupport<T> implements Type<T> {
@@ -102,9 +101,11 @@ public abstract class TypeSupport<T> implements Type<T> {
       return false;
     }
 
-    public Optional<T> getDefault() {
-      return Optional.empty();
+    public Opt<T> getDefault() {
+      return Opt.empty();
     }
 
-
+    protected boolean isInitialized() {
+      return true;
+    }
 }

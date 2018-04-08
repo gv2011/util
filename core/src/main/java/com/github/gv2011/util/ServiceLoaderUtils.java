@@ -26,14 +26,10 @@ package com.github.gv2011.util;
  * #L%
  */
 
-
-
-
 import static com.github.gv2011.util.Constants.softRefConstant;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 
-import java.util.Optional;
-
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.serviceloader.RecursiveServiceLoader;
 
 public final class ServiceLoaderUtils {
@@ -44,7 +40,7 @@ public final class ServiceLoaderUtils {
     return RecursiveServiceLoader.service(serviceClass);
   }
 
-  public static <T> Optional<T> tryGetService(final Class<T> serviceClass){
+  public static <T> Opt<T> tryGetService(final Class<T> serviceClass){
     return RecursiveServiceLoader.tryGetService(serviceClass);
   }
 

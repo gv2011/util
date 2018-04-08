@@ -34,7 +34,6 @@ import static com.github.gv2011.util.ex.Exceptions.format;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -44,6 +43,7 @@ import com.github.gv2011.util.beans.Partial;
 import com.github.gv2011.util.beans.Property;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.ISortedMap;
+import com.github.gv2011.util.icol.Opt;
 
 public abstract class BeanBuilderSupport<T> implements BeanBuilder<T> {
 
@@ -120,8 +120,8 @@ public abstract class BeanBuilderSupport<T> implements BeanBuilder<T> {
 
     @SuppressWarnings("rawtypes")
     @Override
-    public <V> Setter<T,V> setOpt(final Function<T, Optional<V>> method) {
-      final PropertyImp<T,Optional<V>> property = beanType().getProperty(method);
+    public <V> Setter<T,V> setOpt(final Function<T, Opt<V>> method) {
+      final PropertyImp<T,Opt<V>> property = beanType().getProperty(method);
       verify(property.type() instanceof CollectionType);
       final CollectionType optType = (CollectionType) property.type();
       verifyEqual(optType.structure, Structure.opt());
@@ -138,7 +138,10 @@ public abstract class BeanBuilderSupport<T> implements BeanBuilder<T> {
         notNull(value, ()->format("Trying to set {} to null.", property));
         property.fixedValue().ifPresent(fv->{
           verifyEqual(value, fv, (e,a)->
-          format("{}: Trying to set property {} to value {}, but it is fixed to value {}.", beanType(), property, e, a)
+            format(
+              "{}: Trying to set property {} to value {}, but it is fixed to value {}.",
+              beanType(), property, e, a
+            )
           );
         });
         map.put(
@@ -150,8 +153,8 @@ public abstract class BeanBuilderSupport<T> implements BeanBuilder<T> {
     }
 
     private class OptSetter<V> implements Setter<T,V> {
-      private final PropertyImp<T,Optional<V>> property;
-      private OptSetter(final PropertyImp<T,Optional<V>> property) {
+      private final PropertyImp<T,Opt<V>> property;
+      private OptSetter(final PropertyImp<T,Opt<V>> property) {
         this.property = property;
       }
       @SuppressWarnings("rawtypes")
@@ -159,7 +162,7 @@ public abstract class BeanBuilderSupport<T> implements BeanBuilder<T> {
       public BeanBuilder<T> to(final V value) {
         map.put(
           property.name(),
-          Optional.of(((CollectionType) property.type()).elementType().cast(notNull(value)))
+          Opt.of(((CollectionType) property.type()).elementType().cast(notNull(value)))
         );
         return BeanBuilderSupport.this;
       }

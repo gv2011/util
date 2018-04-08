@@ -31,22 +31,21 @@ package com.github.gv2011.util.icol;
 
 import java.util.Collection;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 import com.github.gv2011.util.XStream;
 
 public interface ICollection<E> extends Collection<E>{
 
-  default Optional<E> asOptional(){
+  default Opt<E> asOpt(){
     final int size = size();
-    if(size==0) return Optional.empty();
-    else if(size==1) return Optional.of(iterator().next());
+    if(size==0) return Opt.empty();
+    else if(size==1) return Opt.of(iterator().next());
     else throw new IllegalStateException();
   }
 
   default E single(){
-    return asOptional().get();
+    return asOpt().get();
   }
 
   default E first(){
@@ -54,9 +53,9 @@ public interface ICollection<E> extends Collection<E>{
     else return iterator().next();
   }
 
-  default Optional<E> tryGetFirst(){
-    if(isEmpty()) return Optional.empty();
-    else return Optional.of(iterator().next());
+  default Opt<E> tryGetFirst(){
+    if(isEmpty()) return Opt.empty();
+    else return Opt.of(iterator().next());
   }
 
 

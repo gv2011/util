@@ -26,15 +26,15 @@ package com.github.gv2011.util.beans;
  * #L%
  */
 import java.lang.reflect.Method;
-import java.util.Optional;
 
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.icol.ISet;
 
 public interface AnnotationHandler {
 
-  <B> Optional<Class<? extends TypeResolver<B>>> typeResolver(Class<? extends B> clazz);
+  <B> Opt<Class<? extends TypeResolver<B>>> typeResolver(Class<? extends B> clazz);
 
-  Optional<Class<? extends TypeNameStrategy>> typeNameStrategy(Class<?> clazz);
+  Opt<Class<? extends TypeNameStrategy>> typeNameStrategy(Class<?> clazz);
 
   boolean annotatedAsBean(Class<?> clazz);
 
@@ -42,13 +42,13 @@ public interface AnnotationHandler {
 
   boolean isPolymorphicRoot(Class<?> i);
 
-  Optional<String> defaultValue(Method m);
+  Opt<String> defaultValue(Method m);
 
-  Optional<String> fixedValue(Method m);
+  Opt<String> fixedValue(Method m);
 
   ISet<Class<?>> subClasses(Class<?> clazz);
 
-  Optional<String> typeName(Class<?> clazz);
+  Opt<String> typeName(Class<?> clazz);
 
   boolean annotatedAsComputed(Method m);
 

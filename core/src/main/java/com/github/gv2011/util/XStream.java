@@ -42,34 +42,43 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.github.gv2011.util.ex.ThrowingFunction;
+import com.github.gv2011.util.icol.Opt;
 
 
 public interface XStream<E> extends Stream<E>, AutoCloseableNt{
 
   XStream<E> concat(final Stream<? extends E> other);
 
-  default Optional<E> findFirst(final Predicate<? super E> predicate) {
-    return filter(predicate).findFirst();
+  default Opt<E> tryFindFirst(final Predicate<? super E> predicate) {
+    return filter(predicate).tryFindFirst();
   }
 
-  default Optional<E> findAny(final Predicate<? super E> predicate) {
-    return filter(predicate).findAny();
+  default Opt<E> tryFindAny(final Predicate<? super E> predicate) {
+    return filter(predicate).tryFindAny();
+  }
+
+  default Opt<E> tryFindFirst(){
+    return Opt.ofOptional(findFirst());
+  }
+
+  default Opt<E> tryFindAny(){
+    return Opt.ofOptional(findAny());
   }
 
   default E findSingle(){
     return collect(toSingle());
   }
 
-  default Optional<E> toOptional(){
-    return collect(CollectionUtils.toOptional());
+  default Opt<E> toOpt(){
+    return collect(CollectionUtils.toOpt());
   }
 
   default E findSingle(final Predicate<? super E> predicate){
     return filter(predicate).collect(toSingle());
   }
 
-  default Optional<E> toOptional(final Predicate<? super E> predicate){
-    return filter(predicate).collect(CollectionUtils.toOptional());
+  default Opt<E> toOpt(final Predicate<? super E> predicate){
+    return filter(predicate).collect(CollectionUtils.toOpt());
   }
 
   @Override
@@ -90,8 +99,7 @@ public interface XStream<E> extends Stream<E>, AutoCloseableNt{
 
   <T> XStream<T> filter(final Class<T> clazz);
 
-  <R> XStream<R> flatOptional(final Function<? super E, ? extends Optional<? extends R>> mapper);
-
+  <R> XStream<R> flatOpt(final Function<? super E, ? extends Opt<? extends R>> mapper);
 
   public static<T> XStream<T> of(final T t) {
       return xStream(Stream.of(t));
@@ -111,6 +119,7 @@ public interface XStream<E> extends Stream<E>, AutoCloseableNt{
     return iCollections().xStream(Stream.empty());
   }
 
+  @Deprecated
   public static <E> XStream<E> fromOptional(final Optional<? extends E> optional){
     return optional.map(e->XStream.of((E)e)).orElseGet(XStream::empty);
   }

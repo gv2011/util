@@ -51,6 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.gv2011.util.XStream;
+import com.github.gv2011.util.icol.Opt;
 
 final class XStreamImp<T> implements XStream<T> {
 
@@ -282,9 +283,9 @@ final class XStreamImp<T> implements XStream<T> {
     }
 
     @Override
-    public <R> XStream<R> flatOptional(final Function<? super T, ? extends Optional<? extends R>> mapper) {
+    public <R> XStream<R> flatOpt(final Function<? super T, ? extends Opt<? extends R>> mapper) {
       return wrap(
-        delegate.map(mapper).filter(Optional::isPresent).map(Optional::get)
+        delegate.map(mapper).filter(Opt::isPresent).map(Opt::get)
       );
     }
 

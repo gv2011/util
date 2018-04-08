@@ -30,12 +30,12 @@ import static com.github.gv2011.util.ex.Exceptions.format;
 
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.IMap;
 import com.github.gv2011.util.icol.ISet;
+import com.github.gv2011.util.icol.Opt;
 import com.google.common.collect.ImmutableList;
 
 class IMapWrapper<K,V,M extends Map<K,V>> implements IMap<K,V>{
@@ -111,8 +111,8 @@ class IMapWrapper<K,V,M extends Map<K,V>> implements IMap<K,V>{
   }
 
   @Override
-  public final Optional<V> tryGet(final Object key) {
-    return Optional.ofNullable(delegate.get(key));
+  public final Opt<V> tryGet(final Object key) {
+    return Opt.ofNullable(delegate.get(key));
   }
 
   @Override

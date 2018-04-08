@@ -1,14 +1,10 @@
-package com.github.gv2011.util.beans;
-
-import java.util.function.Function;
-
-import com.github.gv2011.util.icol.Opt;
+package com.github.gv2011.util.beans.imp;
 
 /*-
  * #%L
- * The MIT License (MIT)
+ * util-beans
  * %%
- * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -16,10 +12,10 @@ import com.github.gv2011.util.icol.Opt;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,23 +25,34 @@ import com.github.gv2011.util.icol.Opt;
  * THE SOFTWARE.
  * #L%
  */
-public interface BeanBuilder<T> {
+import java.util.function.Function;
+import java.util.function.Supplier;
 
+import com.github.gv2011.util.ann.Nullable;
+import com.github.gv2011.util.icol.Ref;
 
-    T build();
+final class LazyOpt<T> extends Ref<T> {
 
-    Partial<T> buildPartial();
+  private final Supplier<T> constructor;
+  private @Nullable T value;
 
-    <V> void set(Property<V> p, V value);
+  LazyOpt(final Supplier<T> constructor) {
+    this.constructor = constructor;
+  }
 
-    <V> Setter<T,V> set(Function<T,V> method);
-
-    <V> Setter<T,V> setOpt(Function<T,Opt<V>> method);
-
-    BeanBuilder<T> setAll(T bean);
-
-    public interface Setter<T,V> {
-      BeanBuilder<T> to(V value);
+  @Override
+  public T get() {
+    T result = value;
+    if(result == null){
+      result = constructor.get();
+      value = result;
     }
+    return value;
+  }
+
+  @Override
+  public <U> LazyOpt<U> map(final Function<? super T, ? extends U> mapper) {
+    return new LazyOpt<>(()->mapper.apply(get()));
+  }
 
 }

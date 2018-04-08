@@ -51,19 +51,10 @@ import com.google.common.collect.ImmutableSortedSet;
 public final class GuavaIcolFactory implements ICollectionFactory{
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
-  static final IList EMPTY_LIST = new IListWrapper(ImmutableList.of());
-
-  @SuppressWarnings({ "unchecked", "rawtypes" })
   private static final ISortedSet EMPTY_SET = new ISortedSetWrapper(ImmutableSortedSet.of());
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
-  private static final ISortedMap EMPTY_MAP = new ISortedMapWrapper(ImmutableSortedMap.of());
-
-  @SuppressWarnings("unchecked")
-  @Override
-  public <T> IList<T> emptyList() {
-    return EMPTY_LIST;
-  }
+  static final ISortedMap EMPTY_MAP = new ISortedMapWrapper(ImmutableSortedMap.of());
 
   @SuppressWarnings("unchecked")
   @Override
@@ -118,12 +109,6 @@ public final class GuavaIcolFactory implements ICollectionFactory{
   @Override
   public <T extends Comparable<? super T>> ISortedSet<T> sortedSetFrom(final Collection<? extends T> elements) {
     return ((ISortedSet.Builder<T>)sortedSetBuilder()).addAll(elements).build();
-  }
-
-  @SuppressWarnings({ "unchecked", "rawtypes" })
-  @Override
-  public <T> IList<T> listOf(final T element) {
-    return new IListWrapper(ImmutableList.of(element));
   }
 
   @Override

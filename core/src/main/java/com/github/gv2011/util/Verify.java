@@ -104,8 +104,6 @@ public final class Verify {
     return verify(arg, a->a!=null, a->msg.get());
   }
 
-  public static <T> Optional<T> nothing(){return Optional.empty();}
-
   public static Runnable noop(){return ()->{};}
 
   public static <T> Optional<T> tryCast(final Object obj, final Class<? extends T> clazz){

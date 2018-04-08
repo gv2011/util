@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,17 +26,15 @@ package com.github.gv2011.util.beans.imp;
  * #L%
  */
 
-import static com.github.gv2011.util.CollectionUtils.atMostOne;
 import static com.github.gv2011.util.CollectionUtils.setOf;
 import static com.github.gv2011.util.CollectionUtils.stream;
-import static com.github.gv2011.util.CollectionUtils.toOptional;
+import static com.github.gv2011.util.CollectionUtils.toOpt;
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verify;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Optional;
 import java.util.function.Function;
 
 import org.slf4j.Logger;
@@ -53,30 +51,31 @@ import com.github.gv2011.util.beans.TypeName;
 import com.github.gv2011.util.beans.TypeNameStrategy;
 import com.github.gv2011.util.beans.TypeResolver;
 import com.github.gv2011.util.icol.ISet;
+import com.github.gv2011.util.icol.Opt;
 
 final class DefaultAnnotationHandler implements AnnotationHandler{
 
   private static final Logger LOG = getLogger(DefaultAnnotationHandler.class);
 
   @Override
-  public <B> Optional<Class<? extends TypeResolver<B>>> typeResolver(final Class<? extends B> clazz) {
-    return Optional.ofNullable(clazz.getAnnotation(Abstract.class))
+  public <B> Opt<Class<? extends TypeResolver<B>>> typeResolver(final Class<? extends B> clazz) {
+    return Opt.ofNullable(clazz.getAnnotation(Abstract.class))
       .flatMap(a->{
         @SuppressWarnings({"unchecked"})
         final Class<? extends TypeResolver<B>> typeResolver = (Class<? extends TypeResolver<B>>) a.typeResolver();
-        if(typeResolver.equals(TypeResolver.class)) return Optional.empty();
-        else return Optional.of(typeResolver);
+        if(typeResolver.equals(TypeResolver.class)) return Opt.empty();
+        else return Opt.of(typeResolver);
       })
     ;
   }
 
   @Override
-  public Optional<Class<? extends TypeNameStrategy>> typeNameStrategy(final Class<?> clazz) {
-    return Optional.ofNullable(clazz.getAnnotation(Abstract.class))
+  public Opt<Class<? extends TypeNameStrategy>> typeNameStrategy(final Class<?> clazz) {
+    return Opt.ofNullable(clazz.getAnnotation(Abstract.class))
       .flatMap(a->{
         final Class<? extends TypeNameStrategy> typeNameStrategy = a.typeNameStrategy();
-        if(typeNameStrategy.equals(TypeNameStrategy.class)) return Optional.empty();
-        else return Optional.of(typeNameStrategy);
+        if(typeNameStrategy.equals(TypeNameStrategy.class)) return Opt.empty();
+        else return Opt.of(typeNameStrategy);
       })
     ;
   }
@@ -97,7 +96,7 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
 
   @Override
   public boolean isPolymorphicRoot(final Class<?> clazz) {
-    final boolean result = Optional.ofNullable(clazz.getAnnotation(Abstract.class))
+    final boolean result = Opt.ofNullable(clazz.getAnnotation(Abstract.class))
       .map(a->!subClasses(a).isEmpty())
       .orElse(false)
     ;
@@ -106,15 +105,15 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
   }
 
   @Override
-  public Optional<String> defaultValue(final Method m) {
+  public Opt<String> defaultValue(final Method m) {
     return annotationValue(m, DefaultValue.class, DefaultValue::value);
   }
 
   @Override
-  public Optional<String> fixedValue(final Method m) {
-    final Optional<String> fixed = annotationValue(m, FixedValue.class, FixedValue::value);
-    final Optional<String> fixedBoolean = annotationValue(m, FixedBooleanValue.class, a->Boolean.toString(a.value()));
-    return atMostOne(fixed, fixedBoolean);
+  public Opt<String> fixedValue(final Method m) {
+    final Opt<String> fixed = annotationValue(m, FixedValue.class, FixedValue::value);
+    final Opt<String> fixedBoolean = annotationValue(m, FixedBooleanValue.class, a->Boolean.toString(a.value()));
+    return fixed.merge(fixedBoolean);
   }
 
   @Override
@@ -138,11 +137,11 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
   }
 
   @Override
-  public Optional<String> typeName(final Class<?> clazz) {
-    return Optional.ofNullable(clazz.getAnnotation(TypeName.class)).map(TypeName::value);
+  public Opt<String> typeName(final Class<?> clazz) {
+    return Opt.ofNullable(clazz.getAnnotation(TypeName.class)).map(TypeName::value);
   }
 
-  private <A extends Annotation, V> Optional<V> annotationValue(
+  private <A extends Annotation, V> Opt<V> annotationValue(
     final Method propertyMethod, final Class<A> annotationClass, final Function<A,V> annotationProperty
   ){
       verify(propertyMethod.getParameterCount()==0);
@@ -150,8 +149,8 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
       return stream(clazz.getMethods())
         .filter(m->m.getParameterCount()==0)
         .filter(m->m.getName().equals(propertyMethod.getName()))
-        .flatOptional(m->Optional.ofNullable(m.getAnnotation(annotationClass)))
-        .collect(toOptional())
+        .flatOpt(m->Opt.ofNullable(m.getAnnotation(annotationClass)))
+        .collect(toOpt())
         .map(annotationProperty)
       ;
   }

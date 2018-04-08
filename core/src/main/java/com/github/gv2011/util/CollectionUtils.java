@@ -37,7 +37,6 @@ import static com.github.gv2011.util.ex.Exceptions.notYetImplemented;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 import static java.util.stream.Collectors.toList;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -69,6 +68,7 @@ import com.github.gv2011.util.icol.IMap;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.icol.Opt;
 
 public class CollectionUtils {
 
@@ -140,16 +140,6 @@ public class CollectionUtils {
     return single(it, i->i==0?"No element.":"Multiple elements.");
   }
 
-  @SafeVarargs
-  public static <T> T single(final Optional<? extends T>... optionals){
-    return atMostOne(optionals).get();
-  }
-
-  @SafeVarargs
-  public static <T> Optional<T> atMostOne(final Optional<? extends T>... optionals){
-    return Arrays.stream(optionals).flatMap(CollectionUtils::stream).collect(toOptional());
-  }
-
   public static <V> V get(final Map<?,? extends V> map, final Object key){
     final V result = map.get(key);
     if(result==null) {
@@ -162,6 +152,7 @@ public class CollectionUtils {
     return Optional.ofNullable(map.get(key));
   }
 
+  @Deprecated
   public static <S,T> Function<S,XStream<T>> ifPresent(final Function<S,Optional<T>> optFunction){
     return s->stream(optFunction.apply(s));
   }
@@ -170,14 +161,15 @@ public class CollectionUtils {
     return new Pair<>(key, value);
   }
 
+  @Deprecated
   public static <T> XStream<T> stream(final Optional<? extends T> optional){
     return XStream.fromOptional(optional);
   }
 
-  public static <T> Optional<T> filter(final Optional<T> optional, final Predicate<? super T> predicate){
+  public static <T> Opt<T> filter(final Opt<T> optional, final Predicate<? super T> predicate){
     if(optional.isPresent()) {
       if(predicate.test(optional.get())) return optional;
-      else return Optional.empty();
+      else return Opt.empty();
     }
     else return optional;
   }
@@ -210,8 +202,8 @@ public class CollectionUtils {
   }
 
 
-  public static <T> Function<T,Optional<T>> filter(final Predicate<T> predicate){
-    return e->predicate.test(e) ? Optional.of(e) : Optional.empty();
+  public static <T> Function<T,Opt<T>> filter(final Predicate<T> predicate){
+    return e->predicate.test(e) ? Opt.of(e) : Opt.empty();
   }
 
 
@@ -226,28 +218,32 @@ public class CollectionUtils {
     return result;
   }
 
-  public static <T> Optional<T> atMostOne(final Iterable<? extends T> collection){
+  public static <T> Opt<T> atMostOne(final Iterable<? extends T> collection){
     return atMostOne(collection, ()->"Collection has more than one element.");
   }
 
-  public static <T> Optional<T> atMostOne(
+  public static <T> Optional<T> toOptional(final Opt<? extends T> opt){
+    return opt.isPresent() ? Optional.of(opt.get()) : Optional.empty();
+  }
+
+  public static <T> Opt<T> atMostOne(
     final Iterable<? extends T> collection, final Supplier<String> moreThanOneMessage
   ){
     return atMostOne(collection.iterator(), moreThanOneMessage);
   }
 
-  public static <T> Optional<T> atMostOne(
+  public static <T> Opt<T> atMostOne(
     final Iterator<? extends T> iterator, final Supplier<String> moreThanOneMessage
   ){
-    if(!iterator.hasNext()) return Optional.empty();
+    if(!iterator.hasNext()) return Opt.empty();
     else{
-      final Optional<T> result = Optional.of(iterator.next());
+      final Opt<T> result = Opt.of(iterator.next());
       verify(!iterator.hasNext(), moreThanOneMessage);
       return result;
     }
   }
 
-  public static <T> IList<T> asList(final Optional<? extends T> optional){
+  public static <T> IList<T> asList(final Opt<? extends T> optional){
     return notYetImplemented();
 //    return optional
 //      .map(e->{
@@ -337,7 +333,7 @@ public class CollectionUtils {
     final Function<? super T, ? extends K> keyMapper,
     final Function<? super T, Optional<? extends V>> valueMapper
   ) {
-    return  new Collector<T,Map<K,V>, Map<K,V>>(){
+    return new Collector<T,Map<K,V>, Map<K,V>>(){
       @Override
       public Supplier<Map<K, V>> supplier() {
         return HashMap::new;
@@ -396,11 +392,21 @@ public class CollectionUtils {
     };
   }
 
+  @Deprecated
   public static <T> Collector<T,?,Optional<T>> toOptional(){
     return new OptCollector<T,Optional<T>>(){
       @Override
       public Function<AtomicReference<T>, Optional<T>> finisher() {
         return r->Optional.ofNullable(r.get());
+      }
+    };
+  }
+
+  public static <T> Collector<T,?,Opt<T>> toOpt(){
+    return new OptCollector<T,Opt<T>>(){
+      @Override
+      public Function<AtomicReference<T>, Opt<T>> finisher() {
+        return r->Opt.ofNullable(r.get());
       }
     };
   }
@@ -521,6 +527,7 @@ public class CollectionUtils {
     return EitherImp.newThat(b);
   }
 
+  @Deprecated
   public static final boolean optIs(final Optional<?> optional, final Object obj) {
     return optional.map(v->v.equals(obj)).orElse(false);
   }
@@ -530,8 +537,8 @@ public class CollectionUtils {
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  public static final <U,E extends U> Optional<U> upcast(final Optional<E> optional){
-    return (Optional)optional;
+  public static final <U,E extends U> Opt<U> upcast(final Opt<E> optional){
+    return (Opt)optional;
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })

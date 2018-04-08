@@ -12,10 +12,10 @@ package com.github.gv2011.util.icol.guava;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.github.gv2011.util.Comparison;
+import com.github.gv2011.util.icol.ICollectionFactory;
 import com.github.gv2011.util.icol.Path;
 
 final class PathImp extends IListWrapper<String> implements Path{
@@ -37,7 +38,7 @@ final class PathImp extends IListWrapper<String> implements Path{
   private static final Comparator<Path> COMPARATOR = Comparison.listComparator();
 
   @SuppressWarnings("unchecked")
-  static final Path EMPTY = new PathImp(GuavaIcolFactory.EMPTY_LIST);
+  static final Path EMPTY = new PathImp(ICollectionFactory.EMPTY);
 
   private PathImp(final List<String> delegate) {
     super(delegate);

@@ -39,10 +39,10 @@ import static com.github.gv2011.util.CollectionUtils.toIMap;
 import static com.github.gv2011.util.CollectionUtils.toISet;
 import static com.github.gv2011.util.CollectionUtils.toISortedMap;
 import static com.github.gv2011.util.CollectionUtils.toISortedSet;
+import static com.github.gv2011.util.CollectionUtils.toOptional;
 import static com.github.gv2011.util.ex.Exceptions.bug;
 
 import java.util.Collection;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
@@ -54,6 +54,7 @@ import com.github.gv2011.util.icol.IMap;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonNodeType;
@@ -63,6 +64,8 @@ import com.github.gv2011.util.json.JsonNull;
 abstract class Structure<C,K,E> {
 
   private static final Structure OPT = new OptStructure();
+
+  private static final Structure OPTIONAL = new OptionalStructure();
 
   private static final Structure LIST = new ListStructure();
 
@@ -74,8 +77,12 @@ abstract class Structure<C,K,E> {
 
   private static final Structure STRING_MAP = new StringMapStructure();
 
-  static final <E> Structure<Optional<E>,Nothing,E> opt(){
+  static final <E> Structure<Opt<E>,Nothing,E> opt(){
     return OPT;
+  }
+
+  static final <E> Structure<Optional<E>,Nothing,E> optional(){
+    return OPTIONAL;
   }
 
   static final <E> Structure<IList<E>,Nothing,E> list(){
@@ -153,9 +160,47 @@ abstract class Structure<C,K,E> {
   abstract C createCollection(final Collection<? extends E> collection);
 
 
-  private static final class OptStructure<E> extends Structure<Optional<E>,Nothing,E> {
+  private static final class OptStructure<E> extends Structure<Opt<E>,Nothing,E> {
 
     private OptStructure() {
+      super((Class)Opt.class);
+    }
+
+    @Override
+    boolean isEmpty(final Opt<E> opt) {
+      return !opt.isPresent();
+    }
+
+    @Override
+    Opt<E> empty() {
+      return Opt.empty();
+    }
+
+    @Override
+    JsonNode toJson(final CollectionType<Opt<E>,Nothing,E> collectionType, final Opt<E> opt) {
+      final JsonFactory jf = collectionType.jf();
+      return opt.map(e->collectionType.elementType().toJson(e)).orElseGet(jf::jsonNull);
+    }
+
+    @Override
+    Opt<E> convert(final JsonNode json, final CollectionType<Opt<E>,Nothing,E> collectionType) {
+      return json.isNull()
+        ? Opt.empty()
+        : Opt.of(collectionType.elementType().parse(json))
+      ;
+    }
+
+    @Override
+    Opt<E> createCollection(final Collection<? extends E> collection) {
+      return atMostOne(collection);
+    }
+
+  }
+
+
+  private static final class OptionalStructure<E> extends Structure<Optional<E>,Nothing,E> {
+
+    private OptionalStructure() {
       super((Class)Optional.class);
     }
 
@@ -185,9 +230,8 @@ abstract class Structure<C,K,E> {
 
     @Override
     Optional<E> createCollection(final Collection<? extends E> collection) {
-      return atMostOne(collection);
+      return toOptional(atMostOne(collection));
     }
-
   }
 
 
@@ -351,38 +395,39 @@ abstract class Structure<C,K,E> {
 
   }
 
-  private static final class StringMapStructure<V> extends Structure<ISortedMap<String,V>,String,V> {
+  private static final class StringMapStructure<K extends Comparable<? super K>, V>
+  extends Structure<ISortedMap<K,V>,K,V> {
 
     private StringMapStructure() {
       super((Class)ISortedMap.class);
     }
 
     @Override
-    boolean isEmpty(final ISortedMap<String,V> map) {
+    boolean isEmpty(final ISortedMap<K,V> map) {
       return map.isEmpty();
     }
 
     @Override
-    ISortedMap<String, V> empty() {
+    ISortedMap<K, V> empty() {
       return iCollections().emptySortedMap();
     }
 
     @Override
-    JsonNode toJson(final CollectionType<ISortedMap<String,V>,String,V> mapType, final ISortedMap<String,V> map) {
+    JsonNode toJson(final CollectionType<ISortedMap<K,V>,K,V> mapType, final ISortedMap<K,V> map) {
       final JsonFactory jf = mapType.jf();
       final TypeSupport<V> valueType = mapType.elementType();
       return
         map.entrySet().stream()
         .collect(jf.toJsonObject(
-          Entry::getKey,
+          e->e.getKey().toString(),
           e->valueType.toJson(e.getValue())
         ))
       ;
     }
 
     @Override
-    final ISortedMap<String,V> convert(final JsonNode json, final CollectionType<ISortedMap<String,V>,String,V> mapType) {
-      final TypeSupport<String> keyType = mapType.keyType().get();
+    final ISortedMap<K,V> convert(final JsonNode json, final CollectionType<ISortedMap<K,V>,K,V> mapType) {
+      final TypeSupport<K> keyType = mapType.keyType().get();
       final TypeSupport<V> valueType = mapType.elementType();
       final Stream<JsonNode> stream = (json instanceof JsonNull)
         ? Stream.<JsonNode>empty()
@@ -399,7 +444,7 @@ abstract class Structure<C,K,E> {
     }
 
     @Override
-    ISortedMap<String, V> createCollection(final Collection<? extends V> collection) {
+    ISortedMap<K, V> createCollection(final Collection<? extends V> collection) {
       throw new UnsupportedOperationException();
     }
   }

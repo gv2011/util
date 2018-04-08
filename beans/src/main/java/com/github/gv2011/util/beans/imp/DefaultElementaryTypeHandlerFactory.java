@@ -29,6 +29,7 @@ import static com.github.gv2011.util.CollectionUtils.sortedSetOf;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
+import static java.util.stream.Collectors.joining;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -37,15 +38,15 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 
-import com.github.gv2011.util.IsoDay;
 import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.beans.ElementaryTypeHandler;
 import com.github.gv2011.util.beans.ElementaryTypeHandlerFactory;
 import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonBoolean;
 import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
@@ -53,6 +54,7 @@ import com.github.gv2011.util.json.JsonNodeType;
 import com.github.gv2011.util.json.JsonNull;
 import com.github.gv2011.util.json.JsonNumber;
 import com.github.gv2011.util.json.JsonString;
+import com.github.gv2011.util.time.IsoDay;
 
 final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandlerFactory{
 
@@ -66,6 +68,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     Instant.class.getName(),
     Duration.class.getName(),
     IsoDay.class.getName(),
+    UUID.class.getName(),
     InetSocketAddress.class.getName()
   );
 
@@ -90,7 +93,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
   }
 
   @SuppressWarnings("unchecked")
-  <T> Optional<ElementaryTypeHandler<T>> tryGetTypeHandler(final Class<T> clazz) {
+  <T> Opt<ElementaryTypeHandler<T>> tryGetTypeHandler(final Class<T> clazz) {
     @Nullable AbstractElementaryTypeHandler<?> result;
     if(clazz.isEnum()) result = new EnumTypeHandler<>(clazz.asSubclass(Enum.class));
     else if(clazz.equals(String.class)) result = new StringType();
@@ -102,13 +105,14 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     else if(clazz.equals(long.class)) result = new PrimitiveLongType();
     else if(clazz.equals(BigDecimal.class)) result = new DecimalType();
     else if(clazz.equals(Instant.class)) result = stringBasedType(Instant.class);
+    else if(clazz.equals(UUID.class)) result = new UuidType();
     else if(clazz.equals(Date.class)) result = new DateType();
     else if(clazz.equals(Duration.class)) result = new DurationType();
     else if(clazz.equals(IsoDay.class)) result = stringBasedType(IsoDay.class);
     else if(clazz.equals(InetSocketAddress.class)) result = new InetSocketAddressType();
     else if(auto.isSupported(clazz)) result = auto.createType(clazz);
     else result = null;
-    return Optional.ofNullable((AbstractElementaryTypeHandler<T>) result);
+    return Opt.ofNullable((AbstractElementaryTypeHandler<T>) result);
   }
 
 
@@ -116,16 +120,16 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
   private static <T> AbstractElementaryTypeHandler<T> stringBasedType(final Class<T> parseable) {
     final Method method = call(()->parseable.getMethod("parse", CharSequence.class));
     final Function<? super String,T> constructor = s->call(()->parseable.cast(method.invoke(null, s)));
-    return stringBasedType(constructor , Optional.empty());
+    return stringBasedType(constructor , Opt.empty());
   }
 
   @SuppressWarnings("unused")
   private static <T> AbstractElementaryTypeHandler<T> stringBasedType(final Function<? super String,T> constructor) {
-    return stringBasedType(constructor, Optional.empty());
+    return stringBasedType(constructor, Opt.empty());
   }
 
   static <T> AbstractElementaryTypeHandler<T> stringBasedType(
-    final Function<? super String,T> constructor, final Optional<T> defaultValue
+    final Function<? super String,T> constructor, final Opt<T> defaultValue
   ) {
     return new AbstractElementaryTypeHandler<T>() {
       @Override
@@ -133,26 +137,29 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
         return constructor.apply(json.asString());
       }
       @Override
-      public Optional<T> defaultValue() {
+      public Opt<T> defaultValue() {
         return defaultValue;
       }
     };
   }
 
   private static class StringType extends AbstractElementaryTypeHandler<String> {
-    private static final Optional<String> EMPTY = Optional.of("".intern());
+    private static final Opt<String> EMPTY = Opt.of("".intern());
     @Override
     public String fromJson(final JsonNode json) {
-      return json.asString();
+      if(json.jsonNodeType().equals(JsonNodeType.LIST)){
+        return json.asList().stream().map(JsonNode::asString).collect(joining());
+      }
+      else return json.asString();
     }
     @Override
-    public Optional<String> defaultValue() {
+    public Opt<String> defaultValue() {
       return EMPTY;
     }
   }
 
   private static class NothingType extends AbstractElementaryTypeHandler<Nothing> {
-    private static final Optional<Nothing> DEF = Optional.of(Nothing.INSTANCE);
+    private static final Opt<Nothing> DEF = Opt.of(Nothing.INSTANCE);
     @Override
     public Nothing fromJson(final JsonNode json) {
       json.asNull();
@@ -163,7 +170,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
       return jf.jsonNull();
     }
     @Override
-    public Optional<Nothing> defaultValue() {
+    public Opt<Nothing> defaultValue() {
       return DEF;
     }
     @Override
@@ -173,7 +180,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
   }
 
   private static class BooleanType extends AbstractElementaryTypeHandler<Boolean> {
-    private static final Optional<Boolean> FALSE = Optional.of(false);
+    private static final Opt<Boolean> FALSE = Opt.of(false);
     @Override
     public Boolean fromJson(final JsonNode json) {
       return json.asBoolean();
@@ -183,7 +190,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
       return jf.primitive(b);
     }
     @Override
-    public Optional<Boolean> defaultValue() {
+    public Opt<Boolean> defaultValue() {
       return FALSE;
     }
     @Override
@@ -193,7 +200,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
   }
 
   private static class IntegerType extends AbstractElementaryTypeHandler<Integer> {
-    private static final Optional<Integer> ZERO = Optional.of(0);
+    private static final Opt<Integer> ZERO = Opt.of(0);
     @Override
     public Integer fromJson(final JsonNode json) {
       return json.asNumber().intValueExact();
@@ -203,7 +210,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
       return jf.primitive(i);
     }
     @Override
-    public Optional<Integer> defaultValue() {
+    public Opt<Integer> defaultValue() {
       return ZERO;
     }
     @Override
@@ -213,7 +220,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
   }
 
   private static class LongType extends AbstractElementaryTypeHandler<Long> {
-    private static final Optional<Long> ZERO = Optional.of(0l);
+    private static final Opt<Long> ZERO = Opt.of(0l);
     @Override
     public Long fromJson(final JsonNode json) {
       return json.asNumber().longValueExact();
@@ -223,7 +230,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
       return jf.primitive(i);
     }
     @Override
-    public Optional<Long> defaultValue() {
+    public Opt<Long> defaultValue() {
       return ZERO;
     }
     @Override
@@ -240,7 +247,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
   }
 
   private static class DecimalType extends AbstractElementaryTypeHandler<BigDecimal> {
-    private static final Optional<BigDecimal> ZERO = Optional.of(BigDecimal.ZERO);
+    private static final Opt<BigDecimal> ZERO = Opt.of(BigDecimal.ZERO);
     @Override
     public BigDecimal fromJson(final JsonNode json) {
       return json.asNumber();
@@ -250,7 +257,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
       return jf.primitive(dec);
     }
     @Override
-    public Optional<BigDecimal> defaultValue() {
+    public Opt<BigDecimal> defaultValue() {
       return ZERO;
     }
     @Override
@@ -272,8 +279,8 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
       return jf.primitive(date.toInstant().toString());
     }
     @Override
-    public Optional<Date> defaultValue() {
-      return Optional.empty();
+    public Opt<Date> defaultValue() {
+      return Opt.empty();
     }
     @Override
     public JsonNodeType jsonNodeType() {
@@ -282,7 +289,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
   }
 
   private static class DurationType extends AbstractElementaryTypeHandler<Duration> {
-    private static final Optional<Duration> ZERO = Optional.of(Duration.ZERO);
+    private static final Opt<Duration> ZERO = Opt.of(Duration.ZERO);
     @Override
     public Duration fromJson(final JsonNode json) {
       if(json instanceof JsonNumber) {
@@ -295,8 +302,27 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
       return jf.primitive(duration.toString());
     }
     @Override
-    public Optional<Duration> defaultValue() {
+    public Opt<Duration> defaultValue() {
       return ZERO;
+    }
+    @Override
+    public JsonNodeType jsonNodeType() {
+      return JsonNodeType.STRING;
+    }
+  }
+
+  private static class UuidType extends AbstractElementaryTypeHandler<UUID> {
+    @Override
+    public UUID fromJson(final JsonNode json) {
+      return UUID.fromString(json.asString());
+    }
+    @Override
+    public JsonString toJson(final UUID uuid, final JsonFactory jf) {
+      return jf.primitive(uuid.toString());
+    }
+    @Override
+    public Opt<UUID> defaultValue() {
+      return Opt.empty();
     }
     @Override
     public JsonNodeType jsonNodeType() {

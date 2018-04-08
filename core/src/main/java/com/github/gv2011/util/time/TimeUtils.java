@@ -1,4 +1,4 @@
-package com.github.gv2011.util;
+package com.github.gv2011.util.time;
 
 /*-
  * #%L

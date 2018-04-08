@@ -26,9 +26,8 @@ package com.github.gv2011.util.beans.imp;
  * #L%
  */
 
-import java.util.Optional;
-
 import com.github.gv2011.util.beans.ElementaryTypeHandler;
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.tstr.TypedString;
@@ -36,12 +35,12 @@ import com.github.gv2011.util.tstr.TypedString;
 class TypedStringType<S extends TypedString<S>> extends AbstractElementaryType<S>{
 
   private final TypeHandler handler;
-  private final Optional<S> defaultValue;
+  private final Opt<S> defaultValue;
 
   TypedStringType(final JsonFactory jf, final Class<S> clazz) {
     super(jf, clazz);
     this.handler = new TypeHandler();
-    this.defaultValue = Optional.of(create(""));
+    this.defaultValue = Opt.of(create(""));
   }
 
   private class TypeHandler extends AbstractElementaryTypeHandler<S>{
@@ -51,7 +50,7 @@ class TypedStringType<S extends TypedString<S>> extends AbstractElementaryType<S
     }
 
     @Override
-    public Optional<S> defaultValue() {
+    public Opt<S> defaultValue() {
       return defaultValue;
     }
   }

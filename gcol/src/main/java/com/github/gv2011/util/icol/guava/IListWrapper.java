@@ -44,6 +44,7 @@ class IListWrapper<E> implements IList<E>{
 
   IListWrapper(final List<E> delegate) {
     this.delegate = delegate;
+    assert delegate.size()>1;
   }
 
   @Override

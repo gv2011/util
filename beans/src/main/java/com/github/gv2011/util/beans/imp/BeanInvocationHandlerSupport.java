@@ -52,7 +52,7 @@ public abstract class BeanInvocationHandlerSupport<B,P>  {
     Object result;
     final String name = method.getName();
     if(method.getParameterCount()==0) {
-      if(name.equals("hashCode")) result = getHashCode();
+      if(name.equals("hashCode")) result = getHashCode(proxy);
       else if(name.equals("toString")) result = beanType.clazz.getSimpleName()+values;
       else result = tryGetValue(name).orElseGet(()->handleOther(proxy, method, args, x));
     }
@@ -67,8 +67,8 @@ public abstract class BeanInvocationHandlerSupport<B,P>  {
      final Object proxy, final Method method, final Object[] args, P x
   );
 
-  private int getHashCode() {
-    if(hashCode==null) hashCode = beanType.hashCodeFromValues(values);
+  private int getHashCode(final Object proxy) {
+    if(hashCode==null) hashCode = beanType.hashCode(beanType.cast(proxy));
     return hashCode.intValue();
   }
 
@@ -92,7 +92,7 @@ public abstract class BeanInvocationHandlerSupport<B,P>  {
         if(oih instanceof BeanInvocationHandlerSupport) {
           final BeanInvocationHandlerSupport<?,?> obih = (BeanInvocationHandlerSupport<?,?>)oih;
           assert obih.beanType.equals(beanType);
-          if(getHashCode()!=other.hashCode()){
+          if(getHashCode(proxy)!=other.hashCode()){
             result = false;
             assert result == equals1(otherBean);
           }

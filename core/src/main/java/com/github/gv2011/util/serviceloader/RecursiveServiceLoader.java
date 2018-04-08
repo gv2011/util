@@ -39,11 +39,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
+
 import java.util.Set;
 
 import com.github.gv2011.util.CachedConstant;
 import com.github.gv2011.util.Constants;
+import com.github.gv2011.util.icol.Opt;
 
 
 public final class RecursiveServiceLoader {
@@ -56,7 +57,7 @@ public final class RecursiveServiceLoader {
         return INSTANCE.get().getService(serviceClass);
     }
 
-    public static final <S> Optional<S> tryGetService(final Class<S> serviceClass) {
+    public static final <S> Opt<S> tryGetService(final Class<S> serviceClass) {
         return INSTANCE.get().tryGetServiceInternal(serviceClass);
     }
 
@@ -74,7 +75,7 @@ public final class RecursiveServiceLoader {
       );
     }
 
-    private <S> Optional<S> tryGetServiceInternal(final Class<S> serviceClass) {
+    private <S> Opt<S> tryGetServiceInternal(final Class<S> serviceClass) {
         final Set<S> services = getServices(serviceClass);
         return atMostOne(
           services,
@@ -84,13 +85,13 @@ public final class RecursiveServiceLoader {
 
     @SuppressWarnings("unchecked")
     private <S> Set<S> getServices(final Class<S> serviceClass) {
-        Optional<Set<?>> entry = Optional.ofNullable(services.get(serviceClass));
+        Opt<Set<?>> entry = Opt.ofNullable(services.get(serviceClass));
         if(!entry.isPresent()) {
             synchronized(lock) {
-                entry = Optional.ofNullable(services.get(serviceClass));
+                entry = Opt.ofNullable(services.get(serviceClass));
                 if(!entry.isPresent()) {
                     loadServices(serviceClass);
-                    entry = Optional.of(services.get(serviceClass));
+                    entry = Opt.of(services.get(serviceClass));
                 }
             }
         }

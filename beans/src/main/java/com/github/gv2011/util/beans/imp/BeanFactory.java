@@ -28,7 +28,7 @@ package com.github.gv2011.util.beans.imp;
 import static com.github.gv2011.util.CollectionUtils.atMostOne;
 import static com.github.gv2011.util.CollectionUtils.toIMap;
 import static com.github.gv2011.util.CollectionUtils.toISet;
-import static com.github.gv2011.util.CollectionUtils.toOptional;
+import static com.github.gv2011.util.CollectionUtils.toOpt;
 import static com.github.gv2011.util.ReflectionUtils.getAllInterfaces;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
@@ -39,7 +39,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.function.Function;
 
 import org.slf4j.Logger;
@@ -51,6 +50,7 @@ import com.github.gv2011.util.beans.TypeNameStrategy;
 import com.github.gv2011.util.beans.TypeResolver;
 import com.github.gv2011.util.icol.IMap;
 import com.github.gv2011.util.icol.ISet;
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
 
@@ -80,7 +80,7 @@ public abstract class BeanFactory{
       if(clazz.getTypeParameters().length!=0)
         whyNot = "parameterized class";
       else{
-        final Optional<Class<?>> beanSuper = getAllInterfaces(clazz).parallelStream().findAny(this::isBeanClass);
+        final Opt<Class<?>> beanSuper = getAllInterfaces(clazz).parallelStream().tryFindAny(this::isBeanClass);
         if(beanSuper.isPresent()) whyNot = format("{} is subclass of bean class {}.", clazz, beanSuper.get());
       }
     }
@@ -206,7 +206,7 @@ public abstract class BeanFactory{
   }
 
   @SuppressWarnings("unchecked")
-  private <B> Optional<Class<? super B>> tryGetRoot(final Class<B> clazz) {
+  private <B> Opt<Class<? super B>> tryGetRoot(final Class<B> clazz) {
     final ISet<Class<?>> roots = getAllInterfaces(clazz).parallelStream()
       .filter(this::isPolymorphicRootClass)
       .collect(toISet())
@@ -292,16 +292,16 @@ public abstract class BeanFactory{
     ;
   }
 
-  public <B> Optional<ObjectTypeSupport<B>> tryCreate(final Class<B> clazz) {
+  public <B> Opt<ObjectTypeSupport<B>> tryCreate(final Class<B> clazz) {
     if(isBeanClass(clazz)){
-      if(isRegularBeanClass(clazz)) return Optional.of(createRegularBeanType(clazz));
-      else return Optional.of(createPolymorphicBean(clazz));
+      if(isRegularBeanClass(clazz)) return Opt.of(createRegularBeanType(clazz));
+      else return Opt.of(createPolymorphicBean(clazz));
     }
-    else if(isPolymorphicRootClass(clazz)) return Optional.of(createPolymorphicRoot(clazz));
-    else if(isPolymorphicIntermediateClass(clazz)) return Optional.of(createPolymorphicIntermediate(clazz));
+    else if(isPolymorphicRootClass(clazz)) return Opt.of(createPolymorphicRoot(clazz));
+    else if(isPolymorphicIntermediateClass(clazz)) return Opt.of(createPolymorphicIntermediate(clazz));
     else{
       assert !isSupported(clazz);
-      return Optional.empty();
+      return Opt.empty();
     }
   }
 
@@ -342,7 +342,7 @@ public abstract class BeanFactory{
     return new PolymorphicRootType<>(registry, clazz, typeResolver, typeNameStrategy);
   }
 
-  private <B> Optional<TypeResolver<B>> getAnnotatedTypeResolver(final Class<B> clazz) {
+  private <B> Opt<TypeResolver<B>> getAnnotatedTypeResolver(final Class<B> clazz) {
     return annotationHandler.typeResolver(clazz)
       .map(c->new TypeResolverWrapper<>(clazz, call(c::newInstance)))
     ;
@@ -365,10 +365,10 @@ public abstract class BeanFactory{
   }
 
 
-  public Optional<Class<?>> tryGetBeanInterface(final Class<?> clazz) {
+  public Opt<Class<?>> tryGetBeanInterface(final Class<?> clazz) {
     return getAllInterfaces(clazz).parallelStream()
       .filter(this::isBeanClass)
-      .collect(toOptional())
+      .collect(toOpt())
     ;
   }
 
