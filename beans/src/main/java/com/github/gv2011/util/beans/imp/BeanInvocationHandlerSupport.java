@@ -53,7 +53,7 @@ public abstract class BeanInvocationHandlerSupport<B,P>  {
     final String name = method.getName();
     if(method.getParameterCount()==0) {
       if(name.equals("hashCode")) result = getHashCode(proxy);
-      else if(name.equals("toString")) result = beanType.clazz.getSimpleName()+values;
+      else if(name.equals("toString")) result = handleToString(proxy, method, args, x);
       else result = tryGetValue(name).orElseGet(()->handleOther(proxy, method, args, x));
     }
     else if(name.equals("equals") && method.getParameterCount()==1){
@@ -61,6 +61,10 @@ public abstract class BeanInvocationHandlerSupport<B,P>  {
     }
     else return handleOther(proxy, method, args, x);
     return result;
+  }
+
+  protected String handleToString(final Object proxy, final Method method, final Object[] args, final P x) {
+    return beanType.clazz.getSimpleName()+values;
   }
 
   protected abstract Object handleOther(

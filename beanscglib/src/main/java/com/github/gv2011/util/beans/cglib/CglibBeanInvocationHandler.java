@@ -57,4 +57,17 @@ final class CglibBeanInvocationHandler<B> extends BeanInvocationHandlerSupport<B
     catch (final Throwable e) {throw wrap(e);}
   }
 
+  @Override
+  protected String handleToString(final Object proxy, final Method method, final Object[] args, final MethodProxy mp) {
+    if(method.getDeclaringClass().equals(Object.class)){
+      try {
+        return (String) mp.invokeSuper(proxy, args);
+      }
+      catch (final RuntimeException e) {throw e;}
+      catch (final Error e) {throw e;}
+      catch (final Throwable e) {throw wrap(e);}
+    }
+    else return super.handleToString(proxy, method, args, mp);
+  }
+
 }

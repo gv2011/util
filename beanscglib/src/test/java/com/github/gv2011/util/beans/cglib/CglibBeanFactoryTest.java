@@ -28,14 +28,22 @@ package com.github.gv2011.util.beans.cglib;
 import static com.github.gv2011.testutil.Matchers.is;
 import static com.github.gv2011.testutil.Matchers.isA;
 import static com.github.gv2011.testutil.Matchers.mapWithSize;
+import static com.github.gv2011.util.CollectionUtils.iCollections;
+import static com.github.gv2011.util.CollectionUtils.sortedSetOf;
 import static com.github.gv2011.util.json.JsonUtils.jsonFactory;
 import static org.junit.Assert.assertThat;
+
+import java.util.UUID;
 
 import org.junit.Test;
 
 import com.github.gv2011.util.beans.cglib.PolymorphicTestModel.Elephant;
+import com.github.gv2011.util.beans.cglib.TestModel.Id;
 import com.github.gv2011.util.beans.imp.BeanTypeSupport;
 import com.github.gv2011.util.beans.imp.DefaultTypeRegistry;
+import com.github.gv2011.util.icol.ISortedMap;
+import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.tstr.TypedString;
 
 public class CglibBeanFactoryTest {
 
@@ -43,16 +51,22 @@ public class CglibBeanFactoryTest {
 
   @Test
   public void testModel() {
+    final ISortedMap<Id, ISortedSet<UUID>> map = iCollections().<Id, ISortedSet<UUID>>sortedMapBuilder()
+      .put(TypedString.create(Id.class, "n1"), sortedSetOf(UUID.randomUUID(),UUID.randomUUID()))
+      .build()
+    ;
     final TestModel adder = registry.createBuilder(TestModel.class)
       .set(TestModel::number1).to(1)
       .set(TestModel::number2).to(2L)
+      .set(TestModel::ids).to(map)
       .build()
     ;
-    assertThat(adder.sum(), is(3L));
+    assertThat(adder.sum(), is(4L));
 
+    assertThat(adder.ids(), is(map));
     final BeanTypeSupport<TestModel> beanType = registry.beanType(TestModel.class);
     assertThat(beanType, isA(CglibBeanType.class));
-    assertThat(beanType.properties(), mapWithSize(2));
+    assertThat(beanType.properties(), mapWithSize(3));
   }
 
   @Test
