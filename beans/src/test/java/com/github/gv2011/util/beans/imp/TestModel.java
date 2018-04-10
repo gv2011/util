@@ -32,6 +32,7 @@ import com.github.gv2011.util.beans.FixedValue;
 import com.github.gv2011.util.beans.Other;
 import com.github.gv2011.util.beans.TypeName;
 import com.github.gv2011.util.icol.IList;
+import com.github.gv2011.util.time.TimeSpan;
 
 
 public class TestModel {
@@ -49,6 +50,7 @@ public class TestModel {
   @Abstract(subClasses={BlackPea.class, ChickPea.class})
   public static interface Pea extends Sized, Coloured{
     String type();
+    TimeSpan timeSpan();
   }
 
   public static interface BlackPea extends Pea{

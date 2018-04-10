@@ -43,6 +43,7 @@ import static com.github.gv2011.util.CollectionUtils.toOptional;
 import static com.github.gv2011.util.ex.Exceptions.bug;
 
 import java.util.Collection;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
@@ -427,20 +428,17 @@ abstract class Structure<C,K,E> {
 
     @Override
     final ISortedMap<K,V> convert(final JsonNode json, final CollectionType<ISortedMap<K,V>,K,V> mapType) {
+      final JsonFactory jf = mapType.jf();
       final TypeSupport<K> keyType = mapType.keyType().get();
       final TypeSupport<V> valueType = mapType.elementType();
-      final Stream<JsonNode> stream = (json instanceof JsonNull)
-        ? Stream.<JsonNode>empty()
-        : json.asList().stream()
+      final Stream<Entry<String,JsonNode>> stream = (json instanceof JsonNull)
+        ? Stream.<Entry<String,JsonNode>>empty()
+        : json.asObject().entrySet().stream()
       ;
-      return stream
-        .map(JsonNode::asObject)
-        .map(n->pair(
-          keyType.parse(n.get("k")),
-          valueType.parse(n.get("v"))
-        ))
-        .collect(toISortedMap())
-      ;
+      return stream.collect(toISortedMap(
+        e->keyType.parse(jf.primitive(e.getKey())),
+        e->valueType.parse(e.getValue())
+      ));
     }
 
     @Override

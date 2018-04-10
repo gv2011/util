@@ -32,7 +32,6 @@ import static com.github.gv2011.util.CollectionUtils.stream;
 import static com.github.gv2011.util.CollectionUtils.toISet;
 import static com.github.gv2011.util.CollectionUtils.toOpt;
 import static com.github.gv2011.util.Nothing.nothing;
-import static com.github.gv2011.util.ServiceLoaderUtils.tryGetService;
 import static com.github.gv2011.util.Verify.notNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -102,12 +101,19 @@ public class DefaultTypeRegistry implements TypeRegistry{
   final AnnotationHandler annotationHandler = new DefaultAnnotationHandler();
 
   public DefaultTypeRegistry() {
-    this(ServiceLoaderUtils.loadService(JsonFactory.class), new DefaultBeanFactoryBuilder());
+    this(ServiceLoaderUtils.loadService(JsonFactory.class));
   }
 
   public DefaultTypeRegistry(final JsonFactory jsonFactory) {
-    this(jsonFactory, tryGetService(BeanFactoryBuilder.class).orElseGet(DefaultBeanFactoryBuilder::new));
-  }
+      this(
+          jsonFactory,
+          ServiceLoaderUtils.tryGetService(BeanFactoryBuilder.class).orElseGet(DefaultBeanFactoryBuilder::new)
+      );
+    }
+
+  public DefaultTypeRegistry(final BeanFactoryBuilder bfb) {
+      this(ServiceLoaderUtils.loadService(JsonFactory.class));
+    }
 
   public DefaultTypeRegistry(final JsonFactory jsonFactory, final BeanFactoryBuilder bfb) {
     jf = jsonFactory;
@@ -307,14 +313,26 @@ public class DefaultTypeRegistry implements TypeRegistry{
     ;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   public <T> Opt<TypeSupport<? super T>> findTypeForInstanceClass(final Class<T> instanceClass) {
-    if(isSupported(instanceClass)) return Opt.of(type(instanceClass));
-    else {
-        final ISet<Class<?>> types = stream(instanceClass.getInterfaces()).filter(i->isSupported(i)).collect(toISet());
-        if(types.size()==1) return Opt.of((TypeSupport<? super T>) type(single(types)));
-        else return Opt.empty();
+    Opt<TypeSupport<?>> result = Opt.empty();
+    if(isSupported(instanceClass)) result = Opt.of(type(instanceClass));
+    if(!result.isPresent()) {
+      final Opt<Class<?>> sup = Opt.ofNullable(instanceClass.getSuperclass());
+      if(sup.isPresent()) {
+        if(isSupported(sup.get())) result = Opt.of(type(sup.get()));
+      }
     }
+    if(!result.isPresent()) {
+      final Class<?>[] interfaces = instanceClass.getInterfaces();
+      final ISet<Class<?>> types = stream(interfaces)
+        .filter(i->isSupported(i))
+        .collect(toISet())
+      ;
+      if(types.size()==1) result = Opt.of((TypeSupport<? super T>) type(single(types)));
+      ;
+    }
+    return (Opt<TypeSupport<? super T>>)(Opt)result;
   }
 
   final JsonFactory jf() {

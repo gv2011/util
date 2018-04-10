@@ -60,7 +60,7 @@ final class TypedStringInvocationHandler<S extends TypedString<S>> implements In
         if(name.equals("canonical")) result = value;
         else if(name.equals("isEmpty")) result = value.isEmpty();
         else if(name.equals("toString")) result = value;
-        else if(name.equals("hashCode")) result = AbstractTypedString.hashCode(clazz, value);
+        else if(name.equals("hashCode")) result = TypedString.hashCode(clazz, value);
         else if(name.equals("clazz")) result = clazz;
         else if(name.equals("self")) result = proxy;
         else if(name.equals("chars")) result = value.chars();
@@ -71,18 +71,21 @@ final class TypedStringInvocationHandler<S extends TypedString<S>> implements In
       }
       else if(method.getParameterCount()==1) {
         if(name.equals("compareTo")) {
-          result = ((Comparator)AbstractTypedString.COMPARATOR).compare(proxy, args[0]);
+          result = ((Comparator)TypedString.COMPARATOR).compare(proxy, args[0]);
+        }
+        else if(name.equals("compareWithOtherOfSameType")) {
+          result = ((TypedString<?>)proxy).canonical().compareTo(((TypedString<?>)args[0]).canonical());
         }
         else if(name.equals("equals")) {
-            result =  AbstractTypedString.equal((TypedString<?>) proxy, args[0]);
+          result =  TypedString.equal((TypedString<?>) proxy, args[0]);
         }
         else if(name.equals("charAt")) {
-            result =  value.charAt((Integer)args[0]);
+          result =  value.charAt((Integer)args[0]);
         }
-        else throw bug();
+        else throw bug(method::toString);
       }
       else if(method.getParameterCount()==2 && name.equals("subSequence")) {
-          result =  value.subSequence((Integer)args[0], (Integer)args[1]);
+        result =  value.subSequence((Integer)args[0], (Integer)args[1]);
       }
       else throw bug();
       return result;

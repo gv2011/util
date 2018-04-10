@@ -26,15 +26,10 @@ package com.github.gv2011.util.cache;
  * #L%
  */
 import static com.github.gv2011.util.CollectionUtils.pair;
-import static com.github.gv2011.util.Verify.notNull;
-import static java.util.stream.Collectors.toMap;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.slf4j.Logger;
@@ -46,97 +41,46 @@ import com.github.gv2011.util.icol.Opt;
 
 final class SoftIndexImp<K,V> implements SoftIndex<K,V>{
 
-  private static final Logger LOG = getLogger(SoftIndexImp.class);
+  @SuppressWarnings("unused")
+private static final Logger LOG = getLogger(SoftIndexImp.class);
+
+  private final Object lock = new Object();
 
   private final Function<K, Opt<? extends V>> function;
-  private final Object lock = new Object();
-  private SoftReference<Set<WeakReference<Pair<K,Opt<V>>>>> data = new SoftReference<>(null);
-  private SoftReference<Map<K,Opt<V>>> index = new SoftReference<>(null);
+  private final Map<K,Opt<V>> index = new HashMap<>();
 
   private final FConsumer<Pair<K,Opt<V>>> addedListener;
 
-  SoftIndexImp(final Function<K, Opt<? extends V>> function, final FConsumer<Pair<K,Opt<V>>> addedListener) {
+  SoftIndexImp(
+    final Function<K, Opt<? extends V>> function,
+    final FConsumer<Pair<K,Opt<V>>> addedListener
+  ) {
     this.function = function;
     this.addedListener = addedListener;
   }
 
-  private Set<WeakReference<Pair<K,Opt<V>>>> data(){
-    @Nullable Set<WeakReference<Pair<K,Opt<V>>>> result = data.get();
-    if(result==null) {
-      synchronized(lock) {
-        result = data.get();
-        if(result==null) {
-          result = new HashSet<>();
-          data = new SoftReference<>(result);
-        }
-      }
-    }
-    return notNull(result);
-  }
-
-  private Map<K,Opt<V>> index(){
-    @Nullable Map<K, Opt<V>> result = index.get();
-    if(result==null) {
-      synchronized(lock) {
-        result = index.get();
-        if(result==null) {
-          @Nullable
-          final Set<WeakReference<Pair<K, Opt<V>>>> set = data();
-          result =
-            set.stream()
-            .map(WeakReference::get)
-            .filter(p->p!=null)
-            .collect(toMap(Pair::getKey, Pair::getValue))
-          ;
-          index = new SoftReference<>(result);
-        }
-      }
-    }
-    return notNull(result);
-  }
 
   @Override
   public Opt<V> tryGet(final K key) {
-    final Opt<V> result;
-    final Map<K, Opt<V>> index = index();
-    @Nullable final Opt<V> current = index.get(key);
-    if(current==null) {
-      result = tryAddSync(key, index);
-    }
-    else result = notNull(current);
-    return result;
-  }
-
-  @Override
-  public Opt<Opt<V>> getIfPresent(final K key) {
-    return Opt.ofNullable(index().get(key));
-  }
-
-  private Opt<V> tryAddSync(final K key, final Map<K, Opt<V>> index) {
     synchronized(lock) {
-      final Set<WeakReference<Pair<K, Opt<V>>>> set = data();
-      final Opt<Pair<K, Opt<V>>> existing = Opt.ofOptional(set.parallelStream()
-        .map(WeakReference::get)
-        .filter(p->p!=null)
-        .filter(p->p.getKey().equals(key))
-        .findAny()
-      );
       Opt<V> result;
-      if(!existing.isPresent()) {
+      final @Nullable Opt<V> opt = index.get(key);
+      if(opt!=null) return result = opt;
+      else {
         result = function.apply(key).map(v->v);
-        LOG.debug("Adding entry for {}.", key);
-        set.add(new WeakReference<>(pair(key, result)));
         index.put(key, result);
         addedListener.apply(pair(key, result));
-      }
-      else {
-        LOG.debug("There is already an entry for {}.", key);
-        result = existing.get().getValue();
       }
       return result;
     }
   }
 
+  @Override
+  public Opt<Opt<V>> getIfPresent(final K key) {
+    synchronized(lock) {
+      return Opt.ofNullable(index.get(key));
+    }
+  }
 
   @Override
   public V get(final K key) {

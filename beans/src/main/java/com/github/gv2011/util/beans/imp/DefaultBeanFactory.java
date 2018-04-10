@@ -36,7 +36,7 @@ import org.slf4j.Logger;
 import com.github.gv2011.util.beans.AnnotationHandler;
 import com.github.gv2011.util.json.JsonFactory;
 
-final class DefaultBeanFactory extends BeanFactory{
+public final class DefaultBeanFactory extends BeanFactory{
 
   static final class DefaultBeanFactoryBuilder implements BeanFactoryBuilder{
     @Override
@@ -50,7 +50,7 @@ final class DefaultBeanFactory extends BeanFactory{
   @SuppressWarnings("unused")
   private static final Logger LOG = getLogger(DefaultBeanFactory.class);
 
-  private DefaultBeanFactory(
+  public DefaultBeanFactory(
     final JsonFactory jf,
     final AnnotationHandler annotationHandler,
     final DefaultTypeRegistry registry

@@ -4,7 +4,7 @@ package com.github.gv2011.util.tstr;
  * #%L
  * The MIT License (MIT)
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -12,10 +12,10 @@ package com.github.gv2011.util.tstr;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,41 +26,20 @@ package com.github.gv2011.util.tstr;
  * #L%
  */
 
-
-
-
-import com.github.gv2011.util.Equal;
-
 public abstract class AbstractTypedString<T extends AbstractTypedString<T>>
 implements TypedString<T>{
-
-  public static final int hashCode(final TypedString<?> s) {
-    return hashCode(s.clazz(), s.canonical());
-  }
-
-  public static final int hashCode(final Class<? extends TypedString<?>> clazz, final String canonical) {
-    return clazz.hashCode() * 31 + canonical.hashCode();
-  }
-
-  public static final boolean equal(final TypedString<?> s, final Object obj) {
-    return Equal.equal(s, obj, TypedString.class, o->{
-      return s.clazz().equals(o.clazz()) && s.toString().equals(o.toString());
-    });
-  }
-
-
 
   @Override
   public abstract String toString();
 
   @Override
   public int hashCode(){
-    return hashCode(this);
+    return TypedString.hashCode(this);
   }
 
   @Override
   public final boolean equals(final Object obj) {
-    return equal(this, obj);
+    return TypedString.equal(this, obj);
   }
 
   @Override
@@ -68,19 +47,19 @@ implements TypedString<T>{
     return COMPARATOR.compare(this, o);
   }
 
-    @Override
-    public int length() {
-        return canonical().length();
-    }
+  @Override
+  public int length() {
+    return canonical().length();
+  }
 
-@Override
-public char charAt(final int index) {
+  @Override
+  public char charAt(final int index) {
     return canonical().charAt(index);
-}
+  }
 
-@Override
-public CharSequence subSequence(final int start, final int end) {
+  @Override
+  public CharSequence subSequence(final int start, final int end) {
     return canonical().subSequence(start, end);
-}
+  }
 
 }

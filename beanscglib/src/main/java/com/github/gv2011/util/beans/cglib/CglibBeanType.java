@@ -1,6 +1,7 @@
 package com.github.gv2011.util.beans.cglib;
 
 import static com.github.gv2011.util.Verify.notNull;
+import static com.github.gv2011.util.Verify.verify;
 
 /*-
  * #%L
@@ -58,6 +59,7 @@ final class CglibBeanType<T> extends BeanTypeSupport<T>{
     final BeanFactory beanFactory
   ) {
     super(beanClass, jf, annotationHandler, beanFactory);
+    verify(!beanClass.isInterface());
   }
 
   @Override

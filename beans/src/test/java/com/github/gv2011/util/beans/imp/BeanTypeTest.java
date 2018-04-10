@@ -1,5 +1,6 @@
 package com.github.gv2011.util.beans.imp;
 
+import static com.github.gv2011.util.BeanUtils.beanBuilder;
 import static com.github.gv2011.util.CollectionUtils.iCollections;
 import static com.github.gv2011.util.CollectionUtils.listOf;
 import static com.github.gv2011.util.CollectionUtils.mapBuilder;
@@ -42,6 +43,7 @@ import com.github.gv2011.util.beans.BeanBuilder;
 import com.github.gv2011.util.beans.BeanType;
 import com.github.gv2011.util.beans.DefaultValue;
 import com.github.gv2011.util.beans.Property;
+import com.github.gv2011.util.beans.imp.TestModel.BlackPea;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.IMap;
 import com.github.gv2011.util.icol.ISortedMap;
@@ -180,5 +182,9 @@ public class BeanTypeTest {
       );
     }
 
-
+    @Test
+    public void testTimeSpan(){
+      @SuppressWarnings("unused")
+      final BlackPea pea = beanBuilder(BlackPea.class).build();
+    }
 }

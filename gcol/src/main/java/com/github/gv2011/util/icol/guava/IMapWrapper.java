@@ -28,6 +28,7 @@ package com.github.gv2011.util.icol.guava;
 
 import static com.github.gv2011.util.ex.Exceptions.format;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.BiConsumer;
@@ -82,7 +83,16 @@ class IMapWrapper<K,V,M extends Map<K,V>> implements IMap<K,V>{
   @SuppressWarnings({ "unchecked", "rawtypes" })
   @Override
   public final IList<V> values() {
-    return new IListWrapper(ImmutableList.copyOf(delegate.values()));
+    final Collection<V> values = delegate.values();
+    return
+      values.isEmpty()
+      ? Opt.empty()
+      : (
+        values.size()==1
+        ? Opt.of(values.iterator().next())
+        : new IListWrapper(ImmutableList.copyOf(values))
+      )
+    ;
   }
 
   @Override

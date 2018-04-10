@@ -75,7 +75,7 @@ implements MapBuilder<M,K,V,B>{
   @Override
   public B putAll(final IMap<? extends K, ? extends V> map) {
     synchronized(this.map){
-      verify(map.entrySet().stream().allMatch(e->!map.containsKey(e.getKey())));
+      verify(map.entrySet().stream().allMatch(e->!this.map.containsKey(e.getKey())));
       this.map.putAll(map);
     }
     return self();
