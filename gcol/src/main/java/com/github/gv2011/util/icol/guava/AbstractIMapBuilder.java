@@ -62,12 +62,17 @@ implements MapBuilder<M,K,V,B>{
 
   @Override
   public B putAll(final Map<? extends K, ? extends V> map) {
-    final ImmutableMap<K,V> copy = ImmutableMap.copyOf(map);
+    final boolean isOwnImpl = map instanceof IMapWrapper;
+    final Map<? extends K, ? extends V> immutable = isOwnImpl ? map : ImmutableMap.copyOf(map);
     synchronized(this.map){
-      verify(copy.entrySet().stream()
-        .allMatch(e->e.getKey()!=null && e.getValue()!=null && !map.containsKey(e.getKey()))
-      );
-      this.map.putAll(copy);
+      if(isOwnImpl){
+        verify(immutable.entrySet().stream().allMatch(e->!this.map.containsKey(e.getKey())));
+      }else{
+        verify(immutable.entrySet().stream()
+          .allMatch(e->e.getKey()!=null && e.getValue()!=null && !this.map.containsKey(e.getKey()))
+        );
+      }
+      this.map.putAll(immutable);
     }
     return self();
   }

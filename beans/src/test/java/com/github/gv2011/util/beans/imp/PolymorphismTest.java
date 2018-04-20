@@ -56,17 +56,18 @@ public class PolymorphismTest {
     assertThat(blackPeaType.isAbstract(), is(false));
     assertThat(blackPeaType.isPolymorphic(), is(true));
 
-    final BlackPea blackPea = reg.createBuilder(BlackPea.class).build();
+    final BlackPea blackPea = blackPeaType.createBuilder().build();
     assertThat(blackPea.type(), is(BlackPea.class.getSimpleName()));
 
     final BeanTypeSupport<ChickPea> chickPeaType = reg.beanType(ChickPea.class);
     assertThat(chickPeaType.getClass(), is(PolymorphicBeanType.class));
     final PropertyImp<ChickPea,String> typeProp = chickPeaType.getProperty(ChickPea::type);
     assertThat(typeProp.fixedValue(), is(Opt.of("chicks")));
-    final ChickPea chickPea = reg.createBuilder(ChickPea.class).build();
+    final ChickPea chickPea = chickPeaType.createBuilder().build();
     assertThat(chickPea.type(), is("chicks"));
 
-    final SnowPea snowPea = reg.createBuilder(SnowPea.class).build();
+    final BeanTypeSupport<SnowPea> snowPeaType = reg.beanType(SnowPea.class);
+    final SnowPea snowPea = snowPeaType.createBuilder().build();
     assertThat(snowPea.type(), is("saccharatum"));
 
   }

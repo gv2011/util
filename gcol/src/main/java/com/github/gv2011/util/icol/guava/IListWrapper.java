@@ -35,6 +35,7 @@ import java.util.ListIterator;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
+import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.ISortedMap;
 
@@ -42,9 +43,11 @@ class IListWrapper<E> implements IList<E>{
 
   final List<E> delegate;
 
+  @Nullable Integer hashCode = null;
+
   IListWrapper(final List<E> delegate) {
     this.delegate = delegate;
-    assert delegate.size()>1;
+    assert !delegate.isEmpty();
   }
 
   @Override
@@ -94,7 +97,18 @@ class IListWrapper<E> implements IList<E>{
 
   @Override
   public int hashCode() {
-    return delegate.hashCode();
+    final @Nullable Integer cached = hashCode;
+    final int result;
+    if(cached==null){
+      result = delegate.hashCode();
+      hashCode = result;
+      return result;
+    }
+    else{
+      result = cached;
+      assert result == delegate.hashCode();
+    }
+    return result;
   }
 
   @Override

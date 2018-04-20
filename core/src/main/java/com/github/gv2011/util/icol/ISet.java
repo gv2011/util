@@ -1,7 +1,5 @@
 package com.github.gv2011.util.icol;
 
-import static com.github.gv2011.util.CollectionUtils.toIList;
-
 /*-
  * #%L
  * The MIT License (MIT)
@@ -28,9 +26,6 @@ import static com.github.gv2011.util.CollectionUtils.toIList;
  * #L%
  */
 
-
-
-
 import java.util.Collection;
 import java.util.Set;
 
@@ -41,10 +36,14 @@ public interface ISet<E> extends Set<E>, ICollection<E>{
   @SuppressWarnings("unchecked")
   static <E> ISet<E> cast(final ISet<? extends E> set){return (ISet<E>) set;}
 
-
   @Override
   default boolean isEmpty() {
     return size()==0;
+  }
+
+  @Override
+  default Object[] toArray() {
+    return asList().toArray();
   }
 
   @Deprecated
@@ -83,13 +82,4 @@ public interface ISet<E> extends Set<E>, ICollection<E>{
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  @Deprecated
-  default <T> T[] toArray(final T[] a) {
-    throw new UnsupportedOperationException();
-  }
-
-  default IList<E> asList(){
-    return stream().collect(toIList());
-  }
 }

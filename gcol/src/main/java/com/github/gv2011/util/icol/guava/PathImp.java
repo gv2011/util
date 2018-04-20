@@ -30,15 +30,14 @@ import java.util.List;
 import java.util.Optional;
 
 import com.github.gv2011.util.Comparison;
-import com.github.gv2011.util.icol.ICollectionFactory;
+import com.github.gv2011.util.icol.ICollections;
 import com.github.gv2011.util.icol.Path;
 
 final class PathImp extends IListWrapper<String> implements Path{
 
   private static final Comparator<Path> COMPARATOR = Comparison.listComparator();
 
-  @SuppressWarnings("unchecked")
-  static final Path EMPTY = new PathImp(ICollectionFactory.EMPTY);
+  static final Path EMPTY = new PathImp(ICollections.emptyList());
 
   private PathImp(final List<String> delegate) {
     super(delegate);

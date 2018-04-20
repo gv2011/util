@@ -84,7 +84,7 @@ public abstract class BeanBuilderSupport<T> implements BeanBuilder<T> {
       ;
       verify(missing, Set::isEmpty, m->format("{}: The required properties {} have not been set.", beanType(), m));
       //create proxy:
-      final ISortedMap<String, Object> imap = iCollections().copyOf(map);
+      final ISortedMap<String, Object> imap = iCollections().sortedMapFrom(map);
       return create(imap);
     }
 
@@ -92,7 +92,7 @@ public abstract class BeanBuilderSupport<T> implements BeanBuilder<T> {
 
     @Override
     public Partial<T> buildPartial() {
-        return new PartialImp<>(iCollections().copyOf(map));
+        return new PartialImp<>(iCollections().sortedMapFrom(map));
     }
 
     @Override

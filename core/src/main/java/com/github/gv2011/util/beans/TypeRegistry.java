@@ -31,10 +31,6 @@ public interface TypeRegistry {
 
     <T> BeanType<T> beanType(Class<T> beanClass);
 
-    default <T> BeanBuilder<T> createBuilder(final Class<T> beanClass) {
-      return beanType(beanClass).createBuilder();
-    }
-
     <S extends TypedString<S>> S typedString(Class<S> clazz, String value);
 
     boolean isSupported(Class<?> clazz);

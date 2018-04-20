@@ -55,7 +55,7 @@ public class CglibBeanFactoryTest {
       .put(TypedString.create(Id.class, "n1"), sortedSetOf(UUID.randomUUID(),UUID.randomUUID()))
       .build()
     ;
-    final TestModel adder = registry.createBuilder(TestModel.class)
+    final TestModel adder = registry.beanType(TestModel.class).createBuilder()
       .set(TestModel::number1).to(1)
       .set(TestModel::number2).to(2L)
       .set(TestModel::ids).to(map)
@@ -73,7 +73,7 @@ public class CglibBeanFactoryTest {
   public void testPolymorphicModel() {
     final BeanTypeSupport<Elephant> beanType = registry.beanType(Elephant.class);
     beanType.isAbstract();
-    final Elephant elephant = registry.createBuilder(Elephant.class)
+    final Elephant elephant = registry.beanType(Elephant.class).createBuilder()
       .build()
     ;
     assertThat(elephant.count(), is(0));

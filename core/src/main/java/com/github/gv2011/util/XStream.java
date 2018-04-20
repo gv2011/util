@@ -42,6 +42,8 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.github.gv2011.util.ex.ThrowingFunction;
+import com.github.gv2011.util.icol.IList;
+import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.Opt;
 
 
@@ -71,6 +73,14 @@ public interface XStream<E> extends Stream<E>, AutoCloseableNt{
 
   default Opt<E> toOpt(){
     return collect(CollectionUtils.toOpt());
+  }
+
+  default IList<E> toIList(){
+    return collect(CollectionUtils.toIList());
+  }
+
+  default ISet<E> toISet(){
+    return collect(CollectionUtils.toISet());
   }
 
   default E findSingle(final Predicate<? super E> predicate){

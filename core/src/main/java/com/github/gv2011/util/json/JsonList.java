@@ -36,4 +36,7 @@ public interface JsonList extends JsonNode, IList<JsonNode>{
   @Override
   XStream<JsonNode> stream();
 
+  @Override
+  JsonList asList();
+
 }

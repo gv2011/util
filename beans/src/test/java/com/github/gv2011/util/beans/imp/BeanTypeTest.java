@@ -145,9 +145,9 @@ public class BeanTypeTest {
     @Test
     public void testNested() {
       final DefaultTypeRegistry reg = new DefaultTypeRegistry();
-      final BeanBuilder<TestBeanB> b = reg.createBuilder(TestBeanB.class);
+      final BeanBuilder<TestBeanB> b = reg.beanType(TestBeanB.class).createBuilder();
       final TestBeanB bean = b.build();
-      assertThat(bean.beanA(), is(reg.createBuilder(TestBeanA.class).build()));
+      assertThat(bean.beanA(), is(reg.beanType(TestBeanA.class).createBuilder().build()));
       assertThat(bean.beans(), is(listOf()));
     }
 
@@ -159,7 +159,7 @@ public class BeanTypeTest {
         .build()
       ;
       final DefaultTypeRegistry reg = new DefaultTypeRegistry();
-      final TestBeanB b = reg.createBuilder(TestBeanB.class)
+      final TestBeanB b = reg.beanType(TestBeanB.class).createBuilder()
         .set(TestBeanB::colourInfo).to(colourInfo)
         .build()
       ;

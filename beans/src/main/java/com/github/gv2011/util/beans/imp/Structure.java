@@ -416,11 +416,12 @@ abstract class Structure<C,K,E> {
     @Override
     JsonNode toJson(final CollectionType<ISortedMap<K,V>,K,V> mapType, final ISortedMap<K,V> map) {
       final JsonFactory jf = mapType.jf();
+      final TypeSupport<K> keyType = mapType.keyType().get();
       final TypeSupport<V> valueType = mapType.elementType();
       return
         map.entrySet().stream()
         .collect(jf.toJsonObject(
-          e->e.getKey().toString(),
+          e->keyType.toJson(e.getKey()).asString(),
           e->valueType.toJson(e.getValue())
         ))
       ;

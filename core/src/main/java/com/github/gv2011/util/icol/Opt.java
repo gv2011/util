@@ -27,7 +27,6 @@ package com.github.gv2011.util.icol;
  */
 import static com.github.gv2011.util.ex.Exceptions.format;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Spliterator;
@@ -41,10 +40,10 @@ import com.github.gv2011.util.Constant;
 import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.ann.Nullable;
 
-public interface Opt<E> extends IList<E>, Constant<E>{
+public interface Opt<E> extends ISet<E>, Constant<E>{
 
   public static <E> Opt<E> of(final E element){
-    return ICollectionFactory.single(element);
+    return ICollections.single(element);
   }
 
   public static <E> Opt<E> ofOptional(final Optional<? extends E> optional){
@@ -57,7 +56,7 @@ public interface Opt<E> extends IList<E>, Constant<E>{
 
   @SuppressWarnings("unchecked")
   public static <E> Opt<E> empty(){
-    return ICollectionFactory.EMPTY;
+    return ICollections.EMPTY;
   }
 
   @Override
@@ -109,21 +108,6 @@ public interface Opt<E> extends IList<E>, Constant<E>{
     else return Spliterators.emptySpliterator();
   }
 
-  @SuppressWarnings("unchecked")
-  @Override
-  default <T> T[] toArray(final T[] a) {
-    final int size = size();
-    if (a.length < size){
-      final Object[] raw = toArray();
-      return (T[]) Arrays.copyOf(raw, size, a.getClass());
-    }
-    else{
-      for(int i=0; i<size; i++) a[i] = (T) get(i);
-      if (a.length > size) a[size] = null;
-      return a;
-    }
-  }
-
   @Override
   default boolean removeAll(final Collection<?> c) {
     throw new UnsupportedOperationException();
@@ -146,6 +130,17 @@ public interface Opt<E> extends IList<E>, Constant<E>{
     else throw new IllegalStateException(
       format("Both optional values are present: ({} and {}).", this.get(), other.get())
     );
+  }
+
+  @Override
+  default Object[] toArray() {
+    Object[] result;
+    if(isPresent()) {
+      result = new Object[1];
+      result[0] = get();
+    }
+    else result = new Object[0];
+    return result;
   }
 
 }

@@ -33,7 +33,6 @@ import static com.github.gv2011.util.ReflectionUtils.getAllInterfaces;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
-import static com.github.gv2011.util.ex.Exceptions.notYetImplementedException;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.Method;
@@ -191,7 +190,7 @@ public abstract class BeanFactory{
       reason = precondition;
     else if(annotationHandler.isPolymorphicRoot(clazz))
       reason = "annotated as root";
-    else if(tryGetRoot(clazz).isPresent())
+    else if(!tryGetRoot(clazz).isPresent())
       reason = "has no root";
     else {
       reason = "";
@@ -359,9 +358,10 @@ public abstract class BeanFactory{
   }
 
 
-  private <B> ObjectTypeSupport<B> createPolymorphicIntermediate(final Class<B> clazz) {
-    // TODO Auto-generated method stub
-    throw notYetImplementedException();
+  private <B extends R,R> ObjectTypeSupport<B> createPolymorphicIntermediate(final Class<B> clazz) {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    final PolymorphicRootType<R> rootType = (PolymorphicRootType)rootTypeForRootClass(tryGetRoot(clazz).get());
+    return new PolymorphicIntermediateType<>(registry, rootType, clazz);
   }
 
 

@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,17 +25,34 @@ package com.github.gv2011.util.beans.imp;
  * THE SOFTWARE.
  * #L%
  */
-public abstract class ObjectTypeSupport<B> extends TypeSupport<B>{
+import static org.junit.Assert.assertThat;
 
-  protected ObjectTypeSupport(final Class<B> clazz) {
-    super(clazz);
+import org.junit.Test;
+
+import com.github.gv2011.testutil.Matchers;
+import com.github.gv2011.util.beans.Abstract;
+
+public class TestPolymorphicIntermediate {
+
+  @Abstract(subClasses = { ConcreteBean.class })
+  public static interface RootBean {
+    String type();
   }
 
-  public abstract boolean isAbstract();
+  @Abstract
+  public static interface Intermediate extends RootBean {}
 
-  @Override
-  public final boolean hasStringForm() {
-    return false;
+  public static interface ConcreteBean extends Intermediate {
+    String prop1();
+    Intermediate intermediate();
+  }
+
+  @Test
+  public void test() {
+    final DefaultTypeRegistry reg = new DefaultTypeRegistry();
+    reg.beanType(ConcreteBean.class).createBuilder();
+    final TypeSupport<Intermediate> type = reg.type(Intermediate.class);
+    assertThat(type, Matchers.instanceOf(PolymorphicIntermediateType.class));
   }
 
 }

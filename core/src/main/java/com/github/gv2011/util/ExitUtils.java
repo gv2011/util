@@ -152,7 +152,7 @@ public final class ExitUtils {
       thread.interrupt();
       final ISet<Thread> threads;
       synchronized(lock){
-        threads = iCollections().setOf(this.threads.keySet());
+        threads = iCollections().setFrom(this.threads.keySet());
       }
       threads.forEach(t->{
         t.interrupt();

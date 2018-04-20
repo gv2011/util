@@ -1,7 +1,5 @@
 package com.github.gv2011.util.serviceloader;
 
-import static com.github.gv2011.util.CollectionUtils.atMostOne;
-
 /*-
  * #%L
  * The MIT License (MIT)
@@ -37,14 +35,16 @@ import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
-
 import java.util.Set;
 
 import com.github.gv2011.util.CachedConstant;
 import com.github.gv2011.util.Constants;
+import com.github.gv2011.util.icol.IEmpty;
 import com.github.gv2011.util.icol.Opt;
+import com.github.gv2011.util.icol.Single;
 
 
 public final class RecursiveServiceLoader {
@@ -65,9 +65,9 @@ public final class RecursiveServiceLoader {
 
     private final Map<Class<?>,Set<?>> services = new HashMap<>();
 
-    private RecursiveServiceLoader() {
+    private final Set<Class<?>> loading = new HashSet<>();
 
-    }
+    private RecursiveServiceLoader() {}
 
     private <S> S getService(final Class<S> serviceClass) {
       return tryGetServiceInternal(serviceClass)
@@ -75,23 +75,32 @@ public final class RecursiveServiceLoader {
       );
     }
 
+    @SuppressWarnings("unchecked")
     private <S> Opt<S> tryGetServiceInternal(final Class<S> serviceClass) {
         final Set<S> services = getServices(serviceClass);
-        return atMostOne(
-          services,
-          ()->format("Multiple implementations for service {}: {}.", serviceClass, services)
-        );
+        if(services.isEmpty()) return IEmpty.INSTANCE;
+        else{
+          verify(services, s->s.size()==1, s->format("Multiple implementations for service {}: {}.", serviceClass, s));
+          return Single.of(services.iterator().next());
+        }
     }
 
     @SuppressWarnings("unchecked")
     private <S> Set<S> getServices(final Class<S> serviceClass) {
-        Opt<Set<?>> entry = Opt.ofNullable(services.get(serviceClass));
+        Opt<Set<?>> entry = Single.ofNullable(services.get(serviceClass));
         if(!entry.isPresent()) {
             synchronized(lock) {
-                entry = Opt.ofNullable(services.get(serviceClass));
+                entry = Single.ofNullable(services.get(serviceClass));
                 if(!entry.isPresent()) {
+                  final boolean added = loading.add(serviceClass);
+                  try{
+                    if(!added) {throw new RuntimeException(
+                        format("Infinite recursion: already loading {}.", serviceClass.getName()));
+                      }
                     loadServices(serviceClass);
-                    entry = Opt.of(services.get(serviceClass));
+                    entry = Single.of(services.get(serviceClass));
+                  }
+                  finally{loading.remove(serviceClass);}
                 }
             }
         }

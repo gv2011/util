@@ -54,6 +54,28 @@ public interface IMap<K,V> extends Map<K,V>{
   @Override
   ISet<Entry<K, V>> entrySet();
 
+
+  /**
+   * Returns the value to which the specified key is mapped,
+   * or throws {@link NoSuchElementException} if this map contains no mapping for the key.
+   *
+   * This is a major difference to the behaviour of {@Map}, which is needed to avoid the
+   * usage of {@code null}.
+   *
+   * {@link #tryGet} can be used if the presence of a mapping is not known.
+   *
+   * <p>More formally, if this map contains a mapping from a key
+   * {@code k} to a value {@code v} such that key.equals(k))}, then this method returns
+   * {@code v}; otherwise it throws {@link NoSuchElementException}.  (There can be at most one such mapping.)
+   *
+   * <p>This map must not contain {@code null} values.
+   *
+   * @param key the key whose associated value is to be returned. The behaviour is unspecified if key is {@code null}.
+   * @return the value to which the specified key is mapped
+   * @throws NoSuchElementException if the key is not mapped to any value
+   *
+   * @see java.util.Map#get(java.lang.Object)
+   */
   @Override
   default V get(final Object key) {
     return tryGet(key).orElseThrow(()->new NoSuchElementException(format("No entry for key {}.", key)));
@@ -66,16 +88,16 @@ public interface IMap<K,V> extends Map<K,V>{
     return tryGet(key).orElse(defaultValue);
   }
 
-  Entry<K, V> single();
+  default Entry<K, V> single(){
+    return entrySet().single();
+  }
 
   default Entry<K, V> first(){
-    if(isEmpty()) throw new NoSuchElementException();
-    else return entrySet().iterator().next();
+    return entrySet().first();
   }
 
   default Opt<Entry<K, V>> tryGetFirst(){
-    if(isEmpty()) return Opt.empty();
-    else return Opt.of(entrySet().iterator().next());
+    return isEmpty() ? Opt.empty() : Opt.of(entrySet().first());
   }
 
   @Override

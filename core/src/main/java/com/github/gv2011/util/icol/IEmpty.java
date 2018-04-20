@@ -12,10 +12,10 @@ package com.github.gv2011.util.icol;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,40 +25,25 @@ package com.github.gv2011.util.icol;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.util.CollectionUtils.iCollections;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import com.github.gv2011.util.icol.Opt;
-import com.github.gv2011.util.icol.ISortedMap;
-
-final class IEmpty<E> implements Opt<E>{
+public final class IEmpty<E> implements Opt<E>{
 
   @SuppressWarnings("rawtypes")
-  static final Opt INSTANCE = new IEmpty();
+  public static final Opt INSTANCE = new IEmpty();
 
   @SuppressWarnings("rawtypes")
-  private static final ListIterator EMPTY_ITERATOR = new EmptyIterator();
+  static final ListIterator EMPTY_ITERATOR = new EmptyIterator();
 
   private IEmpty(){}
-
-  @Override
-  public IEmpty<E> subList(final int fromIndex, final int toIndex) {
-    if(fromIndex!=0 || toIndex!=0) throw new IndexOutOfBoundsException();
-    return this;
-  }
-
-  @Override
-  public ISortedMap<Integer, E> asMap() {
-    return iCollections().<Integer, E>emptySortedMap();
-  }
 
   @Override
   public int size() {
@@ -88,46 +73,19 @@ final class IEmpty<E> implements Opt<E>{
 
   @Override
   public int hashCode() {
-    return 31;
+    return 0;
   }
 
   @Override
   public boolean equals(final Object obj) {
     if(this==obj) return true;
-    else if(!(obj instanceof List)) return false;
-    else return ((List<?>) obj).isEmpty();
+    else if(!(obj instanceof Set)) return false;
+    else return ((Set<?>) obj).isEmpty();
   }
 
   @Override
   public boolean containsAll(final Collection<?> c) {
     return c.isEmpty();
-  }
-
-  @Override
-  public E get(final int index) {
-    throw new IndexOutOfBoundsException();
-  }
-
-  @Override
-  public int indexOf(final Object o) {
-    return -1;
-  }
-
-  @Override
-  public int lastIndexOf(final Object o) {
-    return -1;
-  }
-
-  @SuppressWarnings("unchecked")
-  @Override
-  public ListIterator<E> listIterator() {
-    return EMPTY_ITERATOR;
-  }
-
-  @SuppressWarnings("unchecked")
-  @Override
-  public ListIterator<E> listIterator(final int index) {
-    return EMPTY_ITERATOR;
   }
 
   @Override

@@ -30,11 +30,14 @@ package com.github.gv2011.util.icol;
 
 
 import static com.github.gv2011.util.CollectionUtils.iCollections;
+import static com.github.gv2011.util.CollectionUtils.toISortedMap;
 
+import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.UnaryOperator;
+import java.util.stream.IntStream;
 
 public interface IList<E> extends List<E>, ICollection<E>{
 
@@ -46,7 +49,14 @@ public interface IList<E> extends List<E>, ICollection<E>{
   @Override
   IList<E> subList(int fromIndex, int toIndex);
 
-  ISortedMap<Integer,E> asMap();
+  default ISortedMap<Integer,E> asMap(){
+    return IntStream.range(0, size()).parallel().mapToObj(Integer::valueOf)
+      .collect(toISortedMap(
+          i->i,
+          this::get
+      ))
+    ;
+  }
 
   @Deprecated
   @Override
@@ -120,11 +130,6 @@ public interface IList<E> extends List<E>, ICollection<E>{
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  default <T> T[] toArray(final T[] a) {
-    throw new UnsupportedOperationException();
-  }
-
   default IList<E> tail(){
     return subList(1, size());
   }
@@ -138,6 +143,31 @@ public interface IList<E> extends List<E>, ICollection<E>{
     b.addAll(this);
     for(final E e: elements) b.add(e);
     return b.build();
+  }
+
+  @Override
+  default IList<E> asList() {
+    return this;
+  }
+
+  @Override
+  default Object[] toArray() {
+    final int size = size();
+    final Object[] result = new Object[size];
+    for(int i=0; i<size; i++) result[i]=get(i);
+    return result;
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  default <T> T[] toArray(T[] a) {
+    final int size = size();
+    if(a.length<size){
+      a = (T[]) Array.newInstance(a.getClass().getComponentType(),size);
+    }
+    for(int i=0; i<size; i++) a[i]=(T) get(i);
+    if(a.length>size) a[size] = null;
+    return a;
   }
 
 }

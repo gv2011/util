@@ -1,6 +1,6 @@
 package com.github.gv2011.util.icol.guava;
 
-import com.github.gv2011.util.icol.ICollectionFactory;
+import com.github.gv2011.util.icol.ICollections;
 
 /*-
  * #%L
@@ -43,8 +43,7 @@ final class IListBuilder<E> extends AbstractIListBuilder<IList<E>,E,IList.Builde
   @SuppressWarnings({ "rawtypes", "unchecked" })
   public IList<E> build() {
     synchronized(list){
-      if(list.isEmpty()) return ICollectionFactory.EMPTY;
-      else if(list.size()==1) return ICollectionFactory.single(list.get(0));
+      if(list.isEmpty()) return ICollections.emptyList();
       return new IListWrapper(ImmutableList.copyOf(list));
     }
   }

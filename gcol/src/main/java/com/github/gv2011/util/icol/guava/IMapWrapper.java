@@ -4,7 +4,7 @@ package com.github.gv2011.util.icol.guava;
  * #%L
  * The MIT License (MIT)
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@ package com.github.gv2011.util.icol.guava;
 
 import static com.github.gv2011.util.ex.Exceptions.format;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.BiConsumer;
@@ -37,7 +36,6 @@ import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.IMap;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.Opt;
-import com.google.common.collect.ImmutableList;
 
 class IMapWrapper<K,V,M extends Map<K,V>> implements IMap<K,V>{
 
@@ -80,19 +78,9 @@ class IMapWrapper<K,V,M extends Map<K,V>> implements IMap<K,V>{
     return new ISetWrapper<>(delegate.keySet());
   }
 
-  @SuppressWarnings({ "unchecked", "rawtypes" })
   @Override
   public final IList<V> values() {
-    final Collection<V> values = delegate.values();
-    return
-      values.isEmpty()
-      ? Opt.empty()
-      : (
-        values.size()==1
-        ? Opt.of(values.iterator().next())
-        : new IListWrapper(ImmutableList.copyOf(values))
-      )
-    ;
+    return GuavaIcolFactory.INSTANCE.listFrom(delegate.values());
   }
 
   @Override

@@ -44,7 +44,7 @@ public final class BeanUtils {
   }
 
   public static <B> BeanBuilder<B> beanBuilder(final Class<B> beanClass){
-      return typeRegistry().createBuilder(beanClass);
+      return typeRegistry().beanType(beanClass).createBuilder();
   }
 
   public static <B> B parse(final Class<B> beanClass, final JsonObject json) {
