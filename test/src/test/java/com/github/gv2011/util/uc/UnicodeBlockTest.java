@@ -1,10 +1,10 @@
-package com.github.gv2011.util.beans.imp;
+package com.github.gv2011.util.uc;
 
 /*-
  * #%L
- * util-beans
+ * util-test
  * %%
- * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,34 +25,18 @@ package com.github.gv2011.util.beans.imp;
  * THE SOFTWARE.
  * #L%
  */
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.Map.Entry;
 
-import com.github.gv2011.util.ann.Nullable;
-import com.github.gv2011.util.icol.Ref;
+import org.junit.Test;
 
-final class LazyOpt<T> extends Ref<T> {
+public class UnicodeBlockTest {
 
-  private final Supplier<T> constructor;
-  private @Nullable T value;
-
-  LazyOpt(final Supplier<T> constructor) {
-    this.constructor = constructor;
-  }
-
-  @Override
-  public T get() {
-    T result = value;
-    if(result == null){
-      result = constructor.get();
-      value = result;
-    }
-    return value;
-  }
-
-  @Override
-  public <U> LazyOpt<U> map(final Function<? super T, ? extends U> mapper) {
-    return new LazyOpt<>(()->mapper.apply(get()));
+  @Test
+  public void testToString() {
+    UnicodeBlock.BLOCKS.entrySet().stream()
+    .map(Entry::getValue)
+    .map(b->Integer.toHexString(b.offset())+" "+b+" "+b.size()+" "+(b.surrogate?"surrogate":""))
+    .forEach(System.out::println);
   }
 
 }

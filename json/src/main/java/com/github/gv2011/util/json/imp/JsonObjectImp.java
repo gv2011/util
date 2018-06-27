@@ -1,6 +1,7 @@
 package com.github.gv2011.util.json.imp;
 
-import static com.github.gv2011.util.CollectionUtils.toISortedSet;
+import static com.github.gv2011.util.icol.ICollections.toISortedSet;
+import static com.github.gv2011.util.icol.ICollections.upcast;
 
 /*-
  * #%L
@@ -27,11 +28,6 @@ import static com.github.gv2011.util.CollectionUtils.toISortedSet;
  * THE SOFTWARE.
  * #L%
  */
-
-
-
-
-import static com.github.gv2011.util.CollectionUtils.upcast;
 
 import java.math.BigDecimal;
 import java.util.Comparator;

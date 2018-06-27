@@ -26,13 +26,13 @@ package com.github.gv2011.util.beans.imp;
  * #L%
  */
 import static com.github.gv2011.util.CollectionUtils.atMostOne;
-import static com.github.gv2011.util.CollectionUtils.toIMap;
-import static com.github.gv2011.util.CollectionUtils.toISet;
 import static com.github.gv2011.util.CollectionUtils.toOpt;
 import static com.github.gv2011.util.ReflectionUtils.getAllInterfaces;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
+import static com.github.gv2011.util.icol.ICollections.toIMap;
+import static com.github.gv2011.util.icol.ICollections.toISet;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.Method;
@@ -350,10 +350,12 @@ public abstract class BeanFactory{
   private <B> TypeResolver<B> createDefaultTypeResolver(
     final Class<B> clazz, final TypeNameStrategy typeNameStrategy
   ) {
-    final IMap<String, Class<? extends B>> subTypes = annotationHandler.subClasses(clazz).stream().collect(toIMap(
-      typeNameStrategy::typeName,
-      c -> c.asSubclass(clazz)
-    ));
+    final IMap<String, Class<? extends B>> subTypes = annotationHandler.subClasses(clazz).stream()
+      .collect(toIMap(
+        typeNameStrategy::typeName,
+        c -> c.asSubclass(clazz)
+      ))
+    ;
     return new DefaultTypeResolver<>(subTypes);
   }
 

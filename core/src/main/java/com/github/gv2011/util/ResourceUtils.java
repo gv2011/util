@@ -26,16 +26,13 @@ package com.github.gv2011.util;
  * #L%
  */
 
-
-
-
 import static com.github.gv2011.util.CollectionUtils.atMostOne;
-import static com.github.gv2011.util.CollectionUtils.toISet;
 import static com.github.gv2011.util.LegacyCollections.asIterator;
 import static com.github.gv2011.util.StreamUtils.readText;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
+import static com.github.gv2011.util.icol.ICollections.toISet;
 
 import java.net.URL;
 import java.util.function.Function;

@@ -25,10 +25,11 @@ package com.github.gv2011.util.beans.imp;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.util.CollectionUtils.sortedSetOf;
+
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
+import static com.github.gv2011.util.icol.ICollections.sortedSetOf;
 import static java.util.stream.Collectors.joining;
 
 import java.lang.reflect.Method;

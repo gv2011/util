@@ -25,20 +25,21 @@ package com.github.gv2011.util.json;
  * THE SOFTWARE.
  * #L%
  */
+
 import static com.github.gv2011.testutil.Matchers.is;
 import static com.github.gv2011.testutil.Matchers.isA;
 import static com.github.gv2011.testutil.Matchers.meets;
-import static com.github.gv2011.util.CollectionUtils.listOf;
 import static com.github.gv2011.util.CollectionUtils.pair;
+import static com.github.gv2011.util.icol.ICollections.listOf;
 import static org.junit.Assert.assertThat;
 
 import java.util.stream.Stream;
 
 import org.junit.Test;
 
-import com.github.gv2011.util.CollectionUtils;
 import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.ResourceUtils;
+import com.github.gv2011.util.icol.ICollections;
 
 public class JsonFactoryTest {
 
@@ -81,11 +82,11 @@ public class JsonFactoryTest {
       Pair::getKey,
       Pair::getValue
     ));
-    CollectionUtils.<String,JsonNode>sortedMapBuilder().put(k1, v1).build();
+    ICollections.<String,JsonNode>sortedMapBuilder().put(k1, v1).build();
     assertThat(
       obj,
       is(
-        CollectionUtils.<String,JsonNode>sortedMapBuilder()
+        ICollections.<String,JsonNode>sortedMapBuilder()
         .put(k1, v1)
         .put(k2, v2)
         .build()

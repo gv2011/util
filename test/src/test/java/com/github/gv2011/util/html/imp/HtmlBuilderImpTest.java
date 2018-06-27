@@ -1,7 +1,5 @@
 package com.github.gv2011.util.html.imp;
 
-import static com.github.gv2011.util.CollectionUtils.listOf;
-import static com.github.gv2011.util.CollectionUtils.pair;
 
 /*-
  * #%L
@@ -28,6 +26,9 @@ import static com.github.gv2011.util.CollectionUtils.pair;
  * THE SOFTWARE.
  * #L%
  */
+
+import static com.github.gv2011.util.CollectionUtils.pair;
+import static com.github.gv2011.util.icol.ICollections.listOf;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;

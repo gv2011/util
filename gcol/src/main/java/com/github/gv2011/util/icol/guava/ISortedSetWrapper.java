@@ -1,5 +1,7 @@
 package com.github.gv2011.util.icol.guava;
 
+import static com.github.gv2011.util.Constants.softRefConstant;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -28,6 +30,11 @@ package com.github.gv2011.util.icol.guava;
 
 import java.util.Iterator;
 import java.util.NavigableSet;
+
+import com.github.gv2011.util.CachedConstant;
+import com.github.gv2011.util.XStream;
+import com.github.gv2011.util.icol.IList;
+import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
 import com.github.gv2011.util.icol.Opt;
 import com.google.common.collect.ImmutableSortedSet;
@@ -35,6 +42,8 @@ import com.google.common.collect.ImmutableSortedSet;
 final class ISortedSetWrapper<E extends Comparable<? super E>>
 extends ISetWrapper<E,NavigableSet<E>>
 implements ISortedSet<E>{
+
+  private final CachedConstant<IList<E>> index = softRefConstant(()->GuavaIcolFactory.INSTANCE.listFrom(this));
 
   ISortedSetWrapper(final NavigableSet<E> delegate) {
     super(delegate);
@@ -135,6 +144,21 @@ implements ISortedSet<E>{
   @Override
   public Opt<E> tryGetHigher(final E e) {
     return Opt.ofNullable(delegate.higher(e));
+  }
+
+  @Override
+  public IList<E> subList(final int fromIndex, final int toIndex) {
+    return index.get().subList(fromIndex, toIndex);
+  }
+
+  @Override
+  public ISortedMap<Integer, E> asMap() {
+    return index.get().asMap();
+  }
+
+  @Override
+  public XStream<E> stream() {
+    return GuavaIcolFactory.INSTANCE.xStream(delegate.stream());
   }
 
 }

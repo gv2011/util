@@ -26,12 +26,9 @@ package com.github.gv2011.util.icol;
  * #L%
  */
 
-
-
-
-import static com.github.gv2011.util.CollectionUtils.toIList;
-import static com.github.gv2011.util.CollectionUtils.toISortedMap;
 import static com.github.gv2011.util.Verify.verify;
+import static com.github.gv2011.util.icol.ICollections.toIList;
+import static com.github.gv2011.util.icol.ICollections.toISortedMap;
 import static java.util.stream.Collectors.joining;
 
 import java.util.Collection;
@@ -106,6 +103,8 @@ public abstract class AbstractIList<E> implements IList<E>{
     final int s = size();
     return IntStream.range(1, s-1).map(i->s-i).filter(i->o.equals(get(i))).findFirst().orElse(-1);
   }
+
+
 
   @Override
   public ListIterator<E> listIterator() {

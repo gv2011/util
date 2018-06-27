@@ -25,15 +25,15 @@ package com.github.gv2011.util.beans.imp;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.util.CollectionUtils.listBuilder;
-import static com.github.gv2011.util.CollectionUtils.setOf;
 import static com.github.gv2011.util.CollectionUtils.single;
 import static com.github.gv2011.util.CollectionUtils.stream;
-import static com.github.gv2011.util.CollectionUtils.toISet;
 import static com.github.gv2011.util.CollectionUtils.toOpt;
 import static com.github.gv2011.util.Nothing.nothing;
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.ex.Exceptions.format;
+import static com.github.gv2011.util.icol.ICollections.listBuilder;
+import static com.github.gv2011.util.icol.ICollections.setOf;
+import static com.github.gv2011.util.icol.ICollections.toISet;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.ParameterizedType;
@@ -332,8 +332,7 @@ public class DefaultTypeRegistry implements TypeRegistry{
         .filter(i->isSupported(i))
         .collect(toISet())
       ;
-      if(types.size()==1) result = Opt.of((TypeSupport<? super T>) type(single(types)));
-      ;
+      if(types.size()==1) result = Opt.of((TypeSupport<? super T>) type(types.single()));
     }
     return (Opt<TypeSupport<? super T>>)(Opt)result;
   }

@@ -26,12 +26,9 @@ package com.github.gv2011.util.icol;
  * #L%
  */
 
-
-
-
 import static com.github.gv2011.util.CollectionUtils.pair;
-import static com.github.gv2011.util.CollectionUtils.toIList;
-import static com.github.gv2011.util.CollectionUtils.toISet;
+import static com.github.gv2011.util.icol.ICollections.toIList;
+import static com.github.gv2011.util.icol.ICollections.toISet;
 import static java.util.stream.Collectors.joining;
 
 import java.util.Map;

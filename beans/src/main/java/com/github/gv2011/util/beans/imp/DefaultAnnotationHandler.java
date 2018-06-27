@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,11 +26,12 @@ package com.github.gv2011.util.beans.imp;
  * #L%
  */
 
-import static com.github.gv2011.util.CollectionUtils.setOf;
 import static com.github.gv2011.util.CollectionUtils.stream;
 import static com.github.gv2011.util.CollectionUtils.toOpt;
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verify;
+import static com.github.gv2011.util.icol.ICollections.asSet;
+import static com.github.gv2011.util.icol.ICollections.emptySet;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.annotation.Annotation;
@@ -132,8 +133,8 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
   private ISet<Class<?>> subClasses(final Abstract annotation) {
     final Class<?>[] subClasses = annotation.subClasses();
     verify(subClasses.length>0);
-    if(subClasses.length==1 && subClasses[0].equals(Nothing.class)) return setOf();
-    else return setOf(subClasses);
+    if(subClasses.length==1 && subClasses[0].equals(Nothing.class)) return emptySet();
+    else return asSet(subClasses);
   }
 
   @Override

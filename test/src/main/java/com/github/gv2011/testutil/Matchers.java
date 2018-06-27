@@ -52,9 +52,10 @@ package com.github.gv2011.testutil;
  * THE SOFTWARE.
  * %---license-end---
  */
-import static com.github.gv2011.util.CollectionUtils.toISet;
+
 import static com.github.gv2011.util.Equal.equal;
 import static com.github.gv2011.util.ex.Exceptions.format;
+import static com.github.gv2011.util.icol.ICollections.toISet;
 
 import java.util.Collection;
 import java.util.Map;

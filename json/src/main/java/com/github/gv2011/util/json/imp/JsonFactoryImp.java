@@ -33,10 +33,10 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collector.Characteristics;
 
-import com.github.gv2011.util.CollectionUtils;
 import com.github.gv2011.util.ServiceLoaderUtils;
 import com.github.gv2011.util.bytes.Bytes;
 import com.github.gv2011.util.icol.ICollectionFactory;
+import com.github.gv2011.util.icol.ICollections;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.json.JsonBoolean;
@@ -51,7 +51,7 @@ import com.github.gv2011.util.json.JsonWriter;
 
 public final class JsonFactoryImp implements JsonFactory{
 
-  private static final ICollectionFactory ICOLF = CollectionUtils.iCollections();
+  private static final ICollectionFactory ICOLF = ICollections.iCollections();
 
   private final Adapter adapter;
 

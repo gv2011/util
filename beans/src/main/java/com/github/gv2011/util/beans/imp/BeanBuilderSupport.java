@@ -25,12 +25,13 @@ package com.github.gv2011.util.beans.imp;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.util.CollectionUtils.iCollections;
-import static com.github.gv2011.util.CollectionUtils.toISet;
+
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.format;
+import static com.github.gv2011.util.icol.ICollections.sortedMapFrom;
+import static com.github.gv2011.util.icol.ICollections.toISet;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -84,7 +85,7 @@ public abstract class BeanBuilderSupport<T> implements BeanBuilder<T> {
       ;
       verify(missing, Set::isEmpty, m->format("{}: The required properties {} have not been set.", beanType(), m));
       //create proxy:
-      final ISortedMap<String, Object> imap = iCollections().sortedMapFrom(map);
+      final ISortedMap<String, Object> imap = sortedMapFrom(map);
       return create(imap);
     }
 
@@ -92,7 +93,7 @@ public abstract class BeanBuilderSupport<T> implements BeanBuilder<T> {
 
     @Override
     public Partial<T> buildPartial() {
-        return new PartialImp<>(iCollections().sortedMapFrom(map));
+        return new PartialImp<>(sortedMapFrom(map));
     }
 
     @Override

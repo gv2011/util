@@ -26,18 +26,14 @@ package com.github.gv2011.util.sec;
  * #L%
  */
 
-
-
-
-
-import static com.github.gv2011.util.CollectionUtils.iCollections;
-import static com.github.gv2011.util.CollectionUtils.toIList;
 import static com.github.gv2011.util.NumUtils.withLeadingZeros;
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.callWithCloseable;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
+import static com.github.gv2011.util.icol.ICollections.listBuilder;
+import static com.github.gv2011.util.icol.ICollections.toIList;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -118,7 +114,7 @@ public final class SecUtils {
     return callWithCloseable(
       ()->new ByteArrayInputStream(pem.getBytes(StandardCharsets.US_ASCII)),
       s->{
-        final IList.Builder<X509Certificate> b = iCollections().listBuilder();
+        final IList.Builder<X509Certificate> b = listBuilder();
         b.add((X509Certificate)certFactory.generateCertificate(s));
         b.add((X509Certificate)certFactory.generateCertificate(s));
         return b.build();
@@ -142,7 +138,7 @@ public final class SecUtils {
   }
 
   public static final IList<X509Certificate> readCertificateChain(final Path folder){
-    final IList.Builder<X509Certificate> chain = iCollections().listBuilder();
+    final IList.Builder<X509Certificate> chain = listBuilder();
     int i = 0;
     Path certFile = certFile(folder, i);
     while(Files.exists(certFile)){

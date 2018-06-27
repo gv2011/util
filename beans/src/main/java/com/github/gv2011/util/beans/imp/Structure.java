@@ -1,9 +1,5 @@
 package com.github.gv2011.util.beans.imp;
 
-import static com.github.gv2011.util.CollectionUtils.atMostOne;
-import static com.github.gv2011.util.CollectionUtils.copyToIList;
-import static com.github.gv2011.util.CollectionUtils.copyToISet;
-import static com.github.gv2011.util.CollectionUtils.copyToISortedSet;
 /*-
  * #%L
  * util-beans
@@ -29,18 +25,24 @@ import static com.github.gv2011.util.CollectionUtils.copyToISortedSet;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.util.CollectionUtils.iCollections;
-import static com.github.gv2011.util.CollectionUtils.listOf;
+
+import static com.github.gv2011.util.CollectionUtils.atMostOne;
 import static com.github.gv2011.util.CollectionUtils.pair;
-import static com.github.gv2011.util.CollectionUtils.setOf;
-import static com.github.gv2011.util.CollectionUtils.sortedSetOf;
-import static com.github.gv2011.util.CollectionUtils.toIList;
-import static com.github.gv2011.util.CollectionUtils.toIMap;
-import static com.github.gv2011.util.CollectionUtils.toISet;
-import static com.github.gv2011.util.CollectionUtils.toISortedMap;
-import static com.github.gv2011.util.CollectionUtils.toISortedSet;
 import static com.github.gv2011.util.CollectionUtils.toOptional;
 import static com.github.gv2011.util.ex.Exceptions.bug;
+import static com.github.gv2011.util.icol.ICollections.emptyList;
+import static com.github.gv2011.util.icol.ICollections.emptyMap;
+import static com.github.gv2011.util.icol.ICollections.emptySet;
+import static com.github.gv2011.util.icol.ICollections.emptySortedMap;
+import static com.github.gv2011.util.icol.ICollections.emptySortedSet;
+import static com.github.gv2011.util.icol.ICollections.listFrom;
+import static com.github.gv2011.util.icol.ICollections.setFrom;
+import static com.github.gv2011.util.icol.ICollections.sortedSetFrom;
+import static com.github.gv2011.util.icol.ICollections.toIList;
+import static com.github.gv2011.util.icol.ICollections.toIMap;
+import static com.github.gv2011.util.icol.ICollections.toISet;
+import static com.github.gv2011.util.icol.ICollections.toISortedMap;
+import static com.github.gv2011.util.icol.ICollections.toISortedSet;
 
 import java.util.Collection;
 import java.util.Map.Entry;
@@ -249,7 +251,7 @@ abstract class Structure<C,K,E> {
 
     @Override
     IList<E> empty() {
-      return listOf();
+      return emptyList();
     }
 
     @Override
@@ -264,7 +266,7 @@ abstract class Structure<C,K,E> {
 
     @Override
     IList<E> createCollection(final Collection<? extends E> collection) {
-      return copyToIList(collection);
+      return listFrom(collection);
     }
   }
 
@@ -282,7 +284,7 @@ abstract class Structure<C,K,E> {
 
     @Override
     ISet<E> empty() {
-      return setOf();
+      return emptySet();
     }
 
     @Override
@@ -297,7 +299,7 @@ abstract class Structure<C,K,E> {
 
     @Override
     ISet<E> createCollection(final Collection<? extends E> collection) {
-      return copyToISet(collection);
+      return setFrom(collection);
     }
   }
 
@@ -316,7 +318,7 @@ abstract class Structure<C,K,E> {
 
     @Override
     ISortedSet<E> empty() {
-      return sortedSetOf();
+      return emptySortedSet();
     }
 
     @Override
@@ -330,7 +332,7 @@ abstract class Structure<C,K,E> {
     }
     @Override
     ISortedSet<E> createCollection(final Collection<? extends E> collection) {
-      return copyToISortedSet(collection);
+      return sortedSetFrom(collection);
     }
   }
 
@@ -348,7 +350,7 @@ abstract class Structure<C,K,E> {
 
     @Override
     IMap<K, V> empty() {
-      return iCollections().emptyMap();
+      return emptyMap();
     }
 
     @Override
@@ -410,7 +412,7 @@ abstract class Structure<C,K,E> {
 
     @Override
     ISortedMap<K, V> empty() {
-      return iCollections().emptySortedMap();
+      return emptySortedMap();
     }
 
     @Override

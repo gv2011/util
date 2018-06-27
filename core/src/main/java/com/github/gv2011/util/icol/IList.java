@@ -4,7 +4,7 @@ package com.github.gv2011.util.icol;
  * #%L
  * The MIT License (MIT)
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -12,10 +12,10 @@ package com.github.gv2011.util.icol;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,12 +25,9 @@ package com.github.gv2011.util.icol;
  * THE SOFTWARE.
  * #L%
  */
-
-
-
-
-import static com.github.gv2011.util.CollectionUtils.iCollections;
-import static com.github.gv2011.util.CollectionUtils.toISortedMap;
+import static com.github.gv2011.util.CollectionUtils.intRange;
+import static com.github.gv2011.util.icol.ICollections.toIList;
+import static com.github.gv2011.util.icol.ICollections.toISortedMap;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
@@ -39,16 +36,13 @@ import java.util.List;
 import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
 
-public interface IList<E> extends List<E>, ICollection<E>{
+import com.github.gv2011.util.XStream;
+
+public interface IList<E> extends List<E>, ICollectionG<E,IList<E>>, ListAccess<E>{
 
   public static interface Builder<E> extends CollectionBuilder<IList<E>,E,Builder<E>>{}
 
-  @SuppressWarnings("unchecked")
-  static <E> IList<E> cast(final IList<? extends E> list){return (IList<E>) list;}
-
   @Override
-  IList<E> subList(int fromIndex, int toIndex);
-
   default ISortedMap<Integer,E> asMap(){
     return IntStream.range(0, size()).parallel().mapToObj(Integer::valueOf)
       .collect(toISortedMap(
@@ -130,19 +124,9 @@ public interface IList<E> extends List<E>, ICollection<E>{
     throw new UnsupportedOperationException();
   }
 
+  @Override
   default IList<E> tail(){
     return subList(1, size());
-  }
-
-  default IList<E> append(final E element){
-    return iCollections().<E>listBuilder().addAll(this).add(element).build();
-  }
-
-  default IList<E> appendAll(final Iterable<? extends E> elements){
-    final Builder<E> b = iCollections().<E>listBuilder();
-    b.addAll(this);
-    for(final E e: elements) b.add(e);
-    return b.build();
   }
 
   @Override
@@ -168,6 +152,45 @@ public interface IList<E> extends List<E>, ICollection<E>{
     for(int i=0; i<size; i++) a[i]=(T) get(i);
     if(a.length>size) a[size] = null;
     return a;
+  }
+
+
+  @Override
+  default int indexOf(final Object o){
+    return IntStream.range(0,size()).filter(i->get(i).equals(o)).findFirst().orElse(-1);
+  }
+
+  @Override
+  default int lastIndexOf(final Object o) {
+    return intRange(size()-1,-1).filter(i->get(i).equals(o)).findFirst().orElse(-1);
+  }
+
+
+
+  @Override
+  default IList<E> addElement(final E element) {
+    return ICollections.<E>listBuilder().addAll(this).add(element).build();
+  }
+
+  @Override
+  default XStream<E> stream() {
+      return XStream.stream(spliterator(), false);
+  }
+
+
+  @Override
+  default XStream<E> parallelStream() {
+      return XStream.stream(spliterator(), true);
+  }
+
+  @Override
+  default IList<E> join(final Collection<? extends E> other) {
+    return stream().concat(other.stream()).collect(toIList());
+  }
+
+  @Override
+  default IList<E> subtract(final Collection<?> other) {
+    return stream().filter(e->!other.contains(e)).collect(toIList());
   }
 
 }

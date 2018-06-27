@@ -25,11 +25,11 @@ package com.github.gv2011.util.beans.cglib;
  * THE SOFTWARE.
  * #L%
  */
+
 import static com.github.gv2011.testutil.Matchers.is;
 import static com.github.gv2011.testutil.Matchers.isA;
 import static com.github.gv2011.testutil.Matchers.mapWithSize;
-import static com.github.gv2011.util.CollectionUtils.iCollections;
-import static com.github.gv2011.util.CollectionUtils.sortedSetOf;
+import static com.github.gv2011.util.icol.ICollections.sortedSetOf;
 import static com.github.gv2011.util.json.JsonUtils.jsonFactory;
 import static org.junit.Assert.assertThat;
 
@@ -41,6 +41,7 @@ import com.github.gv2011.util.beans.cglib.PolymorphicTestModel.Elephant;
 import com.github.gv2011.util.beans.cglib.TestModel.Id;
 import com.github.gv2011.util.beans.imp.BeanTypeSupport;
 import com.github.gv2011.util.beans.imp.DefaultTypeRegistry;
+import com.github.gv2011.util.icol.ICollections;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
 import com.github.gv2011.util.tstr.TypedString;
@@ -51,7 +52,7 @@ public class CglibBeanFactoryTest {
 
   @Test
   public void testModel() {
-    final ISortedMap<Id, ISortedSet<UUID>> map = iCollections().<Id, ISortedSet<UUID>>sortedMapBuilder()
+    final ISortedMap<Id, ISortedSet<UUID>> map = ICollections.<Id, ISortedSet<UUID>>sortedMapBuilder()
       .put(TypedString.create(Id.class, "n1"), sortedSetOf(UUID.randomUUID(),UUID.randomUUID()))
       .build()
     ;

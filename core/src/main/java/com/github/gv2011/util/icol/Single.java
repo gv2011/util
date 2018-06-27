@@ -1,5 +1,7 @@
 package com.github.gv2011.util.icol;
 
+import java.util.Arrays;
+import java.util.Collection;
 /*-
  * #%L
  * The MIT License (MIT)
@@ -54,6 +56,33 @@ public final class Single<E> extends Ref<E>{
   @Override
   public <U> Opt<U> map(final Function<? super E, ? extends U> mapper) {
     return new Single<>(mapper.apply(element));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public Opt<E> subtract(final Collection<?> other) {
+    return other.contains(element) ? this : IEmpty.INSTANCE;
+  }
+
+  @Override
+  public ISet<E> addElement(final E element) {
+    return ICollections.<E>setBuilder().add(this.element).add(element).build();
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public <T> T[] toArray(final T[] a) {
+    T[] result;
+    if(a.length==0){
+      result = Arrays.copyOf(a, 1);
+      result[0] = (T) element;
+    }
+    else{
+      if(a.length>1) a[1] = null;
+      a[0] = (T) element;
+      result = a;
+    }
+    return result;
   }
 
 }

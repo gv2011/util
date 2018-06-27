@@ -1,6 +1,7 @@
 package com.github.gv2011.util.icol;
 
-import static com.github.gv2011.util.CollectionUtils.toIList;
+
+import static com.github.gv2011.util.icol.ICollections.toIList;
 
 /*-
  * #%L
@@ -102,16 +103,6 @@ public interface ICollection<E> extends Collection<E>{
   @Deprecated
   default boolean retainAll(final Collection<?> c) {
     throw new UnsupportedOperationException();
-  }
-
-  @Override
-  default <T> T[] toArray(final T[] a) {
-    return asList().toArray(a);
-  }
-
-  @Override
-  default Object[] toArray() {
-    return asList().toArray();
   }
 
   @Override

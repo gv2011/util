@@ -242,5 +242,7 @@ public interface ICollectionFactory {
 
   <E> XStream<E> xStream(Stream<E> s);
 
+  <E> XStream<E> pStream(Stream<E> s);
+
   <E> XStream<E> xStream(Spliterator<E> spliterator, boolean parallel);
 }

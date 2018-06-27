@@ -27,12 +27,12 @@ package com.github.gv2011.util.beans.imp;
  */
 
 import static com.github.gv2011.util.CollectionUtils.pair;
-import static com.github.gv2011.util.CollectionUtils.toISortedMap;
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
+import static com.github.gv2011.util.icol.ICollections.toISortedMap;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.Method;

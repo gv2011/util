@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
+import com.github.gv2011.util.XStream;
 import com.github.gv2011.util.icol.ISet;
 
 class ISetWrapper<E,S extends Set<E>> implements ISet<E>{
@@ -79,8 +80,7 @@ class ISetWrapper<E,S extends Set<E>> implements ISet<E>{
 
   @Override
   public final boolean containsAll(final Collection<?> c) {
-    //TODO review
-    return c.stream().allMatch(this::contains);
+    return c.parallelStream().allMatch(this::contains);
   }
 
   @Override
@@ -103,6 +103,12 @@ class ISetWrapper<E,S extends Set<E>> implements ISet<E>{
     return delegate.toString();
   }
 
-
+  @Override
+  public ISet<E> addElement(final E other) {
+    return parallelStream()
+      .concat(XStream.parallelStreamOf(other))
+      .collect(GuavaIcolFactory.INSTANCE.setCollector())
+    ;
+  }
 
 }

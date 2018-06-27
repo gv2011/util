@@ -4,7 +4,7 @@ package com.github.gv2011.util;
  * #%L
  * The MIT License (MIT)
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -12,10 +12,10 @@ package com.github.gv2011.util;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,33 +25,23 @@ package com.github.gv2011.util;
  * THE SOFTWARE.
  * #L%
  */
-
-
-
-
-import static com.github.gv2011.util.ServiceLoaderUtils.lazyServiceLoader;
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.format;
-import static com.github.gv2011.util.ex.Exceptions.notYetImplemented;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 import static java.util.stream.Collectors.toList;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.NavigableSet;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -60,33 +50,15 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.github.gv2011.util.icol.ICollectionFactory;
-import com.github.gv2011.util.icol.IList;
-import com.github.gv2011.util.icol.IMap;
-import com.github.gv2011.util.icol.ISet;
-import com.github.gv2011.util.icol.ISortedMap;
-import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.icol.ICollection;
 import com.github.gv2011.util.icol.Opt;
 
 public class CollectionUtils {
 
   private CollectionUtils(){staticClass();}
-
-  private static final Constant<ICollectionFactory> ICOLF = lazyServiceLoader(ICollectionFactory.class);
-
-  public static final ICollectionFactory iCollections(){return ICOLF.get();}
-
-  public static final <E> IList.Builder<E> listBuilder(){return iCollections().listBuilder();};
-  public static final <E> ISet.Builder<E>  setBuilder() {return iCollections().setBuilder();};
-  public static final <E extends Comparable<? super E>> ISortedSet.Builder<E> sortedSetBuilder(){
-    return iCollections().sortedSetBuilder();
-    };
-  public static final <K,V> IMap.Builder<K,V> mapBuilder(){return iCollections().mapBuilder();};
-  public static final <K extends Comparable<? super K>,V> ISortedMap.Builder<K,V> sortedMapBuilder(){
-    return iCollections().sortedMapBuilder();
-    };
 
   public static final <T extends Comparable<? super T>> Collector<T, ?, NavigableSet<T>> toSortedSet(){
     return new SortedSetCollector<T,NavigableSet<T>>(){
@@ -95,10 +67,6 @@ public class CollectionUtils {
         return Function.identity();
       }
     };
-  }
-
-  public static final <T extends Comparable<? super T>> Collector<T, ?, ISortedSet<T>> toISortedSet(){
-    return iCollections().sortedSetCollector();
   }
 
   public static abstract class SortedSetCollector<T,R> implements Collector<T, NavigableSet<T>, R>{
@@ -129,6 +97,14 @@ public class CollectionUtils {
     return single(collection, (n)->n==0?"No element.":"Multiple elements.");
   }
 
+  /**
+   * Use {@link ICollection#single}.
+   */
+  @Deprecated
+  public static <T> T single(final ICollection<? extends T> collection){
+    return collection.single();
+  }
+
   public static <T> T single(final T[] array){
     final int size = array.length;
     verify(size!=0, "No element.");
@@ -148,20 +124,14 @@ public class CollectionUtils {
     return result;
   }
 
-  public static <V> Optional<V> tryGet(final Map<?,? extends V> map, final Object key){
-    return Optional.ofNullable(map.get(key));
-  }
-
-  @Deprecated
-  public static <S,T> Function<S,XStream<T>> ifPresent(final Function<S,Optional<T>> optFunction){
-    return s->stream(optFunction.apply(s));
+  public static <V> Opt<V> tryGet(final Map<?,? extends V> map, final Object key){
+    return Opt.ofNullable(map.get(key));
   }
 
   public static <K,V> Pair<K,V> pair(final K key, final V value){
     return new Pair<>(key, value);
   }
 
-  @Deprecated
   public static <T> XStream<T> stream(final Optional<? extends T> optional){
     return XStream.fromOptional(optional);
   }
@@ -181,15 +151,6 @@ public class CollectionUtils {
   public static <T> XStream<T> stream(final Iterator<? extends T> iterator){
     return XStream.fromIterator(iterator);
   }
-
-//  public static <T> XStream<T> stream(final Iterator<?> iterator, final Class<T> elementType){
-//    return StreamSupport.stream(
-//      Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED),
-//      false
-//    )
-//    .map(elementType::cast)
-//    ;
-//  }
 
 
   @SafeVarargs
@@ -232,6 +193,7 @@ public class CollectionUtils {
     return atMostOne(collection.iterator(), moreThanOneMessage);
   }
 
+
   public static <T> Opt<T> atMostOne(
     final Iterator<? extends T> iterator, final Supplier<String> moreThanOneMessage
   ){
@@ -243,90 +205,6 @@ public class CollectionUtils {
     }
   }
 
-  public static <T> IList<T> asList(final Opt<? extends T> optional){
-    return notYetImplemented();
-//    return optional
-//      .map(e->{
-//        final ArrayList<T> result = new ArrayList<>(1);
-//        result.add(e);
-//        return result;
-//      })
-//      .orElse(new ArrayList<T>(0))
-//    ;
-  }
-
-  public static <T> Collector<T,?,ISet<T>>
-  toISet(){
-    return iCollections().setCollector();
-  }
-
-  public static <T> Collector<T,?,IList<T>>
-  toIList(){
-    return iCollections().listCollector();
-  }
-
-  public static <T, K, V> Collector<T, ?, IMap<K,V>>
-  toIMap(
-    final Function<? super T, ? extends K> keyMapper,
-    final Function<? super T, ? extends V> valueMapper
-  ) {
-    return iCollections().mapCollector(keyMapper, valueMapper);
-  }
-
-  public static <E extends Entry<? extends K, ? extends V>, K, V> Collector<E, ?, IMap<K,V>>
-  toIMap() {
-    return iCollections().mapCollector();
-  }
-
-  public static <T, K extends Comparable<? super K>, V> Collector<T, ?, ISortedMap<K,V>>
-  toISortedMap(
-    final Function<? super T, ? extends K> keyMapper,
-    final Function<? super T, ? extends V> valueMapper
-  ) {
-    return iCollections().sortedMapCollector(keyMapper, valueMapper);
-  }
-
-  public static <T extends Entry<? extends K, ? extends V>, K extends Comparable<? super K>, V>
-  Collector<T, ?, ISortedMap<K,V>>
-  toISortedMap() {
-    return iCollections().sortedMapCollector(Entry::getKey, Entry::getValue);
-  }
-
-  public static <T, K, V> Collector<T, ?, SortedMap<K,V>>
-  toISortedMap(
-    final Function<? super T, ? extends K> keyMapper,
-    final Function<? super T, ? extends V> valueMapper,
-    final Comparator<K> comparator
-  ) {
-    return  new Collector<T,SortedMap<K,V>, SortedMap<K,V>>(){
-      @Override
-      public Supplier<SortedMap<K, V>> supplier() {
-        return ()->new TreeMap<>(comparator);
-      }
-      @Override
-      public BiConsumer<SortedMap<K, V>, T> accumulator() {
-         return (b,t)->b.put(
-           keyMapper.apply(notNull(t, ()->"Found null element in stream.")),
-           valueMapper.apply(t)
-         );
-      }
-      @Override
-      public BinaryOperator<SortedMap<K, V>> combiner() {
-        return (b1,b2)->{
-          b1.putAll(b2);
-          return b1;
-        };
-      }
-      @Override
-      public Function<SortedMap<K, V>, SortedMap<K, V>> finisher() {
-        return Collections::unmodifiableSortedMap;
-      }
-      @Override
-      public Set<Characteristics> characteristics() {
-        return EnumSet.of(Characteristics.UNORDERED);
-      }
-    };
-  }
 
   public static <T, K, V> Collector<T, ?, Map<K,V>>
   toMapOpt(
@@ -454,54 +332,6 @@ public class CollectionUtils {
     }
   }
 
-  public static <T> IList<T> copyToIList(final Collection<? extends T> collection) {
-    return collection.stream().collect(toIList());
-  }
-
-  public static <S,T> IList<T> copyToIList(
-    final Collection<S> collection, final Function<? super S, ? extends T> mapping
-  ) {
-    return collection.stream().map(mapping).collect(toIList());
-  }
-
-  public static <T> ISet<T> copyToISet(final Collection<? extends T> collection) {
-    return collection.parallelStream().collect(toISet());
-  }
-
-  public static <T extends Comparable<? super T>> ISortedSet<T> copyToISortedSet(final Collection<? extends T> collection) {
-    return collection.parallelStream().collect(toISortedSet());
-  }
-
-  @SafeVarargs
-  public static <T> IList<T> listOf(final T... elements) {
-    final IList.Builder<T> builder = iCollections().listBuilder();
-    for(final T e: elements) builder.add(e);
-    return builder.build();
-  }
-
-  @SafeVarargs
-  public static <T> ISet<T> setOf(final T... elements) {
-    final ISet.Builder<T> builder = iCollections().setBuilder();
-    for(final T e: elements) builder.add(e);
-    return builder.build();
-  }
-
-
-  @SafeVarargs
-  public static <T extends Comparable<? super T>> ISortedSet<T> sortedSetOf(final T... elements) {
-    final ISortedSet.Builder<T> builder = iCollections().sortedSetBuilder();
-    for(final T e: elements) builder.add(e);
-    return builder.build();
-  }
-
-  public static <K extends Comparable<? super K>,V> ISortedMap<K,V> sortedMapOf() {
-    return iCollections().emptySortedMap();
-  }
-
-  public static <K extends Comparable<? super K>,V> ISortedMap<K,V> sortedMapOf(final K key,final V value) {
-    return iCollections().<K,V>sortedMapBuilder().put(key, value).build();
-  }
-
   public static <S,T> Iterable<T> mapIterable(
     final Iterable<? extends S> delegate, final Function<? super S, ? extends T> mapping
   ){
@@ -532,45 +362,33 @@ public class CollectionUtils {
     return optional.map(v->v.equals(obj)).orElse(false);
   }
 
-  public static final <K,V> IMap<V,K> revert(final Map<? extends K,? extends V> map){
-    return map.entrySet().stream().collect(toIMap(Entry::getValue,Entry::getKey));
-  }
-
-  @SuppressWarnings({ "rawtypes", "unchecked" })
-  public static final <U,E extends U> Opt<U> upcast(final Opt<E> optional){
-    return (Opt)optional;
-  }
-
-  @SuppressWarnings({ "rawtypes", "unchecked" })
-  public static final <U,E extends U> IList<U> upcast(final IList<E> list){
-    return (IList)list;
-  }
-
-  @SuppressWarnings({ "rawtypes", "unchecked" })
-  public static final <U,E extends U> ISet<U> upcast(final ISet<E> set){
-    return (ISortedSet)set;
-  }
-
-  @SuppressWarnings({ "rawtypes", "unchecked" })
-  public static final <U extends Comparable<? super U>,E extends U> ISortedSet<U> upcast(final ISortedSet<E> set){
-    return (ISortedSet)set;
-  }
-
-  @SuppressWarnings({ "rawtypes", "unchecked" })
-  public static final <UK,K extends UK,UV, V extends UV> IMap<UK,UV> upcast(final IMap<K,V> map){
-    return (IMap)map;
-  }
-
-  @SuppressWarnings({ "rawtypes", "unchecked" })
-  public static final <UK extends Comparable<? super UK>,K extends UK,UV, V extends UV> ISortedMap<UK,UV>
-    upcast(final ISortedMap<K,V> map
-  ){
-    return (ISortedMap)map;
-  }
 
   public static final <N> XStream<N> recursiveStream(
     final N root, final Function<N,? extends Stream<? extends N>> children
   ){
     return XStream.of(root).concat(children.apply(root).flatMap(c->recursiveStream(c,children)));
+  }
+
+    /**
+     * Returns a sequential ordered {@code IntStream} from {@code fromExclusive}
+     * (exclusive) to {@code toInclusive} (inclusive) by an incremental or decremental step of
+     * {@code 1}.
+     *
+     * <p>An equivalent sequence of increasing values can be produced
+     * sequentially using a {@code for} loop as follows:
+     * <pre>{@code
+     *     final int increment = endExclusive >= startInclusive ? 1 : -1;
+     *     for (int i = startInclusive; i != endExclusive ; i+=increment) { ... }
+     * }</pre>
+     *
+     * @param startExclusive the (exclusive) initial value
+     * @param endInclusive the inclusive lower bound
+     * @return a sequential {@code IntStream} for the range of {@code int}
+     *         elements from higher to lower values
+     */
+  public static IntStream intRange(final int startInclusive, final int endExclusive){
+    final int size = endExclusive - startInclusive;
+    if(size>=1) return IntStream.range(startInclusive, endExclusive);
+    else return IntStream.range(0, size).map(i->startInclusive-i);
   }
 }

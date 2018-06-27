@@ -1,10 +1,9 @@
 package com.github.gv2011.util.beans.imp;
 
 import static com.github.gv2011.util.BeanUtils.beanBuilder;
-import static com.github.gv2011.util.CollectionUtils.iCollections;
-import static com.github.gv2011.util.CollectionUtils.listOf;
-import static com.github.gv2011.util.CollectionUtils.mapBuilder;
-import static com.github.gv2011.util.CollectionUtils.sortedSetOf;
+import static com.github.gv2011.util.icol.ICollections.emptyList;
+import static com.github.gv2011.util.icol.ICollections.mapBuilder;
+import static com.github.gv2011.util.icol.ICollections.sortedSetOf;
 
 /*-
  * #%L
@@ -44,6 +43,7 @@ import com.github.gv2011.util.beans.BeanType;
 import com.github.gv2011.util.beans.DefaultValue;
 import com.github.gv2011.util.beans.Property;
 import com.github.gv2011.util.beans.imp.TestModel.BlackPea;
+import com.github.gv2011.util.icol.ICollections;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.IMap;
 import com.github.gv2011.util.icol.ISortedMap;
@@ -148,13 +148,13 @@ public class BeanTypeTest {
       final BeanBuilder<TestBeanB> b = reg.beanType(TestBeanB.class).createBuilder();
       final TestBeanB bean = b.build();
       assertThat(bean.beanA(), is(reg.beanType(TestBeanA.class).createBuilder().build()));
-      assertThat(bean.beans(), is(listOf()));
+      assertThat(bean.beans(), is(emptyList()));
     }
 
     @Test
     public void testMap() {
       final ISortedMap<Colour,ISortedSet<String>> colourInfo =
-        iCollections().<Colour,ISortedSet<String>>sortedMapBuilder()
+        ICollections.<Colour,ISortedSet<String>>sortedMapBuilder()
         .put(TypedString.create(Colour.class, "red"), sortedSetOf("a","b"))
         .build()
       ;

@@ -63,6 +63,10 @@ final class XStreamImp<T> implements XStream<T> {
       else return wrap(s);
     }
 
+    static <E> XStreamImp<E> pStream(final Stream<E> s){
+      return xStream(s).parallel();
+    }
+
     private static <E> XStreamImp<E> wrap(final Stream<E> s){
       return new XStreamImp<>(s);
     }
@@ -99,7 +103,7 @@ final class XStreamImp<T> implements XStream<T> {
     }
 
     @Override
-    public XStream<T> parallel() {
+    public XStreamImp<T> parallel() {
       return wrap(delegate.parallel());
     }
 

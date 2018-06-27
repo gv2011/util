@@ -26,10 +26,10 @@ package com.github.gv2011.testutil;
  * #L%
  */
 
-import static com.github.gv2011.util.CollectionUtils.iCollections;
 import static com.github.gv2011.util.FileUtils.WORK_DIR;
 import static com.github.gv2011.util.ResourceUtils.tryGetResourceUrl;
 import static com.github.gv2011.util.ex.Exceptions.call;
+import static com.github.gv2011.util.icol.ICollections.listBuilder;
 import static org.junit.Assert.assertTrue;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -133,7 +133,7 @@ public class TestFolderRule implements TestRule{
     final Class<?> testClass = testDescription.get().getTestClass();
     final Opt<URL> zip = tryGetResourceUrl(testClass, testClass.getSimpleName()+".zip");
     zip.ifPresent(url->{
-      final Builder<Path> pathCollector = iCollections().listBuilder();
+      final Builder<Path> pathCollector = listBuilder();
       Zipper.newZipper().unZip(url::openStream, testFolder, pathCollector::add);
       final IList<Path> paths = pathCollector.build();
       assertTrue(paths.stream().allMatch(Files::exists));

@@ -25,17 +25,18 @@ package com.github.gv2011.util.swing;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.util.CollectionUtils.setOf;
-import static com.github.gv2011.util.CollectionUtils.toISortedSet;
+
 import static com.github.gv2011.util.ex.Exceptions.call;
+import static com.github.gv2011.util.icol.ICollections.setOf;
+import static com.github.gv2011.util.icol.ICollections.toISortedSet;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
 
 import javax.swing.table.AbstractTableModel;
 
-import com.github.gv2011.util.CollectionUtils;
 import com.github.gv2011.util.XStream;
+import com.github.gv2011.util.icol.ICollections;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.ISet;
 
@@ -57,7 +58,7 @@ public final class PropertiesTableModel extends AbstractTableModel{
         .collect(toISortedSet())
         .asList()
       )
-      .orElseGet(CollectionUtils::listOf)
+      .orElseGet(ICollections::emptyList)
     ;
   }
 

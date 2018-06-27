@@ -12,10 +12,10 @@ package com.github.gv2011.util;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,12 +26,9 @@ package com.github.gv2011.util;
  * #L%
  */
 
-
-
-
-import static com.github.gv2011.util.CollectionUtils.iCollections;
 import static com.github.gv2011.util.Comparison.compareByAttribute;
 import static com.github.gv2011.util.Comparison.listComparator;
+import static com.github.gv2011.util.icol.ICollections.asList;
 
 import java.lang.reflect.Method;
 import java.util.Comparator;
@@ -39,21 +36,21 @@ import java.util.Comparator;
 import com.github.gv2011.util.icol.IList;
 
 public final class MethodSignature implements Comparable<MethodSignature>{
-  
+
   private static Comparator<IList<Class<?>>> PCOMP = listComparator(compareByAttribute(Class::getName));
-  
+
   private final String name;
   private final IList<Class<?>> parameters;
-  
+
   public MethodSignature(final Method m) {
     name = m.getName();
-    parameters = iCollections().asList(m.getParameterTypes());
+    parameters = asList(m.getParameterTypes());
   }
 
   public String name() {
     return name;
   }
-  
+
   public IList<Class<?>> parameters(){
     return parameters;
   }

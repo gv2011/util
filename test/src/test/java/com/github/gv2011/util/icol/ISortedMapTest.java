@@ -12,10 +12,10 @@ package com.github.gv2011.util.icol;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,8 +25,9 @@ package com.github.gv2011.util.icol;
  * THE SOFTWARE.
  * #L%
  */
+
 import static com.github.gv2011.testutil.Matchers.is;
-import static com.github.gv2011.util.CollectionUtils.iCollections;
+import static com.github.gv2011.util.icol.ICollections.sortedMapBuilder;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
@@ -35,7 +36,7 @@ public class ISortedMapTest {
 
   @Test
   public void test() {
-    final ISortedMap.Builder<String,String> b = iCollections().sortedMapBuilder();
+    final ISortedMap.Builder<String,String> b = sortedMapBuilder();
     b.put("b", "lala");
     b.put("a", "lulu");
     final ISortedMap<String, String> map = b.build();

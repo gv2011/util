@@ -1,6 +1,5 @@
 package com.github.gv2011.util.icol;
 
-import static com.github.gv2011.util.ServiceLoaderUtils.lazyServiceLoader;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 
 /*-
@@ -39,6 +38,8 @@ import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import com.github.gv2011.util.Constant;
+import com.github.gv2011.util.Constants;
+import com.github.gv2011.util.ServiceLoaderUtils;
 import com.github.gv2011.util.XStream;
 
 
@@ -49,7 +50,9 @@ public final class ICollections {
 
   private ICollections(){staticClass();}
 
-  private static final Constant<ICollectionFactory> ICOLF = lazyServiceLoader(ICollectionFactory.class);
+  private static final Constant<ICollectionFactory> ICOLF = Constants.softRefConstant(
+      ()->ServiceLoaderUtils.loadService(ICollectionFactorySupplier.class).get()
+  );
 
   public static final ICollectionFactory iCollections(){return ICOLF.get();}
 
@@ -119,7 +122,7 @@ public final class ICollections {
 
   //Varargs:
 
-  @SuppressWarnings("unchecked")
+  @SafeVarargs
   public static <E> IList<E> listOf(final E e1, final E e2, final E... more){
     return iCollections().listOf(e1, e2, more);
   }
@@ -217,20 +220,20 @@ public final class ICollections {
 
   //Collectors:
 
-  public static <E> Collector<E, ?, IList<E>> listCollector() {
+  public static <E> Collector<E, ?, IList<E>> toIList() {
     return iCollections().listCollector();
   }
 
-  public static <E> Collector<E, ?, ISet<E>> setCollector() {
+  public static <E> Collector<E, ?, ISet<E>> toISet() {
     return iCollections().setCollector();
   }
 
-  public static <E extends Comparable<? super E>> Collector<E, ?, ISortedSet<E>> sortedSetCollector() {
+  public static <E extends Comparable<? super E>> Collector<E, ?, ISortedSet<E>> toISortedSet() {
     return iCollections().sortedSetCollector();
   }
 
   public static <E, K, V>
-  Collector<E, ?, IMap<K,V>> mapCollector(
+  Collector<E, ?, IMap<K,V>> toIMap(
     final Function<? super E, ? extends K> keyMapper,
     final Function<? super E, ? extends V> valueMapper
   ){
@@ -238,12 +241,12 @@ public final class ICollections {
   }
 
   public static <E extends Entry<? extends K, ? extends V>, K, V>
-  Collector<E, ?, IMap<K,V>> mapCollector(){
+  Collector<E, ?, IMap<K,V>> toIMap(){
     return iCollections().mapCollector();
   }
 
   public static <E, K extends Comparable<? super K>, V>
-  Collector<E, ?, ISortedMap<K,V>> sortedMapCollector(
+  Collector<E, ?, ISortedMap<K,V>> toISortedMap(
     final Function<? super E, ? extends K> keyMapper,
     final Function<? super E, ? extends V> valueMapper
   ){
@@ -251,10 +254,44 @@ public final class ICollections {
   }
 
   public static <K extends Comparable<? super K>, V>
-  Collector<Entry<? extends K, ? extends V>, ?, ISortedMap<K,V>> sortedMapCollector(){
+  Collector<Entry<? extends K, ? extends V>, ?, ISortedMap<K,V>> toISortedMap(){
     return iCollections().sortedMapCollector();
   }
 
+
+  //Upcast:
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public static final <U,E extends U> Opt<U> upcast(final Opt<E> optional){
+    return (Opt)optional;
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public static final <U,E extends U> IList<U> upcast(final IList<E> list){
+    return (IList)list;
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public static final <U,E extends U> ISet<U> upcast(final ISet<E> set){
+    return (ISortedSet)set;
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public static final <U extends Comparable<? super U>,E extends U> ISortedSet<U> upcast(final ISortedSet<E> set){
+    return (ISortedSet)set;
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public static final <UK,K extends UK,UV, V extends UV> IMap<UK,UV> upcast(final IMap<K,V> map){
+    return (IMap)map;
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public static final <UK extends Comparable<? super UK>,K extends UK,UV, V extends UV> ISortedMap<UK,UV>
+    upcast(final ISortedMap<K,V> map
+  ){
+    return (ISortedMap)map;
+  }
 
   //Other:
 
@@ -264,6 +301,10 @@ public final class ICollections {
 
   public static <E> XStream<E> xStream(final Stream<E> s) {
     return iCollections().xStream(s);
+  }
+
+  public static <E> XStream<E> pStream(final Stream<E> s) {
+    return iCollections().pStream(s);
   }
 
   public static <E> XStream<E> xStream(final Spliterator<E> spliterator, final boolean parallel) {

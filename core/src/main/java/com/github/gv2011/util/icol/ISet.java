@@ -26,10 +26,14 @@ package com.github.gv2011.util.icol;
  * #L%
  */
 
+import static com.github.gv2011.util.icol.ICollections.toISet;
+
 import java.util.Collection;
 import java.util.Set;
 
-public interface ISet<E> extends Set<E>, ICollection<E>{
+import com.github.gv2011.util.XStream;
+
+public interface ISet<E> extends Set<E>, ICollectionG<E, ISet<E>>{
 
   public static interface Builder<E> extends CollectionBuilder<ISet<E>,E,Builder<E>>{}
 
@@ -44,6 +48,14 @@ public interface ISet<E> extends Set<E>, ICollection<E>{
   @Override
   default Object[] toArray() {
     return asList().toArray();
+  }
+
+  @Override
+  default ISet<E> subtract(final Collection<?> other) {
+    if(other.isEmpty()) return this;
+    else{
+      return parallelStream().filter(e->!other.contains(e)).collect(toISet());
+    }
   }
 
   @Deprecated
@@ -80,6 +92,16 @@ public interface ISet<E> extends Set<E>, ICollection<E>{
   @Override
   default void clear() {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  default XStream<E> parallelStream() {
+      return XStream.stream(spliterator(), true);
+  }
+
+  @Override
+  default ISet<E> join(final Collection<? extends E> other) {
+    return parallelStream().concat(other.parallelStream()).collect(toISet());
   }
 
 }

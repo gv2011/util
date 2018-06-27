@@ -1,7 +1,5 @@
 package com.github.gv2011.util;
 
-import static com.github.gv2011.util.CollectionUtils.listBuilder;
-
 /*-
  * #%L
  * The MIT License (MIT)
@@ -28,15 +26,13 @@ import static com.github.gv2011.util.CollectionUtils.listBuilder;
  * #L%
  */
 
-
-
-
 import static com.github.gv2011.util.CollectionUtils.toSortedSet;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.ex.Exceptions.run;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
+import static com.github.gv2011.util.icol.ICollections.listBuilder;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.nio.file.Files;

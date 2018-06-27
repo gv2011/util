@@ -143,4 +143,7 @@ public interface Opt<E> extends ISet<E>, Constant<E>{
     return result;
   }
 
+  @Override
+  public Opt<E> subtract(final Collection<?> other);
+
 }

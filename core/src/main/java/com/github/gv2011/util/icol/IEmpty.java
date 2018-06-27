@@ -1,5 +1,7 @@
 package com.github.gv2011.util.icol;
 
+import static com.github.gv2011.util.icol.ICollections.setFrom;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -134,6 +136,29 @@ public final class IEmpty<E> implements Opt<E>{
   @Override
   public Opt<E> or(final Supplier<? extends Opt<? extends E>> supplier) {
     return (Opt<E>) supplier.get();
+  }
+
+
+  @Override
+  public ISet<E> join(final Collection<? extends E> other) {
+    return setFrom(other);
+  }
+
+  @Override
+  public IEmpty<E> subtract(final Collection<?> other) {
+    return this;
+  }
+
+
+  @Override
+  public Opt<E> addElement(final E element) {
+    return ICollections.single(element);
+  }
+
+  @Override
+  public <T> T[] toArray(final T[] a) {
+    if(a.length>0) a[0] = null;
+    return a;
   }
 
 

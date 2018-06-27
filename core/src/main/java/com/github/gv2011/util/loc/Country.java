@@ -1,5 +1,11 @@
 package com.github.gv2011.util.loc;
 
+import static com.github.gv2011.util.icol.ICollections.asSet;
+import static com.github.gv2011.util.icol.ICollections.toISortedMap;
+import static com.github.gv2011.util.icol.ICollections.toISortedSet;
+
+import java.time.Instant;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -26,21 +32,16 @@ package com.github.gv2011.util.loc;
  * #L%
  */
 
-
-
-
-import static com.github.gv2011.util.CollectionUtils.iCollections;
-import static com.github.gv2011.util.CollectionUtils.toISortedMap;
-import static com.github.gv2011.util.CollectionUtils.toISortedSet;
-
 import java.util.Arrays;
 import java.util.Locale;
 
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.time.IsoDay;
 import com.github.gv2011.util.tstr.AbstractTypedString;
 
+@SuppressWarnings("unused")
 public class Country extends AbstractTypedString<Country>{
 
   private final static ISortedMap<String,Country> COUNTRIES;
@@ -48,11 +49,17 @@ public class Country extends AbstractTypedString<Country>{
   static{
     COUNTRIES = Arrays.stream(Locale.getISOCountries()).collect(toISortedMap(k->k,k->{
       final String name = new Locale(Language.ENGLISH.getLanguage(), k).getDisplayCountry(Language.ENGLISH);
-      final ISet<String> eu = iCollections().asSet(new String[]{
+      final ISet<String> eu = asSet(new String[]{
         "BE","BG","DK","DE","EE","FI","FR","GR","IE","IT","HR","LV","LT","LU",
         "MT","NL","AT","PL","PT","RO","SE","SK","SI","ES","CZ","HU","CY"}
       );
-      final ISet<String> efta = iCollections().asSet(new String[]{"IS", "LI", "NO", "CH"});
+      final ISet<String> ecsc = asSet(new String[]{"BE", "DE", "FR", "IT", "LU", "NL"});
+      final IsoDay escscStart = IsoDay.parse("1952-07-23");
+
+      final ISet<String> weu = asSet(new String[]{"GB", "BE", "FR", "LU", "NL"});
+      final IsoDay weuStart = IsoDay.parse("1948-08-25");
+
+      final ISet<String> efta = asSet(new String[]{"IS", "LI", "NO", "CH"});
       return new Country(k, name, eu.contains(k), efta.contains(k));
     }));
   }
@@ -100,7 +107,7 @@ public class Country extends AbstractTypedString<Country>{
     return new Locale(Language.ENGLISH.getLanguage(), iso3166).getDisplayCountry(locale);
   }
 
-  public boolean euMember(){
+  public boolean euMember(final IsoDay time){
     return euMember;
   }
 

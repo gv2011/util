@@ -26,10 +26,10 @@ package com.github.gv2011.util;
  * #L%
  */
 
-import static com.github.gv2011.util.CollectionUtils.iCollections;
 import static com.github.gv2011.util.CollectionUtils.pair;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
+import static com.github.gv2011.util.icol.ICollections.setFrom;
 
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.ref.Reference;
@@ -152,7 +152,7 @@ public final class ExitUtils {
       thread.interrupt();
       final ISet<Thread> threads;
       synchronized(lock){
-        threads = iCollections().setFrom(this.threads.keySet());
+        threads = setFrom(this.threads.keySet());
       }
       threads.forEach(t->{
         t.interrupt();

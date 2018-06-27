@@ -1,6 +1,5 @@
 package com.github.gv2011.util.serviceloader;
 
-import static com.github.gv2011.util.CollectionUtils.iCollections;
 
 /*-
  * #%L
@@ -48,6 +47,7 @@ import java.util.stream.StreamSupport;
 
 import com.github.gv2011.util.LegacyCollections;
 import com.github.gv2011.util.icol.ICollectionFactory;
+import static com.github.gv2011.util.icol.ICollections.*;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.ISet;
 

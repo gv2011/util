@@ -1,5 +1,6 @@
 package com.github.gv2011.util.icol.guava;
 
+import java.util.Collection;
 /*-
  * #%L
  * The MIT License (MIT)
@@ -49,16 +50,6 @@ final class PathImp extends IListWrapper<String> implements Path{
   }
 
   @Override
-  public Path append(final String element) {
-    return new PathImp(super.append(element));
-  }
-
-  @Override
-  public Path appendAll(final Iterable<? extends String> elements) {
-    return new PathImp(super.appendAll(elements));
-  }
-
-  @Override
   public Optional<Path> parent() {
     return isEmpty()
       ? Optional.empty()
@@ -67,6 +58,16 @@ final class PathImp extends IListWrapper<String> implements Path{
         : new PathImp(delegate.subList(0, delegate.size()-1))
       )
     ;
+  }
+
+  @Override
+  public Path addElement(final String element) {
+    return new PathImp(super.addElement(element));
+  }
+
+  @Override
+  public Path join(final Collection<? extends String> elements) {
+    return new PathImp(super.join(elements));
   }
 
 
