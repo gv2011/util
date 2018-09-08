@@ -1,6 +1,8 @@
 package com.github.gv2011.util.icol;
 
+import static com.github.gv2011.util.CollectionUtils.pair;
 import static com.github.gv2011.util.ex.Exceptions.format;
+import static com.github.gv2011.util.icol.ICollections.toIMap;
 
 /*-
  * #%L
@@ -98,6 +100,10 @@ public interface IMap<K,V> extends Map<K,V>{
 
   default Opt<Entry<K, V>> tryGetFirst(){
     return isEmpty() ? Opt.empty() : Opt.of(entrySet().first());
+  }
+
+  default IMap<V,K> reverted(){
+    return entrySet().stream().map(e->pair(e.getValue(), e.getKey())).collect(toIMap());
   }
 
   @Override

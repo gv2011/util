@@ -47,6 +47,7 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Random;
+import java.util.stream.Collector;
 
 import com.github.gv2011.util.ex.ThrowingSupplier;
 
@@ -208,5 +209,7 @@ public class ByteUtils {
     return new ArrayBytes(i.toByteArray());
   }
 
-
+  public static Collector<Bytes,?,Bytes> joining(){
+    return new JoiningBytesCollector();
+  }
 }

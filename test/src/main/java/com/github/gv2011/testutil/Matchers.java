@@ -72,6 +72,7 @@ import org.hamcrest.TypeSafeMatcher;
 import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.bytes.Bytes;
 import com.github.gv2011.util.icol.ISet;
+import com.github.gv2011.util.icol.Opt;
 
 
 public final class Matchers {
@@ -84,7 +85,7 @@ public final class Matchers {
     return OptionalMatchers.isEmpty();
   }
 
-  public static <T> Matcher<Optional<T>> isOpt(final T value){
+  public static <T> Matcher<Opt<T>> isOpt(final T value){
     return OptionalMatchers.isOpt(value);
   }
 

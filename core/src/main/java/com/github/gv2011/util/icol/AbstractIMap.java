@@ -101,5 +101,4 @@ public abstract class AbstractIMap<K, V> implements IMap<K,V>{
     return keySet().stream().map(k->k+"="+get(k)).collect(joining(", ","{","}"));
   }
 
-
 }

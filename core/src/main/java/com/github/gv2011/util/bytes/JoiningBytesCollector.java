@@ -1,4 +1,4 @@
-package com.github.gv2011.util.uc;
+package com.github.gv2011.util.bytes;
 
 /*-
  * #%L
@@ -12,10 +12,10 @@ package com.github.gv2011.util.uc;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,28 +25,44 @@ package com.github.gv2011.util.uc;
  * THE SOFTWARE.
  * #L%
  */
-final class BmpString extends UStrImp{
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 
-  private final String bmp;
+final class JoiningBytesCollector implements Collector<Bytes, BytesBuilder, Bytes> {
 
-  BmpString(final String bmp) {
-    this.bmp = bmp;
-    assert bmp.chars().parallel().noneMatch(ch->Character.isSurrogate((char) ch));
+  private static final Set<Characteristics> CHARACTERISTICS =
+    Collections.unmodifiableSet(EnumSet.of(Characteristics.CONCURRENT))
+  ;
+
+  @Override
+  public Supplier<BytesBuilder> supplier() {
+    return BytesBuilder::new;
   }
 
   @Override
-  public int size() {
-    return bmp.length();
+  public BiConsumer<BytesBuilder, Bytes> accumulator() {
+    return (builder, bytes)->builder.append(bytes);
   }
 
   @Override
-  public int getCodePoint(final int index) {
-    return bmp.charAt(index);
+  public BinaryOperator<BytesBuilder> combiner() {
+    return (b1,b2)->b1.append(b2.build());
   }
 
   @Override
-  public String toString() {
-    return bmp;
+  public Function<BytesBuilder, Bytes> finisher() {
+    return BytesBuilder::build;
+  }
+
+  @Override
+  public Set<Characteristics> characteristics() {
+    return CHARACTERISTICS;
   }
 
 }

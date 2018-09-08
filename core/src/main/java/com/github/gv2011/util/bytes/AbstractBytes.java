@@ -52,6 +52,8 @@ import java.util.Optional;
 import com.github.gv2011.util.Constant;
 import com.github.gv2011.util.Constants;
 import com.github.gv2011.util.Pair;
+import com.github.gv2011.util.uc.UChars;
+import com.github.gv2011.util.uc.UStr;
 
 import net.jcip.annotations.Immutable;
 
@@ -168,6 +170,11 @@ public abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
     return new String(toByteArray(), UTF_8);
   }
 
+
+  @Override
+  public UStr utf8ToUStr() throws TooBigException {
+    return UChars.uStr(utf8ToString());
+  }
 
   @Override
   public String toString(final Charset charset) {

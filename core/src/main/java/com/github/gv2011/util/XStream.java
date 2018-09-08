@@ -100,6 +100,9 @@ public interface XStream<E> extends Stream<E>, AutoCloseableNt{
   @Override
   <R> XStream<R> map(Function<? super E, ? extends R> mapper);
 
+  @Override
+  <R> XStream<R> flatMap(Function<? super E, ? extends Stream<? extends R>> mapper);
+
   default <R> XStream<R> mapThrowing(final ThrowingFunction<? super E, ? extends R> mapper){
     return map(e->call(()->mapper.apply(e)));
   }

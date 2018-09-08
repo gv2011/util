@@ -35,6 +35,7 @@ import java.util.Optional;
 
 import com.github.gv2011.util.OptCloseable;
 import com.github.gv2011.util.Pair;
+import com.github.gv2011.util.uc.UStr;
 
 import net.jcip.annotations.Immutable;
 
@@ -84,6 +85,8 @@ public interface Bytes extends List<Byte>, Comparable<Bytes>, OptCloseable{
   String toString(Charset charset);
 
   String utf8ToString() throws TooBigException;
+
+  UStr utf8ToUStr() throws TooBigException;
 
   int write(byte[] b, int off, int len);
 

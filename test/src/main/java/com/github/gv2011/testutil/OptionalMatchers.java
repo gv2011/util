@@ -12,10 +12,10 @@ package com.github.gv2011.testutil;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,6 +33,8 @@ import java.util.Optional;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+
+import com.github.gv2011.util.icol.Opt;
 
 final class OptionalMatchers {
 
@@ -62,14 +64,14 @@ final class OptionalMatchers {
     };
   }
 
-  static <T> Matcher<Optional<T>> isOpt(final T value) {
-    return new TypeSafeMatcher<Optional<T>>(){
+  static <T> Matcher<Opt<T>> isOpt(final T value) {
+    return new TypeSafeMatcher<Opt<T>>(){
       @Override
       public void describeTo(final Description description) {
         description.appendText(format("An optional of {}.", value));
       }
       @Override
-      protected boolean matchesSafely(final Optional<T> item) {
+      protected boolean matchesSafely(final Opt<T> item) {
         return item.isPresent() ? item.get().equals(value) : false;
       }
     };

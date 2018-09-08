@@ -31,5 +31,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface Computed {}
+@Target({ElementType.METHOD, ElementType.TYPE_USE})
+public @interface Computed {
+  Class<?> implementation() default Void.class;
+}

@@ -29,6 +29,7 @@ package com.github.gv2011.util.uc;
 
 import static com.github.gv2011.testutil.Matchers.is;
 import static com.github.gv2011.util.Verify.verify;
+import static com.github.gv2011.util.ex.Exceptions.format;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
@@ -61,7 +62,7 @@ public class UCharTest {
     for(int cp = 0x20000; cp<0x20000; cp++){
       if(!UChars.isSurrogate(cp)){
         final UChar c = UChars.uChar(cp);
-        //System.out.println(format("{}: \t'{}'", Integer.toHexString(cp), c));
+        System.out.println(format("{}: \t'{}'", Integer.toHexString(cp), c));
         System.out.print(c);
         col++;
         if(col==96){System.out.println();col=0;}
