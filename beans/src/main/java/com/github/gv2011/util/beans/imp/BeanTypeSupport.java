@@ -182,7 +182,7 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
 
   private ISortedMap<String, PropertyImp<T,?>> createProperties() {
     return Arrays.stream(clazz.getMethods())
-    .filter(beanFactory::isPropertyMethod)
+    .filter(m->beanFactory.isPropertyMethod(clazz, m))
     .map(this::createProperty)
     .collect(toISortedMap(
         p->p.name(),
@@ -213,9 +213,19 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
       annotationHandler.defaultValue(m)
       .map(v->type.parse(parseTolerant(type, jf, v)))
     ;
+    final Opt<Function<T,V>> function = 
+      annotationHandler.annotatedAsComputed(m) 
+      ? Opt.of(createFunction(m)) 
+      : Opt.empty()
+    ;
     if(fixedValue.isPresent()) {
+      verify(!function.isPresent());
       if(annotatedDefaultValue.isPresent()) verifyEqual(annotatedDefaultValue, fixedValue);
       return PropertyImp.createFixed(this, m, m.getName(), type, fixedValue.get());
+    }
+    else if(function.isPresent()) {
+      verify(!annotatedDefaultValue.isPresent());
+      return PropertyImp.createComputed(this, m, type, function.get());
     }
     else{
       final Opt<V> defaultValue = annotatedDefaultValue
@@ -223,6 +233,18 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
       ;
       return PropertyImp.create(this, m, type, defaultValue);
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  private <V> Function<T,V> createFunction(Method m) {
+    Method staticMethod;
+    try {
+      staticMethod = clazz.getMethod(m.getName(), new Class<?>[] {clazz});
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(format("No implementation found for computed attribute {}.", m.getName()), e) ;
+    }
+    verify(m.getReturnType().isAssignableFrom(staticMethod.getReturnType()));
+    return t->(V)call(()->staticMethod.invoke(null, t));
   }
 
   static final JsonNode parseTolerant(final TypeSupport<?> type, final JsonFactory jf, final String string) {
@@ -299,6 +321,7 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   @Override
   public final JsonObject toJson(final T object) {
     return properties().values().stream()
+      .filter(p->!p.function().isPresent())
       .flatOpt(p->toJson(object, p).map(j->pair(p.name(), j)))
       .collect(jf.toJsonObject())
     ;

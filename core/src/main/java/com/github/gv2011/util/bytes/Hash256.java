@@ -1,5 +1,7 @@
 package com.github.gv2011.util.bytes;
 
+import com.github.gv2011.util.beans.Elementary;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -32,10 +34,17 @@ package com.github.gv2011.util.bytes;
 /**
  * SHA-256
  */
-public interface Hash256 extends Bytes{
+public interface Hash256 extends TypedBytes, Elementary{
 
   public static final String ALGORITHM = "SHA-256";
   public static final int SIZE = 32;
+  
+  public static Hash256 parse(CharSequence hex) {
+    return new Hash256Imp(ByteUtils.hexToByteArray(hex));
+  }
 
+  default DataType dataType() {
+    return DataTypeImp.SHA_256;
+  }
 
 }

@@ -33,6 +33,8 @@ public interface UChar extends Comparable<UChar>{
 
   static final int MAX_ISO = 0x100-1;
   static final int MAX_BMP = 0x10000-1;
+  
+  static final UChar REPLACEMENT_CHARACTER = UCharImp.REPLACEMENT_CHARACTER;
 
   String name();
 

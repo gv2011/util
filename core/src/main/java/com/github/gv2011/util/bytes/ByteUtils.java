@@ -30,7 +30,6 @@ package com.github.gv2011.util.bytes;
 
 
 import static com.github.gv2011.util.NumUtils.isOdd;
-import static com.github.gv2011.util.StringUtils.removeWhitespace;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.callWithCloseable;
@@ -72,8 +71,8 @@ public class ByteUtils {
     return new ArrayBytes(hexToByteArray(hex));
   }
 
-  public static byte[] hexToByteArray(final String hex){
-    final String noWhitespace = removeWhitespace(hex);
+  public static byte[] hexToByteArray(final CharSequence hex){
+    final String noWhitespace = removeWhitespaceAndColon(hex);
     if(isOdd(noWhitespace.length())) throw new IllegalArgumentException();
     final int size = noWhitespace.length()/2;
     final byte[] b = new byte[size];
@@ -85,6 +84,11 @@ public class ByteUtils {
     }
     return b;
   }
+  
+  static String removeWhitespaceAndColon(final CharSequence s) {
+    return s.toString().replaceAll("[\\s:]+", "");
+  }
+
 
   public static Bytes newBytes(final Bytes bytes){
     return new ArrayBytes(bytes.toByteArray());

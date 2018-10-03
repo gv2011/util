@@ -1,8 +1,5 @@
-package com.github.gv2011.util.uc;
+package com.github.gv2011.util.beans;
 
-import static com.github.gv2011.util.Verify.verify;
-
-import java.util.PrimitiveIterator.OfInt;
 /*-
  * #%L
  * The MIT License (MIT)
@@ -28,37 +25,6 @@ import java.util.PrimitiveIterator.OfInt;
  * THE SOFTWARE.
  * #L%
  */
-import java.util.function.IntUnaryOperator;
-
-public final class UStrFactoryImp implements UStrFactory {
-
-  @Override
-  public UStr collect(final int size, final IntUnaryOperator valueForIndex) {
-    final UStrBuilderImp builder = new UStrBuilderImp();
-    for(int i=0; i<size; i++) builder.append(valueForIndex.applyAsInt(i));
-    return builder.build();
-  }
-
-  @Override
-  public UChar uChar(final int codePoint) {
-    return UCharImp.uChar(codePoint);
-  }
-
-  @Override
-  public UChar uChar(final String character) {
-    final int codepoint;
-    if(character.length()==1) codepoint = character.charAt(0);
-    else {
-      final OfInt codepoints = character.codePoints().iterator();
-      codepoint = codepoints.nextInt();
-      verify(!codepoints.hasNext());
-    }
-    return UCharImp.uChar(codepoint);
-  }
-
-  @Override
-  public UStrBuilder uStrBuilder() {
-    return new UStrBuilderImp();
-  }
+public interface Elementary {
 
 }

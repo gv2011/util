@@ -80,6 +80,8 @@ public interface Bytes extends List<Byte>, Comparable<Bytes>, OptCloseable{
 
   String toHexMultiline();
 
+  String toHexColon();
+
   int toInt();
 
   String toString(Charset charset);
@@ -101,5 +103,7 @@ public interface Bytes extends List<Byte>, Comparable<Bytes>, OptCloseable{
   TypedBytes typed();
 
   TypedBytes typed(DataType mimeType);
+  
+  
 
 }

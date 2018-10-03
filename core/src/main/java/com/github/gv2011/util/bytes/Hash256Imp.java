@@ -31,16 +31,25 @@ package com.github.gv2011.util.bytes;
 
 import java.security.MessageDigest;
 
-class Hash256Imp extends ArrayBytes implements Hash256{
+final class Hash256Imp extends AbstractTypedBytes implements Hash256{
+
+  private final Bytes content;
 
   Hash256Imp(final MessageDigest md) {
     this(md.digest());
   }
 
   Hash256Imp(final byte[] byteArray) {
-    super(byteArray);
-    if(size()!=Hash256.SIZE) throw new IllegalArgumentException(""+size());
+    if(byteArray.length!=Hash256.SIZE) throw new IllegalArgumentException("Length is "+byteArray.length);
+    content = new ArrayBytes(byteArray);
   }
 
+  protected String toStringImp() {
+    return content.toHexColon();
+  }
 
+  @Override
+  public Bytes content() {
+    return content;
+  }
 }

@@ -46,7 +46,7 @@ public class ByteUtilsTest {
   @Test
   public void testHash() {
     final TypedBytes b = ByteUtils.asUtf8("Franz jagt im komplett verwahrlosten Taxi quer durch Bayern");
-    final Bytes expected = ByteUtils.parseHash(
+    final Hash256 expected = ByteUtils.parseHash(
       "d32b568cd1b96d459e7291ebf4b25d007f275c9f13149beeb782fac0716613f8"
     );
     assertThat(b.content().hash(), is(expected));

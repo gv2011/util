@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import com.github.gv2011.util.ReflectionUtils;
 import com.github.gv2011.util.ann.VisibleForTesting;
 import com.github.gv2011.util.beans.AnnotationHandler;
+import com.github.gv2011.util.beans.Elementary;
 import com.github.gv2011.util.beans.TypeNameStrategy;
 import com.github.gv2011.util.beans.TypeResolver;
 import com.github.gv2011.util.icol.IMap;
@@ -101,15 +102,19 @@ public abstract class BeanFactory{
   @VisibleForTesting
   final String notBeanReason(final Class<?> clazz) {
     final String notBeanReason;
-    final String precondition = isAbstractOrBeanClassCandidate(clazz);
-    if(!precondition.isEmpty())
-      notBeanReason = precondition;
-    else if(annotationHandler.declaredAsAbstract(clazz))
-      notBeanReason = "annotated as abstract";
-    else if(!Arrays.stream(clazz.getMethods()).filter(this::isPropertyMethod).findAny().isPresent())
-      notBeanReason = "has no properties";
+    final String elementary = checkElementary(clazz);
+    if(!elementary.isEmpty()) notBeanReason = elementary;
     else {
-      notBeanReason = "";
+      final String precondition = isAbstractOrBeanClassCandidate(clazz);
+      if(!precondition.isEmpty())
+        notBeanReason = precondition;
+      else if(annotationHandler.declaredAsAbstract(clazz))
+        notBeanReason = "annotated as abstract";
+      else if(!Arrays.stream(clazz.getMethods()).filter(m->isPropertyMethod(clazz, m)).findAny().isPresent())
+        notBeanReason = "has no properties";
+      else {
+        notBeanReason = "";
+      }
     }
     if(notBeanReason.isEmpty()) {
       LOG.trace("{} is a bean.", clazz);
@@ -120,6 +125,12 @@ public abstract class BeanFactory{
     }
     return notBeanReason;
   }
+
+  private String checkElementary(Class<?> clazz) {
+    if(Elementary.class.isAssignableFrom(clazz)) return "is subclass of "+Elementary.class.getSimpleName();
+    else return "";
+  }
+
 
   private final boolean isRegularBeanClass(final Class<?> clazz){
     final String notRegularReason;
@@ -259,7 +270,7 @@ public abstract class BeanFactory{
   }
 
 
-  public final boolean isPropertyMethod(final Method m) {
+  public final boolean isPropertyMethod(Class<?> owner, final Method m) {
     boolean result;
     if(m.getParameterCount()!=0) result = false;
     else if(isObjectMethod(m)) result = false;
@@ -267,8 +278,10 @@ public abstract class BeanFactory{
       result = isPropertyMethod2(m);
       if(result){
         final Class<?> returnType = m.getReturnType();
-        verify(returnType!=void.class && returnType!=Void.class);
-        verify(!annotationHandler().annotatedAsComputed(m));
+        verify(
+          returnType!=void.class && returnType!=Void.class, 
+          ()->format("Method {}:{} has void return type.", owner.getName(), m.getName())
+        );
       }
     }
     return result;
@@ -332,7 +345,7 @@ public abstract class BeanFactory{
 
   private <B> ObjectTypeSupport<B> createPolymorphicRoot(final Class<B> clazz) {
     final TypeNameStrategy typeNameStrategy = annotationHandler.typeNameStrategy(clazz)
-      .map(s->(TypeNameStrategy)call(s::newInstance))
+      .map(s->(TypeNameStrategy)call(()->s.getDeclaredConstructor().newInstance()))
       .orElse(Class::getSimpleName)
     ;
     final TypeResolver<B> typeResolver = getAnnotatedTypeResolver(clazz)
@@ -343,7 +356,7 @@ public abstract class BeanFactory{
 
   private <B> Opt<TypeResolver<B>> getAnnotatedTypeResolver(final Class<B> clazz) {
     return annotationHandler.typeResolver(clazz)
-      .map(c->new TypeResolverWrapper<>(clazz, call(c::newInstance)))
+      .map(c->new TypeResolverWrapper<>(clazz, call(()->c.getDeclaredConstructor().newInstance())))
     ;
   }
 

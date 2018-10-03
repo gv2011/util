@@ -1,13 +1,10 @@
-package com.github.gv2011.util.uc;
+package com.github.gv2011.util.beans.imp;
 
-import static com.github.gv2011.util.Verify.verify;
-
-import java.util.PrimitiveIterator.OfInt;
 /*-
  * #%L
- * The MIT License (MIT)
+ * util-beans
  * %%
- * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,37 +25,33 @@ import java.util.PrimitiveIterator.OfInt;
  * THE SOFTWARE.
  * #L%
  */
-import java.util.function.IntUnaryOperator;
+import static org.junit.Assert.assertThat;
 
-public final class UStrFactoryImp implements UStrFactory {
+import java.net.URI;
 
-  @Override
-  public UStr collect(final int size, final IntUnaryOperator valueForIndex) {
-    final UStrBuilderImp builder = new UStrBuilderImp();
-    for(int i=0; i<size; i++) builder.append(valueForIndex.applyAsInt(i));
-    return builder.build();
-  }
+import org.junit.Test;
 
-  @Override
-  public UChar uChar(final int codePoint) {
-    return UCharImp.uChar(codePoint);
-  }
+import com.github.gv2011.testutil.Matchers;
 
-  @Override
-  public UChar uChar(final String character) {
-    final int codepoint;
-    if(character.length()==1) codepoint = character.charAt(0);
-    else {
-      final OfInt codepoints = character.codePoints().iterator();
-      codepoint = codepoints.nextInt();
-      verify(!codepoints.hasNext());
-    }
-    return UCharImp.uChar(codepoint);
-  }
-
-  @Override
-  public UStrBuilder uStrBuilder() {
-    return new UStrBuilderImp();
+public class TestComputed {
+  
+  @Test
+  public void test() {
+    DefaultTypeRegistry reg = new DefaultTypeRegistry();
+    Host host = reg.beanType(Host.class).createBuilder()
+      .set(Host::host).to("example.org")
+      .build()
+    ;
+    assertThat(host.url(), Matchers.is(URI.create("https://example.org")));
+    assertThat(
+        reg.beanType(Host.class).toJson(host).serialize(),
+        Matchers.is(
+          "{\n"
+          + "  \"host\": \"example.org\",\n"
+          + "  \"secure\": true\n"
+          + "}"
+        )
+      );
   }
 
 }

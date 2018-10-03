@@ -46,6 +46,10 @@ public final class UChars {
     return uStrFactory().uChar(codePoint);
   }
 
+  public static UChar uChar(final String character) {
+    return uStrFactory().uChar(character);
+  }
+
   public static UStr toUStr(final int[] codepoints) {
     return collect(codepoints.length, i->codepoints[i]);
   }

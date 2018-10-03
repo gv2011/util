@@ -67,6 +67,16 @@ public abstract class BeanBuilderSupport<T> implements BeanBuilder<T> {
               }
           });
       }
+      //verify computed properties:
+      for(final PropertyImp<T,?> p: beanType().properties().values()) {
+        if(p.function().isPresent()) {
+          final String propName = p.name();
+          verify(
+            !map.containsKey(propName),
+            ()->format("{}: The comuted property {} must not be set.", beanType(), p)
+          );
+        }
+      }
       //remove default values:
       for(final Property<?> p: beanType().properties().values()) {
           p.defaultValue().ifPresent(dv->{
@@ -80,6 +90,7 @@ public abstract class BeanBuilderSupport<T> implements BeanBuilder<T> {
       //verify all other properties are set:
       final ISet<Property<?>> missing = beanType().properties().values().stream()
           .filter(p->!p.defaultValue().isPresent())
+          .filter(p->!p.function().isPresent())
           .filter(p->!map.keySet().contains(p.name()))
           .collect(toISet())
       ;
@@ -137,6 +148,7 @@ public abstract class BeanBuilderSupport<T> implements BeanBuilder<T> {
       @Override
       public BeanBuilder<T> to(final V value) {
         notNull(value, ()->format("Trying to set {} to null.", property));
+        verify(!property.function().isPresent());
         property.fixedValue().ifPresent(fv->{
           verifyEqual(value, fv, (e,a)->
             format(

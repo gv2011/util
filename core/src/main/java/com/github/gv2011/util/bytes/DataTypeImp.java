@@ -32,6 +32,7 @@ import javax.activation.MimeType;
 public class DataTypeImp implements DataType{
 
   public static final DataType APPLICATION_OCTET_STREAM = new DataTypeImp("application/octet-stream");
+  public static final DataType SHA_256 = new DataTypeImp("application/x-sha-256");
   public static final DataType TEXT = new DataTypeImp("text/plain;charset=UTF-8");
 
   private final MimeType mimeType;

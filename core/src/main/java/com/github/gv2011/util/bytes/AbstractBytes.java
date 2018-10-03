@@ -304,6 +304,19 @@ public abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
     return sb.toString();
   }
 
+  @Override
+  public final String toHexColon() {
+    final StringBuilder sb = new StringBuilder();
+    if(!isEmpty()) {
+    	sb.append(toHex(getUnsigned(0)));
+	    for(int i=1; i<size(); i++){
+	      sb.append(':');
+	      sb.append(toHex(getUnsigned(i)));
+	    }
+    }
+    return sb.toString();
+  }
+
   private String toHex(final int b) {
     if(b<0x10) return "0"+Integer.toHexString(b);
     else return Integer.toHexString(b);

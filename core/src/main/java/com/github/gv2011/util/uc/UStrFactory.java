@@ -31,7 +31,9 @@ public interface UStrFactory {
 
   UStr collect(final int size, final IntUnaryOperator valueForIndex);
 
-  UChar uChar(int codePoint);
+  UChar uChar(final int codePoint);
+
+  UChar uChar(final String character);
 
   UStrBuilder uStrBuilder();
 

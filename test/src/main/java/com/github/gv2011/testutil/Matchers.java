@@ -297,19 +297,6 @@ public final class Matchers {
   }
 
   /**
-   * Decorates another Matcher, retaining its behaviour, but allowing tests
-   * to be slightly more expressive.
-   * <p/>
-   * For example:
-   * <pre>assertThat(cheese, is(equalTo(smelly)))</pre>
-   * instead of:
-   * <pre>assertThat(cheese, equalTo(smelly))</pre>
-   */
-  public static <T> Matcher<T> is(final Matcher<T> matcher) {
-    return org.hamcrest.core.Is.<T>is(matcher);
-  }
-
-  /**
    * A shortcut to the frequently used <code>is(instanceOf(SomeClass.class))</code>.
    * <p/>
    * For example:

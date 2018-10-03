@@ -1,13 +1,10 @@
-package com.github.gv2011.util.uc;
+package com.github.gv2011.util.beans.imp;
 
-import static com.github.gv2011.util.Verify.verify;
-
-import java.util.PrimitiveIterator.OfInt;
 /*-
  * #%L
- * The MIT License (MIT)
+ * util-beans
  * %%
- * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,37 +25,25 @@ import java.util.PrimitiveIterator.OfInt;
  * THE SOFTWARE.
  * #L%
  */
-import java.util.function.IntUnaryOperator;
+import java.net.URI;
 
-public final class UStrFactoryImp implements UStrFactory {
+import com.github.gv2011.util.beans.Computed;
+import com.github.gv2011.util.beans.DefaultValue;
 
-  @Override
-  public UStr collect(final int size, final IntUnaryOperator valueForIndex) {
-    final UStrBuilderImp builder = new UStrBuilderImp();
-    for(int i=0; i<size; i++) builder.append(valueForIndex.applyAsInt(i));
-    return builder.build();
+/**
+ * Example class with computed attribute
+ */
+public interface Host {
+  
+  @DefaultValue("true")
+  Boolean secure();
+  
+  String host();
+  
+  @Computed
+  URI url();
+
+  public static URI url(Host host) {
+    return URI.create((host.secure()?"https://":"http://")+host.host());
   }
-
-  @Override
-  public UChar uChar(final int codePoint) {
-    return UCharImp.uChar(codePoint);
-  }
-
-  @Override
-  public UChar uChar(final String character) {
-    final int codepoint;
-    if(character.length()==1) codepoint = character.charAt(0);
-    else {
-      final OfInt codepoints = character.codePoints().iterator();
-      codepoint = codepoints.nextInt();
-      verify(!codepoints.hasNext());
-    }
-    return UCharImp.uChar(codepoint);
-  }
-
-  @Override
-  public UStrBuilder uStrBuilder() {
-    return new UStrBuilderImp();
-  }
-
 }

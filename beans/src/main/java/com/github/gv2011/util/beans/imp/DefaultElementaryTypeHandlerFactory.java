@@ -46,6 +46,7 @@ import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.beans.ElementaryTypeHandler;
 import com.github.gv2011.util.beans.ElementaryTypeHandlerFactory;
+import com.github.gv2011.util.bytes.Hash256;
 import com.github.gv2011.util.icol.ISortedSet;
 import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonBoolean;
@@ -70,7 +71,8 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     Duration.class.getName(),
     IsoDay.class.getName(),
     UUID.class.getName(),
-    InetSocketAddress.class.getName()
+    InetSocketAddress.class.getName(),
+    Hash256.class.getName()
   );
 
   private final AutoElementarySupport auto = new AutoElementarySupport();
@@ -111,6 +113,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     else if(clazz.equals(Duration.class)) result = new DurationType();
     else if(clazz.equals(IsoDay.class)) result = stringBasedType(IsoDay.class);
     else if(clazz.equals(InetSocketAddress.class)) result = new InetSocketAddressType();
+    else if(clazz.equals(Hash256.class)) result = stringBasedType(Hash256.class);
     else if(auto.isSupported(clazz)) result = auto.createType(clazz);
     else result = null;
     return Opt.ofNullable((AbstractElementaryTypeHandler<T>) result);

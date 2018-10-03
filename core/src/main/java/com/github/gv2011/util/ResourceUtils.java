@@ -96,6 +96,10 @@ public class ResourceUtils {
     return ByteUtils.copyFromStream(getResourceUrl(refClass, relativeName)::openStream);
   }
 
+  public static final Bytes getBinaryResource(final String resourceName){
+	return ByteUtils.copyFromStream(getResourceUrl(resourceName)::openStream);
+  }
+
   public static final ISet<String> getTextResources(final String resourceName){
     return
         LegacyCollections.stream(

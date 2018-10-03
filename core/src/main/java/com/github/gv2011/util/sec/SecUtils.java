@@ -65,6 +65,7 @@ import com.github.gv2011.util.FileUtils;
 import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.bytes.Bytes;
 import com.github.gv2011.util.bytes.BytesBuilder;
+import com.github.gv2011.util.bytes.Hash256;
 import com.github.gv2011.util.ex.ThrowingConsumer;
 import com.github.gv2011.util.ex.ThrowingSupplier;
 import com.github.gv2011.util.icol.IList;
@@ -84,14 +85,14 @@ public final class SecUtils {
 
   private SecUtils(){staticClass();}
 
-	@SuppressWarnings("unused")
+  @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SecUtils.class);
 
-	public static RSAPublicKey createRsaPublicKey(final BigInteger modulus, final BigInteger publicExponent){
+  public static RSAPublicKey createRsaPublicKey(final BigInteger modulus, final BigInteger publicExponent){
     return (RSAPublicKey) call(()->
       KeyFactory.getInstance(RSA).generatePublic(new RSAPublicKeySpec(modulus, publicExponent))
     );
-	}
+  }
 
   public static final X509Certificate readCertificate(final Bytes bytes){
     final CertificateFactory certFactory = call(()->CertificateFactory.getInstance(X_509));
@@ -99,6 +100,10 @@ public final class SecUtils {
       bytes::openStream,
       s->(X509Certificate)certFactory.generateCertificate(s)
     );
+  }
+
+  public static final Hash256 getFingerPrint(final Certificate certificate){
+    return ByteUtils.newBytes(call(certificate::getEncoded)).hash();
   }
 
   public static final X509Certificate readCertificateFromPem(final String pem){
