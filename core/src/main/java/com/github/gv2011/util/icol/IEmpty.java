@@ -201,4 +201,10 @@ public final class IEmpty<E> implements Opt<E>{
     }
   }
 
+
+  @Override
+  public IEmpty<E> intersection(Collection<?> other) {
+    return this;
+  }
+
 }

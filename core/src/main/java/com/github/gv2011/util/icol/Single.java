@@ -85,4 +85,10 @@ public final class Single<E> extends Ref<E>{
     return result;
   }
 
+  @SuppressWarnings("unchecked")
+  @Override
+  public Opt<E> intersection(Collection<?> other) {
+    return other.contains(element) ? this : IEmpty.INSTANCE;
+  }
+
 }

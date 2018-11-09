@@ -33,6 +33,7 @@ import java.util.Spliterator;
 import java.util.function.Consumer;
 
 import com.github.gv2011.util.XStream;
+import com.github.gv2011.util.icol.ICollections;
 import com.github.gv2011.util.icol.ISet;
 
 class ISetWrapper<E,S extends Set<E>> implements ISet<E>{
@@ -109,6 +110,11 @@ class ISetWrapper<E,S extends Set<E>> implements ISet<E>{
       .concat(XStream.parallelStreamOf(other))
       .collect(GuavaIcolFactory.INSTANCE.setCollector())
     ;
+  }
+
+  @Override
+  public ISet<E> intersection(Collection<?> other) {
+    return ICollections.intersection(this, other);
   }
 
 }

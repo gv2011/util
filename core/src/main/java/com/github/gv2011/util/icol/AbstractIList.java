@@ -195,5 +195,10 @@ public abstract class AbstractIList<E> implements IList<E>{
     return hash.get();
   }
 
+  @Override
+  public ISet<E> intersection(Collection<?> other) {
+    return ICollections.intersection(this, other);
+  }
+
 
 }

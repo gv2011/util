@@ -39,4 +39,6 @@ public interface ICollectionG<E,C extends ICollectionG<E,C>> extends ICollection
 
   C subtract(Collection<?> other);
 
+  ISet<E> intersection(Collection<?> other);
+
 }

@@ -43,6 +43,7 @@ public interface Hash256 extends TypedBytes, Elementary{
     return new Hash256Imp(ByteUtils.hexToByteArray(hex));
   }
 
+  @Override
   default DataType dataType() {
     return DataTypeImp.SHA_256;
   }

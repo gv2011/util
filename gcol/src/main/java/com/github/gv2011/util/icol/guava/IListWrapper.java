@@ -36,7 +36,9 @@ import java.util.Spliterator;
 import java.util.function.Consumer;
 
 import com.github.gv2011.util.ann.Nullable;
+import com.github.gv2011.util.icol.ICollections;
 import com.github.gv2011.util.icol.IList;
+import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.ISortedMap;
 
 class IListWrapper<E> implements IList<E>{
@@ -88,6 +90,13 @@ class IListWrapper<E> implements IList<E>{
   @Override
   public boolean containsAll(final Collection<?> c) {
     return delegate.containsAll(c);
+  }
+  
+  
+
+  @Override
+  public ISet<E> intersection(Collection<?> other) {
+    return ICollections.intersection(this, other);
   }
 
   @Override

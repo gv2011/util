@@ -60,6 +60,12 @@ public class ByteUtils {
     return newBytes(bytes, 0, bytes.length);
   }
 
+  public static Bytes newBytes(final int... bytes){
+    final byte[] a = new byte[bytes.length];
+    for(int i=0; i<a.length; i++) a[i] = (byte) bytes[i];
+    return new ArrayBytes(a);
+  }
+
   public static Bytes newBytes(final byte[] bytes, final int from, final int to) {
     final byte[] copy = Arrays.copyOfRange(bytes, from, to);
     return new ArrayBytes(copy);

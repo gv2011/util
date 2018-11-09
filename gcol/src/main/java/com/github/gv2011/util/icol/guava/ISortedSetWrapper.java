@@ -2,6 +2,8 @@ package com.github.gv2011.util.icol.guava;
 
 import static com.github.gv2011.util.Constants.softRefConstant;
 
+import java.util.Collection;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -159,6 +161,17 @@ implements ISortedSet<E>{
   @Override
   public XStream<E> stream() {
     return GuavaIcolFactory.INSTANCE.xStream(delegate.stream());
+  }
+
+  @Override
+  public ISortedSet<E> intersection(Collection<?> other) {
+    return intersection(this, other);
+  }
+
+  static <C extends Comparable<? super C>> ISortedSet<C> intersection(
+    final ISortedSet<C> first, final Collection<?> second
+  ) {
+    return first.parallelStream().filter(second::contains).collect(GuavaIcolFactory.INSTANCE.sortedSetCollector());
   }
 
 }

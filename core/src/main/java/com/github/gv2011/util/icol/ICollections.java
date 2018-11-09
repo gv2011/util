@@ -310,4 +310,15 @@ public final class ICollections {
   public static <E> XStream<E> xStream(final Spliterator<E> spliterator, final boolean parallel) {
     return iCollections().xStream(spliterator, parallel);
   }
+  
+  public static <E> ISet<E> intersection(final ICollection<E> first, final Collection<?> second) {
+    return first.parallelStream().filter(second::contains).collect(toISet());
+  }
+
+  public static <C extends Comparable<? super C>> ISortedSet<C> sortedIntersection(
+    final ICollection<C> first, final Collection<?> second
+  ) {
+    return first.parallelStream().filter(second::contains).collect(toISortedSet());
+  }
+
 }

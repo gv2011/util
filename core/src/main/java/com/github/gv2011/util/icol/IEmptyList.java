@@ -127,4 +127,10 @@ final class IEmptyList<E> extends AbstractIList<E> implements IList<E>{
     return ICollections.listOf(element);
   }
 
+  @SuppressWarnings("unchecked")
+  @Override
+  public ISet<E> intersection(Collection<?> other) {
+    return IEmpty.INSTANCE;
+  }
+
 }

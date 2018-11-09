@@ -190,5 +190,10 @@ public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, Na
     }
     return result;
   }
+  
+  
+  @Override
+  ISortedSet<E> intersection(Collection<?> other);
+
 
 }
