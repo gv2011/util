@@ -1,5 +1,7 @@
 package com.github.gv2011.util.time;
 
+import java.time.LocalDate;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -29,42 +31,43 @@ package com.github.gv2011.util.time;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @author Vinz (https://github.com/gv2011)
+ * @deprecated Use {@link LocalDate} instead.
+ */
+@Deprecated(forRemoval=true)
 public class IsoDay implements Comparable<IsoDay>{
 
   private static final Pattern PATTERN = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
   private static final Pattern DD_MM_YYYY = Pattern.compile("(\\d{2})\\.(\\d{2})\\.(\\d{4})");
 
   public static IsoDay parse(final CharSequence yyyyMmDd) {
-    return new IsoDay(yyyyMmDd.toString());
+    return new IsoDay(LocalDate.parse(yyyyMmDd));
   };
 
   public static final IsoDay fromDdMmYyyy(final String ddMmYyyy){
     final Matcher m = DD_MM_YYYY.matcher(ddMmYyyy);
     if(!m.matches()) throw new IllegalArgumentException();
-    return new IsoDay(m.group(3)+"-"+m.group(2)+"-"+m.group(1));
+    return parse(m.group(3)+"-"+m.group(2)+"-"+m.group(1));
   }
 
-  private final String isoDay;
+  private final LocalDate isoDay;
 
-  private IsoDay(final String isoDay) {
-    if(!PATTERN.matcher(isoDay).matches()) throw new IllegalArgumentException(isoDay);
+  private IsoDay(final LocalDate isoDay) {
+    assert PATTERN.matcher(isoDay.toString()).matches();
     this.isoDay = isoDay;
-    final byte d = day();
-    if(d<1 || d>31) throw new IllegalArgumentException();
-    final byte m = month();
-    if(m<1 || m>12) throw new IllegalArgumentException();
   }
 
   public byte day() {
-    return (byte) Integer.parseInt(isoDay.substring(8, 10));
+    return (byte) isoDay.getDayOfMonth();
   }
 
   public byte month() {
-    return (byte) Integer.parseInt(isoDay.substring(5, 7));
+    return (byte) isoDay.getMonthValue();
   }
 
   public short year() {
-    return (short) Integer.parseInt(isoDay.substring(0, 4));
+    return (short) isoDay.getYear();
   }
 
   @Override
@@ -76,18 +79,20 @@ public class IsoDay implements Comparable<IsoDay>{
   public boolean equals(final Object obj) {
     if(this==obj) return true;
     else if(!(obj instanceof IsoDay)) return false;
-    else return isoDay.equals(obj.toString());
+    else return isoDay.equals(((IsoDay)obj).isoDay);
   }
 
   @Override
   public String toString() {
-    return isoDay;
+    return isoDay.toString();
   }
 
   @Override
   public int compareTo(final IsoDay o) {
-    return isoDay.compareTo(o.toString());
+    return isoDay.compareTo(o.isoDay);
   }
 
-
+  public long daysSince(final IsoDay o){
+    return isoDay.toEpochDay()-o.isoDay.toEpochDay();
+  }
 }

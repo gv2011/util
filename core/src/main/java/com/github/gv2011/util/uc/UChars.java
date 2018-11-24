@@ -1,6 +1,5 @@
 package com.github.gv2011.util.uc;
 
-import static com.github.gv2011.util.ex.Exceptions.call;
 /*-
  * #%L
  * The MIT License (MIT)
@@ -28,20 +27,17 @@ import static com.github.gv2011.util.ex.Exceptions.call;
  */
 import static java.util.stream.Collectors.joining;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CoderResult;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.function.IntUnaryOperator;
 import java.util.stream.IntStream;
 
+import com.github.gv2011.util.ex.ThrowingSupplier;
+
 public final class UChars {
 
   private static final UStrFactory FACTORY = new UStrFactoryImp();
+  private static final Utf8Decoder UTF8_DECODER = new Utf8Decoder();
 
   public static UStrFactory uStrFactory(){
     return FACTORY;
@@ -83,13 +79,7 @@ public final class UChars {
     return FACTORY.uStr(str);
   }
   
-  public IntStream decode(InputStream utf8) throws IOException {
-    return IntStream.iterate(0, i->i!=-1, (i)->call(()->{
-      int b = utf8.read();
-      if(b==-1) return b;
-      else if(b & 0xFF)
-      return read;
-    }));
+  public static IntStream decode(ThrowingSupplier<InputStream> utf8){
+    return UTF8_DECODER.decode(utf8);
   }
-
 }
