@@ -33,6 +33,8 @@ public interface Type<T> {
 
     T parse(JsonNode json);
 
+    T parse(String string);
+
     T cast(Object object);
 
     JsonNode toJson(T object);

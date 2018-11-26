@@ -26,61 +26,134 @@ package com.github.gv2011.util.bytes;
  * #L%
  */
 import static com.github.gv2011.util.ex.Exceptions.call;
+import static com.github.gv2011.util.ex.Exceptions.format;
+
+import java.util.Enumeration;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import javax.activation.MimeType;
+import javax.activation.MimeTypeParameterList;
 
-public class DataTypeImp implements DataType{
+import com.github.gv2011.util.BeanUtils;
+import com.github.gv2011.util.StringUtils;
+import com.github.gv2011.util.beans.Computed;
+import com.github.gv2011.util.beans.ExtendedBeanBuilder;
+import com.github.gv2011.util.beans.Parser;
+import com.github.gv2011.util.beans.Validator;
+import com.github.gv2011.util.icol.ICollections;
+import com.github.gv2011.util.icol.ISortedMap;
 
-  public static final DataType APPLICATION_OCTET_STREAM = new DataTypeImp("application/octet-stream");
-  public static final DataType SHA_256 = new DataTypeImp("application/x-sha-256");
-  public static final DataType TEXT = new DataTypeImp("text/plain;charset=UTF-8");
+public final class DataTypeImp implements DataType {
 
-  private final MimeType mimeType;
+  public static final DataType APPLICATION_OCTET_STREAM = BeanUtils.parse(DataType.class, "application/octet-stream");
+  public static final DataType SHA_256 = BeanUtils.parse(DataType.class, "application/x-sha-256");
+  public static final DataType TEXT = BeanUtils.parse(DataType.class, "text/plain;charset=UTF-8");
 
-  public static final DataType parse(final String mimeType) {
-    return new DataTypeImp(mimeType);
-  }
+  private final DataType core;
 
-  private DataTypeImp(final String mimeType) {
-    this(call(()->new MimeType(mimeType)));
-  }
-
-  private DataTypeImp(final MimeType mimeType) {
-    this.mimeType = mimeType;
+  public DataTypeImp(final DataType core) {
+    this.core = core;
   }
 
   @Override
-  public final MimeType mimeType() {
+  public String primaryType() {
+    return core.primaryType();
+  }
+
+  @Override
+  public String subType() {
+    return core.subType();
+  }
+
+  @Override
+  public ISortedMap<String, String> parameters() {
+    return core.parameters();
+  }
+
+  @Override
+  @Computed
+  public MimeType mimeType() {
+    final MimeType mimeType = call(()->new MimeType(primaryType(), subType()));
+    for(final Entry<String, String> e: parameters().entrySet()) {
+      mimeType.setParameter(e.getKey(), e.getValue());
+    }
     return mimeType;
   }
 
-  protected String extensionId() {
-    return "";
+  @Override
+  @Computed
+  public String baseType() {
+    return primaryType() + "/" + subType();
   }
 
   @Override
   public int hashCode() {
-    return mimeType().hashCode() * 31 + extensionId().hashCode();
+    return core.hashCode();
   }
 
   @Override
   public boolean equals(final Object obj) {
-    if(this==obj) return true;
-    else if(obj instanceof DataType) {
-      if(obj instanceof DataTypeImp) {
-        final DataTypeImp dt = (DataTypeImp)obj;
-        return dt.mimeType().equals(mimeType) && dt.extensionId().equals(extensionId());
-      }
-      else return obj.equals(this);
-    }
-    else return false;
+    return core.equals(obj);
   }
 
   @Override
   public String toString() {
-    return mimeType.toString();
+    return baseType() + parametersToString();
   }
 
+  private String parametersToString() {
+    return
+      parameters().entrySet().stream()
+      .map(e -> "; " + e.getKey() + "=" + quote(e.getValue()))
+      .collect(Collectors.joining())
+    ;
+  }
 
+  private static String quote(final String value) {
+    final MimeTypeParameterList mtpl = new MimeTypeParameterList();
+    mtpl.set("k", value);
+    return StringUtils.removePrefix(mtpl.toString(),"; k=");
+  }
+
+  private static DataType parse(final String encoded, final ExtendedBeanBuilder<DataType> builder) {
+    final MimeType mimeType = call(()->new MimeType(encoded));
+    final ISortedMap.Builder<String, String> parameters = ICollections.sortedMapBuilder();
+    final Enumeration<?> names = mimeType.getParameters().getNames();
+    while(names.hasMoreElements()) {
+      final String name = (String) names.nextElement();
+      parameters.put(name, mimeType.getParameter(name));
+    }
+    builder
+      .set(DataType::primaryType).to(mimeType.getPrimaryType())
+      .set(DataType::subType).to(mimeType.getSubType())
+      .set(DataType::parameters).to(parameters.build())
+    ;
+    return builder.buildUnvalidated();
+  }
+
+  public static final class DataTypeParser implements Parser<DataType>{
+    @Override
+    public DataType parse(final String encoded, final ExtendedBeanBuilder<DataType> builder) {
+      return DataTypeImp.parse(encoded, builder);
+    }
+  }
+
+  public static final class DataTypeValidator implements Validator<DataType>{
+    @Override
+    public String invalidMessage(final DataType dataType) {
+      final String encoded = dataType.toString();
+      final DataType parsed;
+      try {
+        parsed = parse(
+          encoded,
+          BeanUtils.typeRegistry().beanType(DataType.class).createBuilder()
+        );
+      } catch (final Exception e) {
+        return format("Invalid: {} ({}).", encoded, e.getMessage());
+      }
+      return dataType.equals(parsed) ? Validator.VALID : "Parse mismatch.";
+    }
+  }
 
 }

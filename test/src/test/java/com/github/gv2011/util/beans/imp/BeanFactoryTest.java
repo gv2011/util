@@ -1,10 +1,10 @@
-package com.github.gv2011.util.beans;
+package com.github.gv2011.util.beans.imp;
 
 /*-
  * #%L
- * The MIT License (MIT)
+ * util-beans
  * %%
- * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,18 +25,35 @@ package com.github.gv2011.util.beans;
  * THE SOFTWARE.
  * #L%
  */
-import com.github.gv2011.util.icol.ISortedMap;
+import static com.github.gv2011.testutil.Matchers.is;
+import static com.github.gv2011.testutil.Matchers.not;
+import static org.junit.Assert.assertThat;
 
-public interface BeanType<T> extends Type<T>{
+import org.junit.Test;
 
-    ExtendedBeanBuilder<T> createBuilder();
+import com.github.gv2011.util.beans.imp.TestModel.Pea;
+import com.github.gv2011.util.json.imp.JsonFactoryImp;
 
-    Partial<T> emptyPartial();
+public class BeanFactoryTest {
 
-    ISortedMap<String,? extends Property<?>> properties();
+  private final DefaultBeanFactory beanFactory;
 
-    <V> V get(T bean, Property<V> property);
+  public BeanFactoryTest() {
+    final BeanFactoryBuilder beanFactoryBuilder = new DefaultBeanFactory.DefaultBeanFactoryBuilder();
+    final DefaultTypeRegistry typeRegistry = new DefaultTypeRegistry(
+      new JsonFactoryImp(),
+      beanFactoryBuilder
+    );
+    beanFactory = (DefaultBeanFactory) typeRegistry.beanFactory;
+  }
 
-    int hashCode(T bean);
+  @Test
+  public void test() {
+    assertThat(beanFactory.notBeanReason(Pea.class), not(is("")));
+    assertThat(beanFactory.isBeanClass(Pea.class), is(false));
+    assertThat(beanFactory.notPolymorphicRootClassReason(Pea.class), is(""));
+  }
+
+
 
 }

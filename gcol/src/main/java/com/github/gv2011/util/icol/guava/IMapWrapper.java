@@ -118,4 +118,9 @@ class IMapWrapper<K,V,M extends Map<K,V>> implements IMap<K,V>{
     return entrySet().single();
   }
 
+  @Override
+  public String toString() {
+    return delegate.toString();
+  }
+
 }

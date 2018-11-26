@@ -25,18 +25,15 @@ package com.github.gv2011.util.beans;
  * THE SOFTWARE.
  * #L%
  */
-import com.github.gv2011.util.icol.ISortedMap;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public interface BeanType<T> extends Type<T>{
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Constraint {
 
-    ExtendedBeanBuilder<T> createBuilder();
-
-    Partial<T> emptyPartial();
-
-    ISortedMap<String,? extends Property<?>> properties();
-
-    <V> V get(T bean, Property<V> property);
-
-    int hashCode(T bean);
+    Class<? extends Validator<?>> value();
 
 }

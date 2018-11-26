@@ -105,6 +105,11 @@ public abstract class TypeSupport<T> implements Type<T> {
       return Opt.empty();
     }
 
+    @Override
+    public T parse(final String string) {
+      return parse(jf().deserialize(string).asObject());
+    }
+
     protected boolean isInitialized() {
       return true;
     }

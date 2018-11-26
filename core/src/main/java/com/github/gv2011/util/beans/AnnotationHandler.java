@@ -52,5 +52,10 @@ public interface AnnotationHandler {
 
   boolean annotatedAsComputed(Method m);
 
+  Opt<Class<?>> getImplementingClass(final Class<?> clazz);
+
+  Opt<Class<? extends Parser<?>>> getParser(final Class<?> clazz);
+
+  Opt<Class<? extends Validator<?>>> getValidatorClass(Class<?> clazz);
 
 }

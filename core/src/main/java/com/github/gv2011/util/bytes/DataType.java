@@ -25,10 +25,52 @@ package com.github.gv2011.util.bytes;
  * THE SOFTWARE.
  * #L%
  */
+import static com.github.gv2011.util.ex.Exceptions.call;
+
+import java.util.Map.Entry;
+
 import javax.activation.MimeType;
 
-public interface DataType {
+import com.github.gv2011.util.beans.Bean;
+import com.github.gv2011.util.beans.Computed;
+import com.github.gv2011.util.bytes.DataTypeImp.DataTypeParser;
+import com.github.gv2011.util.bytes.DataTypeImp.DataTypeValidator;
+import com.github.gv2011.util.icol.ISortedMap;
 
+/**
+ * A Multipurpose Internet Mail Extension (MIME) type, as defined in RFC 2045
+ * and 2046.
+ */
+@Bean(implementation=DataTypeImp.class, parser=DataTypeParser.class, validator=DataTypeValidator.class)
+public interface DataType{
+
+  String primaryType();
+
+  String subType();
+
+  ISortedMap<String,String> parameters();
+
+  @Computed
   MimeType mimeType();
+
+  /**
+   * @return a String representation without the parameter list
+   */
+  @Computed
+  String baseType();
+
+  public static MimeType mimeType(final DataType dataType){
+    final MimeType result = call(()->new MimeType(dataType.primaryType(), dataType.subType()));
+    for(final Entry<String, String> e: dataType.parameters().entrySet()) {
+      result.setParameter(e.getKey(), e.getValue());
+    }
+    return result;
+  }
+
+  public static String getBaseType(final DataType dataType) {
+    return dataType.primaryType() + "/" + dataType.subType();
+  }
+
+
 
 }

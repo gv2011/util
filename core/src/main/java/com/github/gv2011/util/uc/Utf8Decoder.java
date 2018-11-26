@@ -1,78 +1,105 @@
 package com.github.gv2011.util.uc;
 
+/*-
+ * #%L
+ * The MIT License (MIT)
+ * %%
+ * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
+ * %%
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * #L%
+ */
 import static com.github.gv2011.util.Verify.verify;
-import static com.github.gv2011.util.ex.Exceptions.call;
-import static com.github.gv2011.util.ex.Exceptions.wrap;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.function.IntSupplier;
+import java.util.PrimitiveIterator;
 import java.util.stream.IntStream;
 
-import com.github.gv2011.util.ex.ThrowingSupplier;
+import com.github.gv2011.util.CloseableIntIterator;
 
 final class Utf8Decoder {
 
-  private static final int MASK_PREFIX_ONE =      Integer.parseInt("10000000", 2);
-  private static final int PREFIX_ONE =           Integer.parseInt("00000000", 2);
+  private static final int MASK_PREFIX_ONE =      mask ("0xxxxxxx");
+  private static final int PREFIX_ONE =           value("0xxxxxxx");
+  static final int MAX_ONE =                      value("01111111");
 
-  private static final int MASK_PREFIX_MULTIPLE = Integer.parseInt("11000000", 2);
-  private static final int PREFIX_MULTIPLE =      Integer.parseInt("11000000", 2);
+  private static final int MASK_PREFIX_MULTIPLE = mask ("11xxxxxx");
+  private static final int PREFIX_MULTIPLE =      value("11xxxxxx");
 
-  private static final int MASK_PREFIX_TWO =      Integer.parseInt("11100000", 2);
-  private static final int PREFIX_TWO =           Integer.parseInt("11000000", 2);
+  private static final int MASK_PREFIX_TWO =      mask ("110xxxxx");
+  static final int PREFIX_TWO =                   value("110xxxxx");
+  static final int MAX_TWO =                      value(   "11111"+"111111");
 
-  private static final int MASK_PREFIX_THREE =    Integer.parseInt("11110000", 2);
-  private static final int PREFIX_THREE =         Integer.parseInt("11100000", 2);
+  private static final int MASK_PREFIX_THREE =    mask ("1110xxxx");
+  static final int PREFIX_THREE =                 value("1110xxxx");
+  static final int MAX_THREE =                    value(    "1111"+"111111"+"111111");
 
-  private static final int MASK_PREFIX_FOUR =     Integer.parseInt("11111000", 2);
-  private static final int PREFIX_FOUR =          Integer.parseInt("11110000", 2);
+  private static final int MASK_PREFIX_FOUR =     mask ("11110xxx");
+  static final int PREFIX_FOUR =                  value("11110xxx");
+  static final int MAX_FOUR =                     value(     "111"+"111111"+"111111"+"111111");
 
-  private static final int MASK_DATA_TWO =        Integer.parseInt("00011111", 2);
-  private static final int MASK_DATA_THREE =      Integer.parseInt("00001111", 2);
-  private static final int MASK_DATA_FOUR =       Integer.parseInt("00000111", 2);
+  private static final int MASK_DATA_TWO =        mask ("xxx11111");
+  private static final int MASK_DATA_THREE =      mask ("xxxx1111");
+  private static final int MASK_DATA_FOUR =       mask ("xxxxx111");
+  static final int MASK_DATA_FOLLOW =     mask ("xx111111");
 
-  private static final int MASK_PREFIX_FOLLOW =   Integer.parseInt("11000000", 2);
-  private static final int PREFIX_FOLLOW =        Integer.parseInt("10000000", 2);
-  private static final int MASK_DATA_FOLLOW =     Integer.parseInt("00111111", 2);
+  private static final int MASK_PREFIX_FOLLOW =   mask ("10xxxxxx");
+  static final int PREFIX_FOLLOW =        value("10xxxxxx");
 
-
-  IntStream decode(final ThrowingSupplier<InputStream> utf8){
-    boolean success = false;
-    final InputStream in = call(utf8::get);
-    try {
-      final IntStream intStream = decode(()->{
-        try {return in.read();}
-        catch (final IOException e) {throw wrap(e);}
-      });
-      intStream.onClose(()->call(in::close));
-      success = true;
-      return intStream;
-    } finally {
-      if(!success) call(in::close);
-    }
+  private static int mask(final String pattern) {
+    return Integer.parseInt(pattern.replace('0', '1').replace('x', '0'), 2);
   }
 
-  IntStream decode(final IntSupplier utf8){
-    return IntStream.iterate(decodeNext(utf8), i->i!=-1, (i)->decodeNext(utf8));
+  private static int value(final String pattern) {
+    return Integer.parseInt(pattern.replace('x', '0'), 2);
   }
 
-  private int decodeNext(final IntSupplier utf8){
+
+  IntStream decode(final CloseableIntIterator utf8){
+    return
+      IntStream.iterate(decodeNext(utf8), i->i!=-1, (i)->decodeNext(utf8))
+      .onClose(utf8::close)
+    ;
+  }
+
+  private int decodeNext(final PrimitiveIterator.OfInt utf8){
     final int result;
-    final int b0 = readNext(utf8);
-    if(b0==-1) result = b0;
+    if(!utf8.hasNext()) result = -1;
     else {
+      final int b0 = readNext(utf8);
       if((b0 & MASK_PREFIX_ONE)==PREFIX_ONE) result = b0;
       else{// >=2 bytes
         verify((b0 & MASK_PREFIX_MULTIPLE)==PREFIX_MULTIPLE);
         final int b1 = readFollowing(utf8);
         if((b0 & MASK_PREFIX_TWO)==PREFIX_TWO) {
-          result = ((b0 & MASK_DATA_TWO)<<6) | (b1 & MASK_DATA_FOLLOW);
+          result =
+            ((b0 & MASK_DATA_TWO)<<6) |
+            (b1 & MASK_DATA_FOLLOW)
+          ;
         }
         else {
           final int b2 = readFollowing(utf8);
           if((b0 & MASK_PREFIX_THREE)==PREFIX_THREE) {
-            result = ((b0 & MASK_DATA_THREE)<<12) | ((b1 & MASK_DATA_FOLLOW)<<6) | (b2 & MASK_DATA_FOLLOW);
+            result =
+              ((b0 & MASK_DATA_THREE)<<12) |
+              ((b1 & MASK_DATA_FOLLOW)<<6) |
+              (b2 & MASK_DATA_FOLLOW)
+            ;
           }
           else {
             verify((b0 & MASK_PREFIX_FOUR)==PREFIX_FOUR);
@@ -80,7 +107,7 @@ final class Utf8Decoder {
             result =
               ((b0 & MASK_DATA_FOUR  )<<18) |
               ((b1 & MASK_DATA_FOLLOW)<<12) |
-              ((b2 & MASK_DATA_FOLLOW)<<6)  |
+              ((b2 & MASK_DATA_FOLLOW)<< 6) |
               (b3 & MASK_DATA_FOLLOW)
             ;
           }
@@ -90,16 +117,13 @@ final class Utf8Decoder {
     return result;
   }
 
-  private int readNext(final IntSupplier s){
-    final int b = s.getAsInt();
-    return b == -1 ? b : Byte.toUnsignedInt((byte) b);
+  private int readNext(final PrimitiveIterator.OfInt s){
+    return Byte.toUnsignedInt((byte) s.nextInt());
   }
 
-  private int readFollowing(final IntSupplier s){
-    final int b = s.getAsInt();
-    verify(b!=-1);
-    final int result = Byte.toUnsignedInt((byte) b);
-    verify((b & MASK_PREFIX_FOLLOW) == PREFIX_FOLLOW);
+  private int readFollowing(final PrimitiveIterator.OfInt s){
+    final int result = Byte.toUnsignedInt((byte) (byte) s.nextInt());
+    verify((result & MASK_PREFIX_FOLLOW) == PREFIX_FOLLOW);
     return result;
   }
 

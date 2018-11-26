@@ -32,7 +32,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import org.slf4j.Logger;
 
 import com.github.gv2011.util.beans.AnnotationHandler;
-import com.github.gv2011.util.beans.BeanBuilder;
+import com.github.gv2011.util.beans.ExtendedBeanBuilder;
 import com.github.gv2011.util.json.JsonFactory;
 
 
@@ -52,8 +52,8 @@ public class DefaultBeanType<T> extends BeanTypeSupport<T>{
   }
 
   @Override
-  public BeanBuilder<T> createBuilder() {
-    return new DefaultBeanBuilder<>(this);
+  public ExtendedBeanBuilder<T> createBuilder() {
+    return new DefaultBeanBuilder<>(this, resultWrapper, validator);
   }
 
   @Override

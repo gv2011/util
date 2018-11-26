@@ -1,5 +1,7 @@
 package com.github.gv2011.util.beans.cglib;
 
+import java.util.function.UnaryOperator;
+
 /*-
  * #%L
  * util-beans-cglib
@@ -35,7 +37,12 @@ final class CglibBeanBuilder<B> extends BeanBuilderSupport<B>{
 
   private final CglibBeanType<B> beanType;
 
-  CglibBeanBuilder(final CglibBeanType<B> beanType) {
+  CglibBeanBuilder(
+    final CglibBeanType<B> beanType,
+    final UnaryOperator<B> resultWrapper,
+    final UnaryOperator<B> validator
+  ) {
+    super(resultWrapper, validator);
     this.beanType = beanType;
   }
 

@@ -48,9 +48,11 @@ import com.github.gv2011.util.beans.Computed;
 import com.github.gv2011.util.beans.DefaultValue;
 import com.github.gv2011.util.beans.FixedBooleanValue;
 import com.github.gv2011.util.beans.FixedValue;
+import com.github.gv2011.util.beans.Parser;
 import com.github.gv2011.util.beans.TypeName;
 import com.github.gv2011.util.beans.TypeNameStrategy;
 import com.github.gv2011.util.beans.TypeResolver;
+import com.github.gv2011.util.beans.Validator;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.Opt;
 
@@ -153,6 +155,33 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
         .flatOpt(m->Opt.ofNullable(m.getAnnotation(annotationClass)))
         .collect(toOpt())
         .map(annotationProperty)
+      ;
+  }
+
+  @Override
+  public Opt<Class<?>> getImplementingClass(final Class<?> clazz) {
+    return
+      Opt.ofNullable(clazz.getAnnotation(Bean.class))
+      .map(Bean::implementation)
+      .flatMap(impl->impl.equals(Void.class) ? Opt.empty() : Opt.of(impl))
+    ;
+  }
+
+  @Override
+  public Opt<Class<? extends Validator<?>>> getValidatorClass(final Class<?> clazz) {
+    return
+      Opt.ofNullable(clazz.getAnnotation(Bean.class))
+      .map(Bean::validator)
+      .flatMap(impl->impl.equals(Bean.NoopValidator.class) ? Opt.empty() : Opt.of(impl))
+    ;
+  }
+
+  @Override
+  public Opt<Class<? extends Parser<?>>> getParser(final Class<?> clazz) {
+    return
+        Opt.ofNullable(clazz.getAnnotation(Bean.class))
+        .map(Bean::parser)
+        .flatMap(impl->impl.equals(Bean.NoopParser.class) ? Opt.empty() : Opt.of(impl))
       ;
   }
 

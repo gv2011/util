@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collector;
+import java.util.stream.IntStream;
 
 import com.github.gv2011.util.ex.ThrowingSupplier;
 
@@ -90,7 +91,7 @@ public class ByteUtils {
     }
     return b;
   }
-  
+
   static String removeWhitespaceAndColon(final CharSequence s) {
     return s.toString().replaceAll("[\\s:]+", "");
   }
@@ -183,6 +184,12 @@ public class ByteUtils {
     }
   }
 
+  public static Bytes collectBytes(final IntStream intStream) {
+    return intStream
+      .collect(BytesBuilder::new, BytesBuilder::write, (b1,b2)->b1.append(b2.build()))
+      .build()
+    ;
+  }
 
 
   public static Optional<Bytes> tryRead(final Path file) {
@@ -222,5 +229,5 @@ public class ByteUtils {
   public static Collector<Bytes,?,Bytes> joining(){
     return new JoiningBytesCollector();
   }
-  
+
 }

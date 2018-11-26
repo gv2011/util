@@ -77,7 +77,7 @@ public abstract class BeanInvocationHandlerSupport<B,P>  {
     return hashCode.intValue();
   }
 
-  private Optional<Object> tryGetValue(Object proxy, final String property) {
+  private Optional<Object> tryGetValue(final Object proxy, final String property) {
     if(beanType.properties().containsKey(property)){
       return Optional.of(
         values.tryGet(property).orElseGet(()->{
@@ -118,8 +118,9 @@ public abstract class BeanInvocationHandlerSupport<B,P>  {
     return result;
   }
 
-  private boolean equals1(Object proxy, final B other) {
+  private boolean equals1(final Object proxy, final B other) {
     return beanType.properties().values().stream()
+      .filter(p->!p.function().isPresent())
       .allMatch(p->tryGetValue(proxy, p.name()).get().equals(p.getValue(other)))
     ;
   }

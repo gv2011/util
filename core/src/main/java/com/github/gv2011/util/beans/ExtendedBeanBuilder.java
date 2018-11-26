@@ -25,18 +25,11 @@ package com.github.gv2011.util.beans;
  * THE SOFTWARE.
  * #L%
  */
-import com.github.gv2011.util.icol.ISortedMap;
+public interface ExtendedBeanBuilder<T> extends BeanBuilder<T>{
 
-public interface BeanType<T> extends Type<T>{
 
-    ExtendedBeanBuilder<T> createBuilder();
+    T buildUnvalidated();
 
-    Partial<T> emptyPartial();
-
-    ISortedMap<String,? extends Property<?>> properties();
-
-    <V> V get(T bean, Property<V> property);
-
-    int hashCode(T bean);
+    Partial<T> buildPartial();
 
 }

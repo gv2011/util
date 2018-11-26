@@ -194,7 +194,10 @@ public class DefaultTypeRegistry implements TypeRegistry{
         if(keyType.hasStringForm()) {
           return keyType.mapType(Structure.stringMap(), valueType);
         }
-        else return keyType.mapType(Structure.map(), valueType);
+        else {
+          if(rawType.equals(ISORTEDMAP)) throw new UnsupportedOperationException();
+          return keyType.mapType(Structure.map(), valueType);
+        }
       }
       else throw new UnsupportedOperationException();
     }

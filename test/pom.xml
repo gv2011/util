@@ -58,13 +58,25 @@
       <groupId>com.github.gv2011</groupId>
       <artifactId>gcol</artifactId>
       <version>${util.version}</version>
-      <scope>runtime</scope>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>jsong</artifactId>
       <version>${util.version}</version>
-      <scope>runtime</scope>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>util-beans</artifactId>
+      <version>${util.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>util-beans-cglib</artifactId>
+      <version>${util.version}</version>
+      <scope>test</scope>
     </dependency>
 	</dependencies>
 </project>

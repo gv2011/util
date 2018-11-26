@@ -4,7 +4,7 @@ import static com.github.gv2011.util.icol.ICollections.asSet;
 import static com.github.gv2011.util.icol.ICollections.toISortedMap;
 import static com.github.gv2011.util.icol.ICollections.toISortedSet;
 
-import java.time.Instant;
+import java.time.LocalDate;
 
 /*-
  * #%L
@@ -38,7 +38,6 @@ import java.util.Locale;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
-import com.github.gv2011.util.time.IsoDay;
 import com.github.gv2011.util.tstr.AbstractTypedString;
 
 @SuppressWarnings("unused")
@@ -54,10 +53,10 @@ public class Country extends AbstractTypedString<Country>{
         "MT","NL","AT","PL","PT","RO","SE","SK","SI","ES","CZ","HU","CY"}
       );
       final ISet<String> ecsc = asSet(new String[]{"BE", "DE", "FR", "IT", "LU", "NL"});
-      final IsoDay escscStart = IsoDay.parse("1952-07-23");
+      final LocalDate escscStart = LocalDate.parse("1952-07-23");
 
       final ISet<String> weu = asSet(new String[]{"GB", "BE", "FR", "LU", "NL"});
-      final IsoDay weuStart = IsoDay.parse("1948-08-25");
+      final LocalDate weuStart = LocalDate.parse("1948-08-25");
 
       final ISet<String> efta = asSet(new String[]{"IS", "LI", "NO", "CH"});
       return new Country(k, name, eu.contains(k), efta.contains(k));
@@ -107,7 +106,7 @@ public class Country extends AbstractTypedString<Country>{
     return new Locale(Language.ENGLISH.getLanguage(), iso3166).getDisplayCountry(locale);
   }
 
-  public boolean euMember(final IsoDay time){
+  public boolean euMember(final LocalDate time){
     return euMember;
   }
 

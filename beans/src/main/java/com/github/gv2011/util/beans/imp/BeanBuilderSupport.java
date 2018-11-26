@@ -37,25 +37,32 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.beans.BeanBuilder;
+import com.github.gv2011.util.beans.ExtendedBeanBuilder;
 import com.github.gv2011.util.beans.Partial;
 import com.github.gv2011.util.beans.Property;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.Opt;
 
-public abstract class BeanBuilderSupport<T> implements BeanBuilder<T> {
+public abstract class BeanBuilderSupport<T> implements ExtendedBeanBuilder<T> {
 
     private final Map<String,Object> map = new HashMap<>();
+    private final UnaryOperator<T> resultWrapper;
+    private final UnaryOperator<T> validator;
 
     protected abstract BeanTypeSupport<T> beanType();
 
-    protected BeanBuilderSupport(){}
+    protected BeanBuilderSupport(final UnaryOperator<T> resultWrapper, final UnaryOperator<T> validator){
+      this.resultWrapper = resultWrapper;
+      this.validator = validator;
+    }
 
     @Override
-    public T build() {
+    public T buildUnvalidated() {
       //verify fixed values:
       for(final PropertyImp<T,?> p: beanType().properties().values()) {
           p.fixedValue().ifPresent(fv->{
@@ -97,10 +104,15 @@ public abstract class BeanBuilderSupport<T> implements BeanBuilder<T> {
       verify(missing, Set::isEmpty, m->format("{}: The required properties {} have not been set.", beanType(), m));
       //create proxy:
       final ISortedMap<String, Object> imap = sortedMapFrom(map);
-      return create(imap);
+      return resultWrapper.apply(create(imap));
     }
 
     protected abstract T create(final ISortedMap<String, Object> imap);
+
+    @Override
+    public final T build() {
+      return validator.apply(buildUnvalidated());
+    }
 
     @Override
     public Partial<T> buildPartial() {

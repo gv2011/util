@@ -12,10 +12,10 @@ package com.github.gv2011.util.uc;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,12 +27,11 @@ package com.github.gv2011.util.uc;
  */
 import static java.util.stream.Collectors.joining;
 
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.function.IntUnaryOperator;
 import java.util.stream.IntStream;
 
-import com.github.gv2011.util.ex.ThrowingSupplier;
+import com.github.gv2011.util.CloseableIntIterator;
 
 public final class UChars {
 
@@ -78,8 +77,8 @@ public final class UChars {
   public static UStr uStr(final String str) {
     return FACTORY.uStr(str);
   }
-  
-  public static IntStream decode(ThrowingSupplier<InputStream> utf8){
+
+  public static IntStream decode(final CloseableIntIterator utf8){
     return UTF8_DECODER.decode(utf8);
   }
 }

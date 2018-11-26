@@ -34,8 +34,6 @@ public interface BeanBuilder<T> {
 
     T build();
 
-    Partial<T> buildPartial();
-
     <V> void set(Property<V> p, V value);
 
     <V> Setter<T,V> set(Function<T,V> method);

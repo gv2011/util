@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,7 +35,7 @@ import java.lang.reflect.Method;
 import org.slf4j.Logger;
 
 import com.github.gv2011.util.beans.AnnotationHandler;
-import com.github.gv2011.util.beans.BeanBuilder;
+import com.github.gv2011.util.beans.ExtendedBeanBuilder;
 import com.github.gv2011.util.beans.TypeNameStrategy;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.Opt;
@@ -80,8 +80,8 @@ final class PolymorphicBeanType<T> extends BeanTypeSupport<T> {
   }
 
   @Override
-  public BeanBuilder<T> createBuilder() {
-    return new DefaultBeanBuilder<>(this);
+  public ExtendedBeanBuilder<T> createBuilder() {
+    return new DefaultBeanBuilder<>(this, resultWrapper, validator);
   }
 
   @Override

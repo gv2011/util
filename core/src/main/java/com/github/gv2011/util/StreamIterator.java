@@ -1,4 +1,4 @@
-package com.github.gv2011.util.beans;
+package com.github.gv2011.util;
 
 /*-
  * #%L
@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,18 +25,49 @@ package com.github.gv2011.util.beans;
  * THE SOFTWARE.
  * #L%
  */
-import com.github.gv2011.util.icol.ISortedMap;
+import static com.github.gv2011.util.ex.Exceptions.call;
+import static com.github.gv2011.util.ex.Exceptions.wrap;
 
-public interface BeanType<T> extends Type<T>{
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.NoSuchElementException;
 
-    ExtendedBeanBuilder<T> createBuilder();
+final class StreamIterator implements CloseableIntIterator {
 
-    Partial<T> emptyPartial();
+  private final InputStream stream;
+  private int last;
 
-    ISortedMap<String,? extends Property<?>> properties();
+  StreamIterator(final InputStream stream) {
+    this.stream = stream;
+    readNext();
+  }
 
-    <V> V get(T bean, Property<V> property);
+  private void readNext() {
+    try {
+      last = stream.read();
+      if(last==-1) call(stream::close);
+    } catch (final IOException e) {
+      call(stream::close);
+      throw wrap(e);
+    }
+  }
 
-    int hashCode(T bean);
+  @Override
+  public int nextInt() {
+    final int result = last;
+    if(result==-1) throw new NoSuchElementException();
+    readNext();
+    return result;
+  }
+
+  @Override
+  public boolean hasNext() {
+    return last!=-1;
+  }
+
+  @Override
+  public void close() {
+    if(last!=-1)call(stream::close);
+  }
 
 }

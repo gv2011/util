@@ -1,4 +1,4 @@
-package com.github.gv2011.util.beans;
+package com.github.gv2011.util;
 
 /*-
  * #%L
@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,18 +25,8 @@ package com.github.gv2011.util.beans;
  * THE SOFTWARE.
  * #L%
  */
-import com.github.gv2011.util.icol.ISortedMap;
+import java.util.PrimitiveIterator;
 
-public interface BeanType<T> extends Type<T>{
-
-    ExtendedBeanBuilder<T> createBuilder();
-
-    Partial<T> emptyPartial();
-
-    ISortedMap<String,? extends Property<?>> properties();
-
-    <V> V get(T bean, Property<V> property);
-
-    int hashCode(T bean);
+public interface CloseableIntIterator extends PrimitiveIterator.OfInt, AutoCloseableNt{
 
 }

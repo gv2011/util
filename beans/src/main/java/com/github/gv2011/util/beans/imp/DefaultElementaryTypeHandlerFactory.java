@@ -37,6 +37,7 @@ import java.math.BigDecimal;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -58,6 +59,7 @@ import com.github.gv2011.util.json.JsonNumber;
 import com.github.gv2011.util.json.JsonString;
 import com.github.gv2011.util.time.IsoDay;
 
+@SuppressWarnings("removal")
 final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandlerFactory{
 
   private static final ISortedSet<String> SUPPORTED_CLASS_NAMES = sortedSetOf(
@@ -70,6 +72,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     Instant.class.getName(),
     Duration.class.getName(),
     IsoDay.class.getName(),
+    LocalDate.class.getName(),
     UUID.class.getName(),
     InetSocketAddress.class.getName(),
     Hash256.class.getName()
@@ -111,6 +114,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     else if(clazz.equals(UUID.class)) result = new UuidType();
     else if(clazz.equals(Date.class)) result = new DateType();
     else if(clazz.equals(Duration.class)) result = new DurationType();
+    else if(clazz.equals(LocalDate.class)) result = stringBasedType(LocalDate.class);
     else if(clazz.equals(IsoDay.class)) result = stringBasedType(IsoDay.class);
     else if(clazz.equals(InetSocketAddress.class)) result = new InetSocketAddressType();
     else if(clazz.equals(Hash256.class)) result = stringBasedType(Hash256.class);
@@ -147,7 +151,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     };
   }
 
-  private static class StringType extends AbstractElementaryTypeHandler<String> {
+  private static final class StringType extends AbstractElementaryTypeHandler<String> {
     private static final Opt<String> EMPTY = Opt.of("".intern());
     @Override
     public String fromJson(final JsonNode json) {
@@ -159,6 +163,10 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     @Override
     public Opt<String> defaultValue() {
       return EMPTY;
+    }
+    @Override
+    public boolean hasStringForm() {
+      return true;
     }
   }
 
