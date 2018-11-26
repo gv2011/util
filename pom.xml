@@ -46,6 +46,7 @@
   </scm>
 
   <modules>
+    <module>context</module>
     <module>core</module>
     <module>beans</module>
     <module>beanscglib</module>
