@@ -90,8 +90,10 @@ public abstract class TypeSupport<T> implements Type<T> {
     }
 
     public boolean isCollectionType() {
-        return false;
+      return false;
     }
+
+    public abstract boolean isForeignType();
 
     boolean isOptional() {
       return false;

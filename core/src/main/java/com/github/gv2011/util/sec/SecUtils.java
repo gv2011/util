@@ -73,7 +73,7 @@ import com.github.gv2011.util.icol.IList;
 public final class SecUtils {
 
   private static final String PKIX = "PKIX";
-  private static final String TLSV12 = "TLSv1.2";
+  public static final String TLSV12 = "TLSv1.2";
   private static final String SUN_X509 = "SunX509";
   private static final String CERT_FILE_PATTERN = "cert{}.crt";
   private static final String CERT_ALIAS = "cert";
@@ -179,6 +179,18 @@ public final class SecUtils {
       JKS_DEFAULT_PASSWORD.toCharArray(),
       certChain.toArray(new Certificate[certChain.size()])
     ));
+    Bytes result;
+    try(BytesBuilder builder = ByteUtils.newBytesBuilder()){
+      call(()->keystore.store(builder, JKS_DEFAULT_PASSWORD.toCharArray()));
+      result = builder.build();
+    }
+    return result;
+  }
+
+  public static final Bytes createJKSKeyStore(final X509Certificate trustedCertificate){
+    final KeyStore keystore = call(()->KeyStore.getInstance(JKS));
+    call(()->keystore.load(null, null));
+    call(()->keystore.setCertificateEntry(CERT_ALIAS, trustedCertificate));
     Bytes result;
     try(BytesBuilder builder = ByteUtils.newBytesBuilder()){
       call(()->keystore.store(builder, JKS_DEFAULT_PASSWORD.toCharArray()));

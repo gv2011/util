@@ -445,5 +445,4 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
     return ReflectionUtils.method(clazz, method);
   }
 
-
 }

@@ -138,5 +138,10 @@ final class CollectionType<C,K,E> extends TypeSupport<C>{
     return false;
   }
 
+  @Override
+  public boolean isForeignType() {
+    return false;
+  }
+
 
 }

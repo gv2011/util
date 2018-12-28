@@ -227,8 +227,15 @@ public class DefaultTypeRegistry implements TypeRegistry{
       else result = tryCreateElementaryType(clazz).map(t->t);
     }
     if(result.isPresent()) LOG.debug("Created {} for {}.", result.get(), clazz);
-    else LOG.info("{} is not supported.", clazz);
+    else {
+      LOG.info("{} is not supported.", clazz);
+      result = Opt.of(createForeignType(clazz));
+    }
     return result;
+  }
+
+  private <T> ForeignType<T> createForeignType(final Class<T> clazz) {
+    return new ForeignType<T>(jf, clazz);
   }
 
   private boolean isTypedStringType(final Class<?> clazz) {

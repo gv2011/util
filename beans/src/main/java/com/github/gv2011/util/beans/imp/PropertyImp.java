@@ -1,5 +1,6 @@
 package com.github.gv2011.util.beans.imp;
 
+import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.bug;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
@@ -93,6 +94,7 @@ public final class PropertyImp<B,T> implements Property<T> {
       this.defaultValue = defaultValue;
       this.fixedValue = fixedValue;
       this.function = function;
+      verify(type.isForeignType() ? function.isPresent() : true);
     }
 
     @Override

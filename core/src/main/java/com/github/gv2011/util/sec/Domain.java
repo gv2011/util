@@ -1,4 +1,4 @@
-package com.github.gv2011.util.context;
+package com.github.gv2011.util.sec;
 
 /*-
  * #%L
@@ -25,14 +25,41 @@ package com.github.gv2011.util.context;
  * THE SOFTWARE.
  * #L%
  */
-public interface Context {
+import static com.github.gv2011.util.Verify.verify;
+import static com.github.gv2011.util.Verify.verifyEqual;
 
-  public static <I> ContextConstant<I> createConstant(final Class<I> interfaze){
-    return null;
+import java.net.IDN;
+
+import com.github.gv2011.util.tstr.AbstractTypedString;
+
+public class Domain extends AbstractTypedString<Domain>{
+
+  private final String domain;
+
+  public Domain(final String domain) {
+    verify(!domain.isEmpty());
+    verifyEqual(domain, domain.toLowerCase().trim());
+    this.domain = domain;
   }
 
-  public static Context getContextOfCurrentThread() {
-    return null;
+  @Override
+  public Domain self() {
+    return this;
   }
+
+  @Override
+  public Class<Domain> clazz() {
+    return Domain.class;
+  }
+
+  @Override
+  public String toString() {
+    return domain;
+  }
+
+  public String toAscii() {
+    return IDN.toASCII(domain);
+  }
+
 
 }

@@ -1,4 +1,4 @@
-package com.github.gv2011.util.context;
+package com.github.gv2011.util.sec;
 
 /*-
  * #%L
@@ -25,14 +25,37 @@ package com.github.gv2011.util.context;
  * THE SOFTWARE.
  * #L%
  */
-public interface Context {
+import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
+import java.time.Instant;
+import java.util.function.Supplier;
 
-  public static <I> ContextConstant<I> createConstant(final Class<I> interfaze){
-    return null;
+import javax.naming.ldap.LdapName;
+
+import com.github.gv2011.util.Pair;
+import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.serviceloader.RecursiveServiceLoader;
+
+public interface CertificateBuilder{
+
+  public static interface CertificateBuilderSupplier extends Supplier<CertificateBuilder>{};
+
+  public static CertificateBuilder create() {
+    return RecursiveServiceLoader.service(CertificateBuilderSupplier.class).get();
   }
 
-  public static Context getContextOfCurrentThread() {
-    return null;
-  }
+  CertificateBuilder setSubject(final LdapName subject);
+
+  CertificateBuilder setDomains(final Pair<Domain, ISortedSet<Domain>> domains);
+
+  CertificateBuilder setSubjectPublicKey(final RSAPublicKey subjectPublicKey);
+
+  CertificateBuilder setNotBefore(final Instant notBefore);
+
+  CertificateBuilder setNotAfter(final Instant notAfter);
+
+  CertificateBuilder setIssuer(final LdapName issuer);
+
+  X509Certificate build(final RsaKeyPair keyPair);
 
 }

@@ -38,4 +38,9 @@ public abstract class ObjectTypeSupport<B> extends TypeSupport<B>{
     return false;
   }
 
+  @Override
+  public final boolean isForeignType() {
+    return false;
+  }
+
 }

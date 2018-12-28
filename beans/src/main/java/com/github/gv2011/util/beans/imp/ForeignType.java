@@ -1,10 +1,10 @@
-package com.github.gv2011.util.context;
+package com.github.gv2011.util.beans.imp;
 
 /*-
  * #%L
- * The MIT License (MIT)
+ * util-beans
  * %%
- * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +25,41 @@ package com.github.gv2011.util.context;
  * THE SOFTWARE.
  * #L%
  */
-public interface Context {
+import com.github.gv2011.util.json.JsonFactory;
+import com.github.gv2011.util.json.JsonNode;
 
-  public static <I> ContextConstant<I> createConstant(final Class<I> interfaze){
-    return null;
+public final class ForeignType<T> extends TypeSupport<T>{
+
+  private final JsonFactory jf;
+
+  ForeignType(final JsonFactory jf, final Class<T> clazz) {
+    super(clazz);
+    this.jf = jf;
   }
 
-  public static Context getContextOfCurrentThread() {
-    return null;
+  @Override
+  public T parse(final JsonNode json) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public JsonNode toJson(final T object) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  JsonFactory jf() {
+    return jf;
+  }
+
+  @Override
+  protected boolean hasStringForm() {
+    return false;
+  }
+
+  @Override
+  public boolean isForeignType() {
+    return true;
   }
 
 }
