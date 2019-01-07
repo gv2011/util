@@ -123,7 +123,7 @@ public class DefaultTypeRegistry implements TypeRegistry{
       b.add(tf);
     }
     additionalTypeHandlerFactories = b.build();
-    LOG.info("additionalTypeHandlerFactories:{}", additionalTypeHandlerFactories);
+    LOG.debug("additionalTypeHandlerFactories: {}", additionalTypeHandlerFactories);
   }
 
   @Override
@@ -228,7 +228,7 @@ public class DefaultTypeRegistry implements TypeRegistry{
     }
     if(result.isPresent()) LOG.debug("Created {} for {}.", result.get(), clazz);
     else {
-      LOG.info("{} is not supported.", clazz);
+      LOG.debug("{} is not supported, creating foreign type.", clazz);
       result = Opt.of(createForeignType(clazz));
     }
     return result;
