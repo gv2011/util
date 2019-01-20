@@ -2,3 +2,5 @@
 /.project
 /.classpath
 /target/
+/log/
+/logback.xml

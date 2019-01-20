@@ -47,5 +47,4 @@ final class IListBuilder<E> extends AbstractIListBuilder<IList<E>,E,IList.Builde
       return new IListWrapper(ImmutableList.copyOf(list));
     }
   }
-
 }

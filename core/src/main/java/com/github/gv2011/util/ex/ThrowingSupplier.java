@@ -1,6 +1,7 @@
 package com.github.gv2011.util.ex;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /*-
  * #%L
@@ -47,6 +48,17 @@ public interface ThrowingSupplier<R> extends ArgumentIgnoringThrowingFunction<Ob
       }
       catch (final Exception e) {
         throw new WrappedException(e);
+      }
+    };
+  }
+
+  default Function<Object,R> asFunction(final Supplier<?> exceptionMessage) {
+    return (final Object arg) -> {
+      try {
+         return get();
+      }
+      catch (final Exception e) {
+        throw new WrappedException(e, String.valueOf(exceptionMessage.get()));
       }
     };
   }

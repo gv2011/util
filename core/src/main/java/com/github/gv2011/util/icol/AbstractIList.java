@@ -196,9 +196,22 @@ public abstract class AbstractIList<E> implements IList<E>{
   }
 
   @Override
-  public ISet<E> intersection(Collection<?> other) {
+  public ISet<E> intersection(final Collection<?> other) {
     return ICollections.intersection(this, other);
   }
 
+  @Override
+  public IList<E> reversed() {
+    return new ReversedIList();
+  }
+
+  private final class ReversedIList extends AbstractIList<E>{
+    @Override
+    public E get(final int index) {return AbstractIList.this.get(AbstractIList.this.size()-1-index);}
+    @Override
+    public int size() {return AbstractIList.this.size();}
+    @Override
+    public IList<E> reversed() {return AbstractIList.this;}
+  }
 
 }

@@ -91,11 +91,11 @@ class IListWrapper<E> implements IList<E>{
   public boolean containsAll(final Collection<?> c) {
     return delegate.containsAll(c);
   }
-  
-  
+
+
 
   @Override
-  public ISet<E> intersection(Collection<?> other) {
+  public ISet<E> intersection(final Collection<?> other) {
     return ICollections.intersection(this, other);
   }
 
@@ -163,6 +163,12 @@ class IListWrapper<E> implements IList<E>{
   @Override
   public ISortedMap<Integer, E> asMap() {
     return notYetImplemented();
+  }
+
+  @Override
+  public IList<E> reversed() {
+    if(delegate.getClass().equals(RList.class)) return new IListWrapper<>(((RList<E>)delegate).delegate);
+    else return new IListWrapper<>(new RList<>(delegate));
   }
 
 }

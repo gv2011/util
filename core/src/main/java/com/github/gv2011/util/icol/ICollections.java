@@ -303,6 +303,10 @@ public final class ICollections {
     return iCollections().xStream(s);
   }
 
+  public static <E> XStream<E> xStream(final Collection<E> c) {
+    return iCollections().xStream(c.stream());
+  }
+
   public static <E> XStream<E> pStream(final Stream<E> s) {
     return iCollections().pStream(s);
   }
@@ -310,7 +314,7 @@ public final class ICollections {
   public static <E> XStream<E> xStream(final Spliterator<E> spliterator, final boolean parallel) {
     return iCollections().xStream(spliterator, parallel);
   }
-  
+
   public static <E> ISet<E> intersection(final ICollection<E> first, final Collection<?> second) {
     return first.parallelStream().filter(second::contains).collect(toISet());
   }

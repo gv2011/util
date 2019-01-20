@@ -4,7 +4,7 @@ package com.github.gv2011.util.beans;
  * #%L
  * The MIT License (MIT)
  * %%
- * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2019 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,23 +25,17 @@ package com.github.gv2011.util.beans;
  * THE SOFTWARE.
  * #L%
  */
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
-@Retention(RUNTIME)
-@Target(TYPE)
-public @interface Bean {
-
-  Class<?> implementation() default Void.class;
-
-  Class<? extends Parser<?>> parser() default NoopParser.class;
-
-  Class<? extends Validator<?>> validator() default NoopValidator.class;
-
-  static interface NoopParser extends Parser<Object>{}
-  static interface NoopValidator extends Validator<Object>{}
+/**
+ * Tagging interface.
+ *
+ * This interface, annotations or both may be used.
+ * Any bean interface annotated as {@link AbstractRoot}, {@link AbstractRoot} or {@link AbstractRoot}
+ * may also extend Bean.
+ *
+ * If an annotations are not present, the inheritance structure is examined.
+ *
+ * Objects must not directly implement Bean ("obj instanceof Bean" must always tell the truth).
+ */
+public interface Bean {
 
 }

@@ -1,5 +1,7 @@
 package com.github.gv2011.util.bytes;
 
+import static com.github.gv2011.util.StringUtils.toLowerCase;
+import static com.github.gv2011.util.Verify.verifyEqualsResult;
 /*-
  * #%L
  * The MIT License (MIT)
@@ -12,10 +14,10 @@ package com.github.gv2011.util.bytes;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,7 +29,10 @@ package com.github.gv2011.util.bytes;
  */
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
+import static com.github.gv2011.util.icol.ICollections.toISortedMap;
 
+import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -36,21 +41,33 @@ import javax.activation.MimeType;
 import javax.activation.MimeTypeParameterList;
 
 import com.github.gv2011.util.BeanUtils;
+import com.github.gv2011.util.Constant;
+import com.github.gv2011.util.Constants;
 import com.github.gv2011.util.StringUtils;
 import com.github.gv2011.util.beans.Computed;
 import com.github.gv2011.util.beans.ExtendedBeanBuilder;
 import com.github.gv2011.util.beans.Parser;
 import com.github.gv2011.util.beans.Validator;
-import com.github.gv2011.util.icol.ICollections;
 import com.github.gv2011.util.icol.ISortedMap;
+import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.icol.Opt;
+import com.github.gv2011.util.serviceloader.RecursiveServiceLoader;
 
 public final class DataTypeImp implements DataType {
 
-  public static final DataType APPLICATION_OCTET_STREAM = BeanUtils.parse(DataType.class, "application/octet-stream");
-  public static final DataType SHA_256 = BeanUtils.parse(DataType.class, "application/x-sha-256");
-  public static final DataType TEXT = BeanUtils.parse(DataType.class, "text/plain;charset=UTF-8");
+  private static final Constant<DataTypeProvider> DATA_TYPE_PROVIDER =
+    RecursiveServiceLoader.lazyService(DataTypeProvider.class)
+  ;
 
   private final DataType core;
+
+  private final Constant<Opt<FileExtension>> preferredFileExtension = Constants.cachedConstant(
+    ()->DATA_TYPE_PROVIDER.get().preferredFileExtension(this)
+  );
+
+  private final Constant<ISortedSet<FileExtension>> fileExtensions = Constants.cachedConstant(
+    ()->DATA_TYPE_PROVIDER.get().fileExtensions(this)
+  );
 
   public DataTypeImp(final DataType core) {
     this.core = core;
@@ -73,6 +90,24 @@ public final class DataTypeImp implements DataType {
 
   @Override
   @Computed
+  public Opt<FileExtension> preferredFileExtension() {
+    return preferredFileExtension.get();
+  }
+
+  @Override
+  @Computed
+  public ISortedSet<FileExtension> fileExtensions() {
+    return fileExtensions.get();
+  }
+
+  @Override
+  @Computed
+  public Opt<Charset> charset() {
+    return core.parameters().tryGet(DataType.CHARSET_PARAMETER_NAME).map(Charset::forName);
+  }
+
+  @Override
+  @Computed
   public MimeType mimeType() {
     final MimeType mimeType = call(()->new MimeType(primaryType(), subType()));
     for(final Entry<String, String> e: parameters().entrySet()) {
@@ -83,8 +118,15 @@ public final class DataTypeImp implements DataType {
 
   @Override
   @Computed
-  public String baseType() {
-    return primaryType() + "/" + subType();
+  public DataType baseType() {
+    return core.parameters().isEmpty()
+      ? this
+      :( BeanUtils.beanBuilder(DataType.class)
+        .set(DataType::primaryType).to(core.primaryType())
+        .set(DataType::subType).to(core.subType())
+        .build()
+      )
+    ;
   }
 
   @Override
@@ -99,7 +141,7 @@ public final class DataTypeImp implements DataType {
 
   @Override
   public String toString() {
-    return baseType() + parametersToString();
+    return core.primaryType()+"/"+core.subType() + parametersToString();
   }
 
   private String parametersToString() {
@@ -118,16 +160,21 @@ public final class DataTypeImp implements DataType {
 
   private static DataType parse(final String encoded, final ExtendedBeanBuilder<DataType> builder) {
     final MimeType mimeType = call(()->new MimeType(encoded));
-    final ISortedMap.Builder<String, String> parameters = ICollections.sortedMapBuilder();
-    final Enumeration<?> names = mimeType.getParameters().getNames();
-    while(names.hasMoreElements()) {
-      final String name = (String) names.nextElement();
-      parameters.put(name, mimeType.getParameter(name));
-    }
     builder
       .set(DataType::primaryType).to(mimeType.getPrimaryType())
       .set(DataType::subType).to(mimeType.getSubType())
-      .set(DataType::parameters).to(parameters.build())
+      .set(DataType::parameters)
+      .to(
+        Collections.list((Enumeration<?>)mimeType.getParameters().getNames())
+        .stream().map(n->toLowerCase((String)n))
+        .collect(toISortedMap(
+          name->name,
+          name->(name.equals(CHARSET_PARAMETER_NAME)
+            ? verifyEqualsResult(mimeType.getParameter(name), cs->Charset.forName(cs).name())
+            : mimeType.getParameter(name)
+          )
+        ))
+      )
     ;
     return builder.buildUnvalidated();
   }

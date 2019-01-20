@@ -12,10 +12,10 @@ package com.github.gv2011.util.time;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -70,5 +70,13 @@ public class TimeUtils {
     double result = time.getSeconds();
     result += ((double)time.getNano()) / NANOS_PER_SECOND;
     return result;
+  }
+
+  public static String fileSafeFormat(final Instant instant) {
+    return instant.toString().replace(':', '.');
+  }
+
+  public static String fileSafeInstant() {
+    return fileSafeFormat(Instant.now());
   }
 }

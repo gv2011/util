@@ -32,6 +32,7 @@ import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
+import static com.github.gv2011.util.ex.Exceptions.wrap;
 import static com.github.gv2011.util.icol.ICollections.toISortedMap;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -172,6 +173,7 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   @Override
   public final int hashCode(final T bean) {
     return clazz.hashCode() * 31 + properties.values().stream()
+      .filter(p->p.function().isEmpty())
       .mapToInt(p->p.name().hashCode() ^ p.getValue(bean).hashCode())
       .sum()
     ;
@@ -417,7 +419,11 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
 
   @Override
   public final <V> V get(final T bean, final Property<V> property) {
-    return property.type().cast(call(()->clazz.getMethod(property.name()).invoke(bean)));
+    try {
+      return property.type().cast(clazz.getMethod(property.name()).invoke(bean));
+    } catch (final Exception e) {
+      throw wrap(e, format("Could not read property {} of {}.", property, this));
+    }
   }
 
 

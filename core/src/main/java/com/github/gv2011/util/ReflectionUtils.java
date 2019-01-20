@@ -95,6 +95,7 @@ public final class ReflectionUtils {
     private final ThreadLocal<Method> method = new ThreadLocal<>();
     private Lookup(final Class<T> interfaze){
       final InvocationHandler ih = (proxy, method, args) -> {
+        notNull(method);
         this.method.set(method);
         return defaultValue(method.getReturnType());
       };

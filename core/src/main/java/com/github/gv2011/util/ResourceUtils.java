@@ -100,6 +100,10 @@ public class ResourceUtils {
 	return ByteUtils.copyFromStream(getResourceUrl(resourceName)::openStream);
   }
 
+  public static final String getTextResource(final String resourceName){
+    return getTextResources(resourceName).single();
+  }
+
   public static final ISet<String> getTextResources(final String resourceName){
     return
         LegacyCollections.stream(

@@ -12,10 +12,10 @@ package com.github.gv2011.util.bytes;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -41,12 +41,12 @@ public class DataTypeTest {
     final String encoded =
       "multipart/related; boundary=example-2; start=\"<950118.AEBH@XIson.com>\"; type=\"Text/x-Okie\""
     ;
-    final DataType type = BeanUtils.parse(DataType.class,encoded);
+    final DataType type = DataType.parse(encoded);
     assertThat(type.getClass(), is(DataTypeImp.class));
 
     assertThat(type.primaryType(), is("multipart"));
     assertThat(type.subType(),     is("related"));
-    assertThat(type.baseType(),    is("multipart/related"));
+    assertThat(type.baseType(),    is(DataType.parse("multipart/related")));
 
     assertThat(type.parameters(),  is(
       ICollections.mapBuilder()

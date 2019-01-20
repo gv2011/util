@@ -79,4 +79,16 @@ implements CollectionBuilder<C,E,B> {
     return addAll(elements);
   }
 
+  public final int size() {
+    return list.size();
+  }
+
+  public final E get(final int index) {
+    return list.get(index);
+  }
+
+  public final E set(final int index, final E element) {
+    return list.set(index, element);
+  }
+
 }

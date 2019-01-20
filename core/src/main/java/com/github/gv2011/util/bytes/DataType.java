@@ -12,10 +12,10 @@ package com.github.gv2011.util.bytes;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,22 +27,34 @@ package com.github.gv2011.util.bytes;
  */
 import static com.github.gv2011.util.ex.Exceptions.call;
 
+import java.nio.charset.Charset;
 import java.util.Map.Entry;
 
 import javax.activation.MimeType;
 
-import com.github.gv2011.util.beans.Bean;
+import com.github.gv2011.util.BeanUtils;
 import com.github.gv2011.util.beans.Computed;
+import com.github.gv2011.util.beans.Final;
 import com.github.gv2011.util.bytes.DataTypeImp.DataTypeParser;
 import com.github.gv2011.util.bytes.DataTypeImp.DataTypeValidator;
 import com.github.gv2011.util.icol.ISortedMap;
+import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.icol.Opt;
+
 
 /**
  * A Multipurpose Internet Mail Extension (MIME) type, as defined in RFC 2045
  * and 2046.
  */
-@Bean(implementation=DataTypeImp.class, parser=DataTypeParser.class, validator=DataTypeValidator.class)
+@Final(implementation=DataTypeImp.class, parser=DataTypeParser.class, validator=DataTypeValidator.class)
 public interface DataType{
+
+  public static final String CHARSET_PARAMETER_NAME = "charset";
+
+
+  public static DataType parse(final String dataType){
+    return BeanUtils.parse(DataType.class, dataType);
+  }
 
   String primaryType();
 
@@ -51,13 +63,22 @@ public interface DataType{
   ISortedMap<String,String> parameters();
 
   @Computed
+  Opt<FileExtension> preferredFileExtension();
+
+  @Computed
+  ISortedSet<FileExtension> fileExtensions();
+
+  @Computed
   MimeType mimeType();
+
+  @Computed
+  Opt<Charset> charset();
 
   /**
    * @return a String representation without the parameter list
    */
   @Computed
-  String baseType();
+  DataType baseType();
 
   public static MimeType mimeType(final DataType dataType){
     final MimeType result = call(()->new MimeType(dataType.primaryType(), dataType.subType()));
@@ -66,11 +87,5 @@ public interface DataType{
     }
     return result;
   }
-
-  public static String getBaseType(final DataType dataType) {
-    return dataType.primaryType() + "/" + dataType.subType();
-  }
-
-
 
 }

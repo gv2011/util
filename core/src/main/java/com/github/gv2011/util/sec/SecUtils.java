@@ -69,19 +69,25 @@ import com.github.gv2011.util.bytes.Hash256;
 import com.github.gv2011.util.ex.ThrowingConsumer;
 import com.github.gv2011.util.ex.ThrowingSupplier;
 import com.github.gv2011.util.icol.IList;
+import com.github.gv2011.util.icol.Opt;
 
 public final class SecUtils {
 
-  private static final String PKIX = "PKIX";
   public static final String TLSV12 = "TLSv1.2";
-  private static final String SUN_X509 = "SunX509";
-  private static final String CERT_FILE_PATTERN = "cert{}.crt";
-  private static final String CERT_ALIAS = "cert";
   public static final String JKS = "JKS";
-  private static final String X_509 = "X.509";
   public static final String RSA = "RSA";
   public static final String JKS_DEFAULT_PASSWORD = "changeit";
   public static final String KEY_FILE_NAME = "key.pkcs8";
+  public static final String PKCS12 = "PKCS12";
+  public static final String PKCS12_FILE_EXTENSION = "p12";
+  public static final String JAVAX_NET_DEBUG_SYS_PROP = "javax.net.debug";
+  public static final String JAVAX_NET_DEBUG_SYS_PROP_ALL = "all";
+
+  private static final String PKIX = "PKIX";
+  private static final String SUN_X509 = "SunX509";
+  private static final String CERT_FILE_PATTERN = "cert{}.crt";
+  private static final String CERT_ALIAS = "cert";
+  private static final String X_509 = "X.509";
 
   private SecUtils(){staticClass();}
 
@@ -142,6 +148,24 @@ public final class SecUtils {
     }
   }
 
+  public static final Bytes convertToPkcs12(final Path folder){
+    final RsaKeyPair keyPair = RsaKeyPair.parse(ByteUtils.read(folder.resolve("key.rsa")));
+    final IList<X509Certificate> chain = readCertificateChain(folder);
+    return call(()->{
+      final KeyStore ks = KeyStore.getInstance(SecUtils.PKCS12);
+      ks.load(null, null);
+      ks.setKeyEntry(
+        CERT_ALIAS,
+        keyPair.getPrivate(),
+        JKS_DEFAULT_PASSWORD.toCharArray(),
+        chain.toArray(new Certificate[chain.size()])
+      );
+      final BytesBuilder bytesBuilder = ByteUtils.newBytesBuilder();
+      ks.store(bytesBuilder, "default".toCharArray());
+      return bytesBuilder.build();
+    });
+  }
+
   public static final IList<X509Certificate> readCertificateChain(final Path folder){
     final IList.Builder<X509Certificate> chain = listBuilder();
     int i = 0;
@@ -167,21 +191,46 @@ public final class SecUtils {
     return ks;
   }
 
-  public static final Bytes createJKSKeyStore(
+  public static final KeyStore createJKSKeyStore(
     final RsaKeyPair privKey, final IList<X509Certificate> certChain
+  ){
+    final KeyStore keyStore = call(()->KeyStore.getInstance(JKS));
+    call(()->keyStore.load(null));
+    return addToKeyStore(privKey, certChain, keyStore, Opt.empty());
+  }
+
+
+  public static final KeyStore addToKeyStore(
+    final RsaKeyPair privKey, final IList<X509Certificate> certChain, final KeyStore keystore, final Opt<String> alias
   ){
     final X509Certificate cert = certChain.get(0);
     verifyEqual(privKey.getPublic(), cert.getPublicKey());
-    final KeyStore keystore = call(()->KeyStore.getInstance(JKS));
-    call(()->keystore.load(null, null));
     call(()->keystore.setKeyEntry(
-      CERT_ALIAS, privKey.getPrivate(),
+      alias.orElseGet(()->findAlias(keystore)),
+      privKey.getPrivate(),
       JKS_DEFAULT_PASSWORD.toCharArray(),
       certChain.toArray(new Certificate[certChain.size()])
     ));
+    return keystore;
+  }
+
+  private static final String findAlias(final KeyStore ks){
+    return call(()->{
+      String alias = CERT_ALIAS;
+      int i=0;
+      while(ks.containsAlias(alias)) {
+        alias = CERT_ALIAS+(++i);
+      }
+      return alias;
+    });
+  }
+
+  public static final Bytes createJKSKeyStoreBytes(
+    final RsaKeyPair privKey, final IList<X509Certificate> certChain
+  ){
     Bytes result;
     try(BytesBuilder builder = ByteUtils.newBytesBuilder()){
-      call(()->keystore.store(builder, JKS_DEFAULT_PASSWORD.toCharArray()));
+      call(()->createJKSKeyStore(privKey, certChain).store(builder, JKS_DEFAULT_PASSWORD.toCharArray()));
       result = builder.build();
     }
     return result;

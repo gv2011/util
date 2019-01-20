@@ -111,7 +111,7 @@ public class ByteUtils {
   }
 
   public static TypedBytes asUtf8(final String text){
-    return new ArrayBytes(text.getBytes(UTF_8)).typed(DataTypeImp.TEXT);
+    return new ArrayBytes(text.getBytes(UTF_8)).typed(DataTypes.TEXT_PLAIN_UTF_8);
   }
 
   public static Hash256 hash(final String text){

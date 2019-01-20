@@ -2,6 +2,7 @@ package com.github.gv2011.util.beans.cglib;
 
 import java.math.BigDecimal;
 
+import com.github.gv2011.util.beans.Bean;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.tstr.TypedString;
@@ -35,7 +36,7 @@ public final class PolymorphicTestModel {
 
   public static interface Subtype extends TypedString<Subtype>{}
 
-  public static abstract class Animal{
+  public static abstract class Animal implements Bean{
     public abstract Subtype type();
     public abstract Opt<? extends Animal> bestFriend();
     public abstract IList<? extends Animal> contacts();

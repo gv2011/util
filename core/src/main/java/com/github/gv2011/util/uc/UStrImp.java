@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.stream.IntStream;
 
 import com.github.gv2011.util.icol.AbstractIList;
+import com.github.gv2011.util.icol.IList;
 
 public abstract class UStrImp extends AbstractIList<UChar> implements UStr {
 
@@ -134,6 +135,12 @@ public abstract class UStrImp extends AbstractIList<UChar> implements UStr {
   @Override
   public final UStr addElement(final UChar ch) {
     return new UStrBuilderImp().append(this).append(ch).build();
+  }
+
+  @Override
+  public final IList<UChar> reversed() {
+    // TODO Auto-generated method stub
+    throw notYetImplementedException();
   }
 
 }

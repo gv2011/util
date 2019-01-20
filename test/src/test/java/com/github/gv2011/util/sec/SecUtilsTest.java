@@ -44,7 +44,7 @@ public class SecUtilsTest extends AbstractTest{
   public void testCreateJKSKeyStore() {
     final RsaKeyPair privKey = RsaKeyPair.parse(getResourceBytes("rsaprivcrt.pkcs8"));
     final X509Certificate cert = SecUtils.readCertificate(getResourceBytes("cert.der"));
-    SecUtils.createJKSKeyStore(privKey, listOf(cert));
+    SecUtils.createJKSKeyStoreBytes(privKey, listOf(cert));
   }
 
   @Test

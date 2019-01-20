@@ -95,6 +95,12 @@ public interface ISet<E> extends Set<E>, ICollectionG<E, ISet<E>>{
   }
 
   @Override
+  default XStream<E> stream() {
+      return XStream.stream(spliterator(), false);
+  }
+
+
+  @Override
   default XStream<E> parallelStream() {
       return XStream.stream(spliterator(), true);
   }

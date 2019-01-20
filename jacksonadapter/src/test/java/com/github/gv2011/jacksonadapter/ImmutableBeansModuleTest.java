@@ -34,6 +34,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.gv2011.util.beans.Bean;
 
 public class ImmutableBeansModuleTest {
 
@@ -46,7 +47,7 @@ public class ImmutableBeansModuleTest {
       this.mapper = mapper;
   }
 
-  public static interface BeanB{
+  public static interface BeanB extends Bean{
       String propA();
       Integer propB();
   }

@@ -35,6 +35,7 @@ import static java.util.stream.Collectors.joining;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -118,6 +119,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     else if(clazz.equals(IsoDay.class)) result = stringBasedType(IsoDay.class);
     else if(clazz.equals(InetSocketAddress.class)) result = new InetSocketAddressType();
     else if(clazz.equals(Hash256.class)) result = stringBasedType(Hash256.class);
+    else if(clazz.equals(URI.class)) result = stringBasedType(URI::create);
     else if(auto.isSupported(clazz)) result = auto.createType(clazz);
     else result = null;
     return Opt.ofNullable((AbstractElementaryTypeHandler<T>) result);

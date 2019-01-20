@@ -4,7 +4,7 @@ package com.github.gv2011.util.ex;
  * #%L
  * The MIT License (MIT)
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2019 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,18 +25,13 @@ package com.github.gv2011.util.ex;
  * THE SOFTWARE.
  * #L%
  */
-
-
-
-
-import static org.slf4j.LoggerFactory.getLogger;
-
 import java.io.InterruptedIOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.MessageFormatter;
 
 import com.github.gv2011.util.Nothing;
@@ -49,7 +44,7 @@ public final class Exceptions {
 
   public static final boolean ASSERTIONS_ON;
 
-  private final static Logger LOG = getLogger(Exceptions.class);
+  private static @Nullable Logger logger = null;
 
   static{
     boolean on = false;
@@ -104,6 +99,10 @@ public final class Exceptions {
     return MessageFormatter.arrayFormat(pattern, arguments).getMessage();
   }
 
+  public static <R> R call(final ThrowingSupplier<R> throwing, final Supplier<?> message){
+    return throwing.asFunction().apply(null);
+  }
+
   public static <R> R call(final ThrowingSupplier<R> throwing){
     return throwing.asFunction().apply(null);
   }
@@ -117,7 +116,7 @@ public final class Exceptions {
     throwing.asFunction().apply(null);
   }
 
-  public static void tryAll(final Runnable... operations){
+  public static void tryAll(final ThrowingRunnable... operations){
     tryAll(Arrays.asList(operations));
   }
 
@@ -126,11 +125,11 @@ public final class Exceptions {
    * All but the last exception will be logged, but otherwise ignored.
    */
   public static void tryAll(
-    final List<Runnable> operations
+    final List<ThrowingRunnable> operations
   ){
     if(operations.isEmpty()); //do nothing
     else if(operations.size()==1) {
-      operations.get(0).run();
+      call(()->operations.get(0).run());
     }
     else{
       Throwable t1 = null;
@@ -138,14 +137,14 @@ public final class Exceptions {
         try{operations.get(0).run();}
         catch(final Throwable t){
           t1 = t;
-          throw t;
+          throw wrap(t);
         }
       }finally{
         try{tryAll(operations.subList(1, operations.size()));}
         catch(final Throwable t2){
           if(t1!=null){
             //Log this exception, because it is hidden by t2.
-            LOG.error(t1.getMessage(), t1);
+            getLogger().error(t1.getMessage(), t1);
           }
           throw t2;
         }
@@ -160,7 +159,7 @@ public final class Exceptions {
     if(ASSERTIONS_ON){
       throw wrap(t);
     }
-    else LOG.error(t.getMessage()+" (tolerated)", t);
+    else getLogger().error(t.getMessage()+" (tolerated)", t);
   }
 
   public static void staticClass(){
@@ -230,17 +229,30 @@ public final class Exceptions {
   }
 
   public static <C> Nothing callWithCloseable(
-      final ThrowingSupplier<C> supplier,
-      final ThrowingConsumer<C> consumer,
-      final ThrowingConsumer<? super C> closer
-    ){
-      try{
-        final C closeable = supplier.get();
-        try{consumer.accept(closeable);}
-        finally{closer.accept(closeable);}
-      }
-      catch(final Exception ex){throw wrap(ex);}
-      return Nothing.INSTANCE;
+    final ThrowingSupplier<C> supplier,
+    final ThrowingConsumer<C> consumer,
+    final ThrowingConsumer<? super C> closer
+  ){
+    try{
+      final C closeable = supplier.get();
+      try{consumer.accept(closeable);}
+      finally{closer.accept(closeable);}
     }
+    catch(final Exception ex){throw wrap(ex);}
+    return Nothing.INSTANCE;
+  }
+
+  /**
+   * Lazy creation because of bootstrapping.
+   */
+  private static Logger getLogger() {
+    Logger logger = Exceptions.logger;
+    if(logger==null){
+      logger = LoggerFactory.getLogger(Exceptions.class);
+      Exceptions.logger = logger;
+    }
+    return logger;
+  }
+
 
 }

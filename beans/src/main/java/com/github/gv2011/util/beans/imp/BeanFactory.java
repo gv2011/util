@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import com.github.gv2011.util.ReflectionUtils;
 import com.github.gv2011.util.ann.VisibleForTesting;
 import com.github.gv2011.util.beans.AnnotationHandler;
+import com.github.gv2011.util.beans.Bean;
 import com.github.gv2011.util.beans.Elementary;
 import com.github.gv2011.util.beans.TypeNameStrategy;
 import com.github.gv2011.util.beans.TypeResolver;
@@ -82,6 +83,11 @@ public abstract class BeanFactory{
       else{
         final Opt<Class<?>> beanSuper = getAllInterfaces(clazz).parallelStream().tryFindAny(this::isBeanClass);
         if(beanSuper.isPresent()) whyNot = format("{} is subclass of bean class {}.", clazz, beanSuper.get());
+      }
+    }
+    if(whyNot.isEmpty()){
+      if(!(annotationHandler.annotatedAsBean(clazz) || Bean.class.isAssignableFrom(clazz))){
+        whyNot = format("{} is neither annotated as beann nor a subclass of Bean.", clazz);
       }
     }
     return whyNot;
@@ -126,7 +132,7 @@ public abstract class BeanFactory{
     return notBeanReason;
   }
 
-  private String checkElementary(Class<?> clazz) {
+  private String checkElementary(final Class<?> clazz) {
     if(Elementary.class.isAssignableFrom(clazz)) return "is subclass of "+Elementary.class.getSimpleName();
     else return "";
   }
@@ -270,7 +276,7 @@ public abstract class BeanFactory{
   }
 
 
-  public final boolean isPropertyMethod(Class<?> owner, final Method m) {
+  public final boolean isPropertyMethod(final Class<?> owner, final Method m) {
     boolean result;
     if(m.getParameterCount()!=0) result = false;
     else if(isObjectMethod(m)) result = false;
@@ -279,7 +285,7 @@ public abstract class BeanFactory{
       if(result){
         final Class<?> returnType = m.getReturnType();
         verify(
-          returnType!=void.class && returnType!=Void.class, 
+          returnType!=void.class && returnType!=Void.class,
           ()->format("Method {}:{} has void return type.", owner.getName(), m.getName())
         );
       }

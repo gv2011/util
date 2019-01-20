@@ -99,6 +99,11 @@ public class BytesBuilder extends FilterOutputStream implements Builder<Bytes>, 
     for(int i=off; i<end; i++) hashCode = 31*hashCode + Byte.hashCode(b[i]);
   }
 
+  @Override
+  public void write(final byte b[]){
+      write(b, 0, b.length);
+  }
+
   public BytesBuilder append(final Bytes b){
     b.write(this);
     return this;

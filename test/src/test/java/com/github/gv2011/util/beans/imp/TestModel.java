@@ -26,7 +26,8 @@ package com.github.gv2011.util.beans.imp;
  * #L%
  */
 
-import com.github.gv2011.util.beans.Abstract;
+import com.github.gv2011.util.beans.AbstractRoot;
+import com.github.gv2011.util.beans.Bean;
 import com.github.gv2011.util.beans.Default;
 import com.github.gv2011.util.beans.FixedValue;
 import com.github.gv2011.util.beans.Other;
@@ -37,18 +38,18 @@ import com.github.gv2011.util.time.TimeSpan;
 
 public class TestModel {
 
-  @Abstract
+  @AbstractRoot
   public static interface Sized{
     int size();
   }
 
-  @Abstract
+  @AbstractRoot
   public static interface Coloured{
     String colour();
   }
 
-  @Abstract(subClasses={BlackPea.class, ChickPea.class})
-  public static interface Pea extends Sized, Coloured{
+  @AbstractRoot(subClasses={BlackPea.class, ChickPea.class})
+  public static interface Pea extends Bean, Sized, Coloured{
     String type();
     TimeSpan timeSpan();
   }
@@ -71,8 +72,8 @@ public class TestModel {
 
   public static enum Colour{RED, @Default BLUE, @Other OTHER}
 
-  @Abstract(subClasses={NormalPot.class, ChickPeaPot.class})
-  public static interface Pot{
+  @AbstractRoot(subClasses={NormalPot.class, ChickPeaPot.class})
+  public static interface Pot extends Bean{
     String type();
     Pea content();
     IList<? extends Pea> moreContent();

@@ -146,4 +146,8 @@ public interface Opt<E> extends ISet<E>, Constant<E>{
   @Override
   public Opt<E> subtract(final Collection<?> other);
 
+  default <T> Opt<T> tryCast(final Class<T> clazz){
+    return flatMap(o->clazz.isInstance(o) ? of(clazz.cast(o)) : empty());
+  }
+
 }

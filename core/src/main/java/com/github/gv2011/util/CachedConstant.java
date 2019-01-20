@@ -1,5 +1,7 @@
 package com.github.gv2011.util;
 
+import com.github.gv2011.util.icol.Opt;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -39,5 +41,7 @@ public interface CachedConstant<T> extends Constant<T>{
    * Must be called before {@link Constant#get}.
    */
   void set(T value);
+
+  Opt<T> tryGet();
 
 }

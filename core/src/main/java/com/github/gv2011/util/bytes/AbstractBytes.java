@@ -287,6 +287,15 @@ public abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
   }
 
   @Override
+  public String toHex() {
+    final StringBuilder sb = new StringBuilder();
+    for(int i=0; i<size(); i++){
+      sb.append(toHex(getUnsigned(i)));
+    }
+    return sb.toString();
+  }
+
+  @Override
   public String toHexMultiline() {
     final StringBuilder sb = new StringBuilder();
     int column = 0;
@@ -439,7 +448,7 @@ public abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
 
   @Override
   public TypedBytes typed() {
-    return typed(DataTypeImp.APPLICATION_OCTET_STREAM);
+    return typed(DataTypes.APPLICATION_OCTET_STREAM);
   }
 
   @Override

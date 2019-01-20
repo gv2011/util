@@ -12,10 +12,10 @@ package com.github.gv2011.util;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -37,6 +37,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.NoSuchElementException;
@@ -390,5 +391,30 @@ public class CollectionUtils {
     final int size = endExclusive - startInclusive;
     if(size>=1) return IntStream.range(startInclusive, endExclusive);
     else return IntStream.range(0, size).map(i->startInclusive-i);
+  }
+
+  public static int listHashCode(final Iterable<?> list){
+    int hashCode = 1;
+    for(final Object e: list) hashCode = 31*hashCode + (e==null ? 0 : e.hashCode());
+    return hashCode;
+  }
+
+
+  public static boolean listEquals(final List<?> list1, final Object o){
+    final boolean result;
+    if (list1 == o) result = true;
+    else if (!(o instanceof List)) result = false;
+    else{
+      final ListIterator<?> e1 = list1.listIterator();
+      final ListIterator<?> e2 = ((List<?>) o).listIterator();
+      boolean differenceFound = false;
+      while (e1.hasNext() && e2.hasNext() && !differenceFound) {
+        final Object o1 = e1.next();
+        final Object o2 = e2.next();
+        if (!(o1==null ? o2==null : o1.equals(o2))) differenceFound = true;
+      }
+      result = !differenceFound && !e1.hasNext() && !e2.hasNext();
+    }
+    return result;
   }
 }

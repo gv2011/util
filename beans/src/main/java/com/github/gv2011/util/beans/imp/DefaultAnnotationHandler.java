@@ -41,9 +41,9 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 
 import com.github.gv2011.util.Nothing;
-import com.github.gv2011.util.beans.Abstract;
+import com.github.gv2011.util.beans.AbstractRoot;
 import com.github.gv2011.util.beans.AnnotationHandler;
-import com.github.gv2011.util.beans.Bean;
+import com.github.gv2011.util.beans.Final;
 import com.github.gv2011.util.beans.Computed;
 import com.github.gv2011.util.beans.DefaultValue;
 import com.github.gv2011.util.beans.FixedBooleanValue;
@@ -62,7 +62,7 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
 
   @Override
   public <B> Opt<Class<? extends TypeResolver<B>>> typeResolver(final Class<? extends B> clazz) {
-    return Opt.ofNullable(clazz.getAnnotation(Abstract.class))
+    return Opt.ofNullable(clazz.getAnnotation(AbstractRoot.class))
       .flatMap(a->{
         @SuppressWarnings({"unchecked"})
         final Class<? extends TypeResolver<B>> typeResolver = (Class<? extends TypeResolver<B>>) a.typeResolver();
@@ -74,7 +74,7 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
 
   @Override
   public Opt<Class<? extends TypeNameStrategy>> typeNameStrategy(final Class<?> clazz) {
-    return Opt.ofNullable(clazz.getAnnotation(Abstract.class))
+    return Opt.ofNullable(clazz.getAnnotation(AbstractRoot.class))
       .flatMap(a->{
         final Class<? extends TypeNameStrategy> typeNameStrategy = a.typeNameStrategy();
         if(typeNameStrategy.equals(TypeNameStrategy.class)) return Opt.empty();
@@ -85,21 +85,21 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
 
   @Override
   public boolean annotatedAsBean(final Class<?> clazz) {
-    final boolean result = clazz.getAnnotation(Bean.class)!=null;
+    final boolean result = clazz.getAnnotation(Final.class)!=null;
     if(result) verify(!declaredAsAbstract(clazz));
     return result;
   }
 
   @Override
   public boolean declaredAsAbstract(final Class<?> clazz) {
-    final boolean result = clazz.getAnnotation(Abstract.class)!=null;
+    final boolean result = clazz.getAnnotation(AbstractRoot.class)!=null;
     if(result) verify(!annotatedAsBean(clazz));
     return result;
   }
 
   @Override
   public boolean isPolymorphicRoot(final Class<?> clazz) {
-    final boolean result = Opt.ofNullable(clazz.getAnnotation(Abstract.class))
+    final boolean result = Opt.ofNullable(clazz.getAnnotation(AbstractRoot.class))
       .map(a->!subClasses(a).isEmpty())
       .orElse(false)
     ;
@@ -129,10 +129,10 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
 
   @Override
   public ISet<Class<?>> subClasses(final Class<?> clazz) {
-    return subClasses(notNull(clazz.getAnnotation(Abstract.class)));
+    return subClasses(notNull(clazz.getAnnotation(AbstractRoot.class)));
   }
 
-  private ISet<Class<?>> subClasses(final Abstract annotation) {
+  private ISet<Class<?>> subClasses(final AbstractRoot annotation) {
     final Class<?>[] subClasses = annotation.subClasses();
     verify(subClasses.length>0);
     if(subClasses.length==1 && subClasses[0].equals(Nothing.class)) return emptySet();
@@ -161,8 +161,8 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
   @Override
   public Opt<Class<?>> getImplementingClass(final Class<?> clazz) {
     return
-      Opt.ofNullable(clazz.getAnnotation(Bean.class))
-      .map(Bean::implementation)
+      Opt.ofNullable(clazz.getAnnotation(Final.class))
+      .map(Final::implementation)
       .flatMap(impl->impl.equals(Void.class) ? Opt.empty() : Opt.of(impl))
     ;
   }
@@ -170,18 +170,18 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
   @Override
   public Opt<Class<? extends Validator<?>>> getValidatorClass(final Class<?> clazz) {
     return
-      Opt.ofNullable(clazz.getAnnotation(Bean.class))
-      .map(Bean::validator)
-      .flatMap(impl->impl.equals(Bean.NoopValidator.class) ? Opt.empty() : Opt.of(impl))
+      Opt.ofNullable(clazz.getAnnotation(Final.class))
+      .map(Final::validator)
+      .flatMap(impl->impl.equals(Final.NoopValidator.class) ? Opt.empty() : Opt.of(impl))
     ;
   }
 
   @Override
   public Opt<Class<? extends Parser<?>>> getParser(final Class<?> clazz) {
     return
-        Opt.ofNullable(clazz.getAnnotation(Bean.class))
-        .map(Bean::parser)
-        .flatMap(impl->impl.equals(Bean.NoopParser.class) ? Opt.empty() : Opt.of(impl))
+        Opt.ofNullable(clazz.getAnnotation(Final.class))
+        .map(Final::parser)
+        .flatMap(impl->impl.equals(Final.NoopParser.class) ? Opt.empty() : Opt.of(impl))
       ;
   }
 

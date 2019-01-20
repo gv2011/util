@@ -37,7 +37,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.function.Function;
@@ -74,6 +76,14 @@ public final class StringUtils {
       format("{} does not start with {}.", s, prefix)
     );
     return s.substring(prefix.length());
+  }
+
+  public static String toLowerCase(final String s) {
+    return s.toLowerCase(Locale.ENGLISH);
+  }
+
+  public static String toUpperCase(final String s) {
+    return s.toUpperCase(Locale.ENGLISH);
   }
 
   public static Optional<String> tryRemovePrefix(final String s, final String prefix) {
@@ -163,7 +173,7 @@ public final class StringUtils {
 
   @Deprecated//Moved to FileUtils
   public static String readText(final String path, final String... morePathElements) {
-    return call(()->new String(Files.readAllBytes(FileUtils.path(path, morePathElements)), UTF_8));
+    return call(()->new String(Files.readAllBytes(Paths.get(path, morePathElements)), UTF_8));
   }
 
   @Deprecated//Moved to com.github.gv2011.util.FileUtils.writeText(String, String, String...)
@@ -177,16 +187,28 @@ public final class StringUtils {
   }
 
   public static IList<String> split(final String text, final char c) {
+    final Builder<String> listBuilder = listBuilder();
+    addSplit(text, c, listBuilder);
+    return listBuilder.build();
+  }
+
+  public static void addSplit(final String text, final char c, final Builder<String> listBuilder) {
     int i = text.indexOf(c);
     int from = 0;
-    final Builder<String> b = listBuilder();
     while(i!=-1) {
-      b.add(text.substring(from, i));
+      listBuilder.add(text.substring(from, i));
       from = i+1;
       i = text.indexOf(c, from);
     }
-    b.add(text.substring(from));
-    return b.build();
+    listBuilder.add(text.substring(from));
+  }
+
+  public static boolean isTrimmed(final String s) {
+    return s.trim().equals(s);
+  }
+
+  public static boolean isLowerCase(final String s) {
+    return toLowerCase(s).equals(s);
   }
 
 }

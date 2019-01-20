@@ -2,6 +2,7 @@ package com.github.gv2011.util.beans.cglib;
 
 import java.util.UUID;
 
+import com.github.gv2011.util.beans.Bean;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
 import com.github.gv2011.util.tstr.TypedString;
@@ -31,7 +32,7 @@ import com.github.gv2011.util.tstr.TypedString;
  * THE SOFTWARE.
  * #L%
  */
-public abstract class TestModel {
+public abstract class TestModel implements Bean{
 
   public static interface Id extends TypedString<Id>{};
 

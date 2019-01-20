@@ -1,5 +1,10 @@
 package com.github.gv2011.util.beans.imp;
 
+import static com.github.gv2011.util.ex.Exceptions.call;
+
+import java.lang.reflect.Constructor;
+import java.util.function.Function;
+
 /*-
  * #%L
  * util-beans
@@ -36,14 +41,35 @@ class TypedStringType<S extends TypedString<S>> extends AbstractElementaryType<S
 
   private final TypeHandler handler;
   private final Opt<S> defaultValue;
+  private final Function<String,S> constructor;
 
   TypedStringType(final JsonFactory jf, final Class<S> clazz) {
     super(jf, clazz);
+    if(clazz.isInterface()){
+      constructor = v->TypedString.create(clazz, v);
+    }
+    else{
+      final Constructor<S> constr = call(()->clazz.getConstructor(String.class));
+      constructor = v->call(()->constr.newInstance(v));
+    }
     this.handler = new TypeHandler();
     this.defaultValue = Opt.of(create(""));
   }
 
-  private class TypeHandler extends AbstractElementaryTypeHandler<S>{
+  @Override
+  ElementaryTypeHandler<S> handler(){return handler;}
+
+  S create(final String value) {
+    return constructor.apply(value);
+//    return TypedString.create(clazz, value);
+  }
+
+  @Override
+  public final boolean hasStringForm() {
+    return true;
+  }
+
+  private final class TypeHandler extends AbstractElementaryTypeHandler<S>{
     @Override
     public S fromJson(final JsonNode json) {
       return create(json.asString());
@@ -55,16 +81,5 @@ class TypedStringType<S extends TypedString<S>> extends AbstractElementaryType<S
     }
   }
 
-  @Override
-  ElementaryTypeHandler<S> handler(){return handler;}
-
-  S create(final String value) {
-    return TypedString.create(clazz, value);
-  }
-
-  @Override
-  public final boolean hasStringForm() {
-    return true;
-  }
 
 }

@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,23 +27,24 @@ package com.github.gv2011.util.beans.imp;
  */
 import java.net.URI;
 
+import com.github.gv2011.util.beans.Bean;
 import com.github.gv2011.util.beans.Computed;
 import com.github.gv2011.util.beans.DefaultValue;
 
 /**
  * Example class with computed attribute
  */
-public interface Host {
-  
+public interface Host extends Bean{
+
   @DefaultValue("true")
   Boolean secure();
-  
+
   String host();
-  
+
   @Computed
   URI url();
 
-  public static URI url(Host host) {
+  public static URI url(final Host host) {
     return URI.create((host.secure()?"https://":"http://")+host.host());
   }
 }

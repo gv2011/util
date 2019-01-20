@@ -2,6 +2,7 @@ package com.github.gv2011.util.beans;
 
 import java.util.function.Function;
 
+import com.github.gv2011.util.icol.ICollection;
 import com.github.gv2011.util.icol.Opt;
 
 /*-
@@ -41,6 +42,8 @@ public interface BeanBuilder<T> {
     <V> Setter<T,V> setOpt(Function<T,Opt<V>> method);
 
     BeanBuilder<T> setAll(T bean);
+
+    BeanBuilder<T> setProperties(T bean, ICollection<Function<T,?>> methods);
 
     public interface Setter<T,V> {
       BeanBuilder<T> to(V value);

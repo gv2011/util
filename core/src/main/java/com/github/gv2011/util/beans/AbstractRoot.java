@@ -40,7 +40,7 @@ import com.github.gv2011.util.Nothing;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Abstract {
+public @interface AbstractRoot {
 
     Class<?>[] subClasses() default Nothing.class;
 

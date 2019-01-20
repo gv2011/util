@@ -12,10 +12,10 @@ package com.github.gv2011.util.main;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,36 +27,57 @@ package com.github.gv2011.util.main;
  */
 
 import static com.github.gv2011.util.ex.Exceptions.call;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.slf4j.LoggerFactory.getLogger;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.concurrent.CountDownLatch;
 
 import com.github.gv2011.util.AutoCloseableNt;
+import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.main.MainUtils.ServiceBuilder;
 
 public class MainUtilsTest {
 
-  public static void main(final String[] args){
-    new Thread().start();
-    final MainUtils mainUtils = new MainUtils();
+  public static void main(final String[] args) throws IOException{
+    Files.deleteIfExists(Paths.get("logback.xml"));
+    final MainUtils mainUtils = MainUtils.create(args, new TestServiceBuilder(), Nothing.class);
     new Thread(()->{
-      call(()->Thread.sleep(100));
-      mainUtils.shutdown();
+      call(()->Thread.sleep(3000));
+      getLogger(MainUtilsTest.class).info("Modify");
+      call(()->Files.write(Paths.get("logback.xml"), "\n".getBytes(UTF_8), StandardOpenOption.APPEND));
+      call(()->Thread.sleep(3000));
+      getLogger(MainUtilsTest.class).info("Modify 2");
+      call(()->Files.write(Paths.get("logback.xml"), "\n".getBytes(UTF_8), StandardOpenOption.APPEND));
+      call(()->Thread.sleep(3000));
+      getLogger(MainUtilsTest.class).info("Closing");
+      mainUtils.close();
     }).start();
-    mainUtils.runMain(args, new TestServiceBuilder());
-    System.out.println(3);
+    System.exit(mainUtils.runMain());
   }
 
   private static class TestService implements AutoCloseableNt{
+    private final Thread thread;
+    private final CountDownLatch latch = new CountDownLatch(1);
+    private TestService(){
+      thread = new Thread(()->call(()->latch.await()));
+      thread.start();
+    }
     @Override
-    public void close() {}
+    public void close() {
+      latch.countDown();
+      call(()->thread.join());
+    }
   }
 
-  private static class TestServiceBuilder implements ServiceBuilder<TestService> {
+  private static class TestServiceBuilder implements ServiceBuilder<TestService, Nothing> {
     @Override
-    public void close() {}
-    @Override
-    public TestService startService(final String[] args) throws Exception {
+    public TestService startService(final Nothing configuration) {
       return new TestService();
     }
-
   }
 
 }

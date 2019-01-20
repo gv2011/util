@@ -44,6 +44,7 @@ import com.github.gv2011.util.beans.BeanBuilder;
 import com.github.gv2011.util.beans.ExtendedBeanBuilder;
 import com.github.gv2011.util.beans.Partial;
 import com.github.gv2011.util.beans.Property;
+import com.github.gv2011.util.icol.ICollection;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.Opt;
@@ -125,6 +126,16 @@ public abstract class BeanBuilderSupport<T> implements ExtendedBeanBuilder<T> {
             copy(p, bean);
         }
         return this;
+    }
+
+    @Override
+    public BeanBuilder<T> setProperties(final T bean, final ICollection<Function<T, ?>> methods) {
+      final BeanTypeSupport<T> beanType = beanType();
+      methods.stream()
+        .map(m->beanType.getProperty(m))
+        .forEach(p->copy(p, bean))
+      ;
+      return this;
     }
 
     private <V >void copy(final PropertyImp<T,V> p, final T bean) {
