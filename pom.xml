@@ -45,6 +45,7 @@
   </scm>
 
   <modules>
+    <module>bc</module>
     <module>context</module>
     <module>core</module>
     <module>beans</module>
