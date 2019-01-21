@@ -12,10 +12,10 @@ package com.github.gv2011.util.log.logback;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -74,6 +74,9 @@ public class LogbackLogAdapter implements LogAdapter{
   public void ensureInitialized() {
     synchronized(lock){
       final Logger logger = getLogger(LogbackLogAdapter.class);
+      if(loggerContext==null){
+        loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+      }
       if(configHash!=null){
         logger.info("Logback initialized.");
         fileWatchService = RecursiveServiceLoader.service(FileWatchService.class);
@@ -137,10 +140,17 @@ public class LogbackLogAdapter implements LogAdapter{
   private boolean reconfigure(final Bytes config) {
     synchronized(lock){
       if(!closing){
+        notNull(loggerContext);
         final Logger logger = getLogger(LogbackLogAdapter.class);
         logger.info("Reconfiguring logback.");
-        notNull(loggerContext).reset();
-        doConfigure(config);
+        final Hash256 newHash = config.hash();
+        verify(!newHash.equals(configHash));
+        final JoranConfigurator configurator = new JoranConfigurator();
+        configurator.setContext(loggerContext);
+        loggerContext.reset();
+        callWithCloseable(config::openStream, s->{configurator.doConfigure(s);});
+        configHash = newHash;
+        logger.info("Reconfigured logback.");
       }
       return !closing;
     }

@@ -12,10 +12,10 @@ package com.github.gv2011.util.filewatch;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -182,29 +182,36 @@ public class DefaultFileWatchService implements FileWatchService, AutoCloseableN
   }
 
   private void doCallback(final Registration r){
-    if(!closing){
-      final Bytes content = ByteUtils.read(r.file);
-      final Hash256 hash = content.hash();
-      if(hash.equals(r.hash)){
-        LOG.debug("File {} has not changed, watching it again.", r);
-        watch(r.file, hash, r.changedCallback);
-      }
-      else{
-        LOG.info("File {} has changed, running callback (content: {}).", r, hash);
-        final boolean active = r.changedCallback.apply(content);
-        if(active && !closing){
-          LOG.debug("Callback for {} done, resume watching.", r);
-          r.updateHash(hash);
-          watch(r);
-        }else{
-          LOG.debug("Callback for {} done.", r);
-          if(active) LOG.info("Stopped watching {} (closing).", r);
-          else LOG.info("Stopped watching {} (no more interest).", r);
+    try{
+      if(!closing){
+        final Bytes content = ByteUtils.read(r.file);
+        final Hash256 hash = content.hash();
+        if(hash.equals(r.hash)){
+          LOG.debug("File {} has not changed, watching it again.", r);
+          watch(r.file, hash, r.changedCallback);
+        }
+        else{
+          LOG.info("File {} has changed, running callback (content: {}).", r, hash);
+          boolean active = false;
+          active = r.changedCallback.apply(content);
+          if(active && !closing){
+            LOG.debug("Callback for {} done, resume watching.", r);
+            r.updateHash(hash);
+            watch(r);
+          }else{
+            LOG.debug("Callback for {} done.", r);
+            if(active) LOG.info("Stopped watching {} (closing).", r);
+            else LOG.info("Stopped watching {} (no more interest).", r);
+          }
         }
       }
+      else{
+        LOG.info("Stopped watching {} (closing).", r);
+      }
     }
-    else{
-      LOG.info("Stopped watching {} (closing).", r);
+    catch(final Throwable t){
+      LOG.error(format("Callback for {} failed.", r), t);
+      throw t;
     }
   }
 

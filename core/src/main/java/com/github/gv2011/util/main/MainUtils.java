@@ -54,6 +54,7 @@ import com.github.gv2011.util.FileUtils;
 import com.github.gv2011.util.JmxUtils;
 import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.ResourceUtils;
+import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.ex.Exceptions;
 import com.github.gv2011.util.json.JsonUtils;
 import com.github.gv2011.util.log.LogAdapter;
@@ -110,6 +111,7 @@ public abstract class MainUtils implements MainUtilsMBean, AutoCloseableNt{
     private boolean started = false;
     private boolean closing = false;
     private final Logger log;
+    private @Nullable AutoCloseableNt pidLog = null;
 
 
     private MainRunner(
@@ -132,34 +134,33 @@ public abstract class MainUtils implements MainUtilsMBean, AutoCloseableNt{
       int resultCode = 3;
       final CountDownLatch mainDone = new CountDownLatch(1);
       try{
-        try(AutoCloseableNt pidLog = logPid(log)){
-          Runtime.getRuntime().addShutdownHook(new Thread(
-            ()->{
-              shutdownLatch.countDown();
-              call(()->mainDone.await());
-            },
-            "shutdown"
-          ));
+        pidLog = logPid(log);
+        Runtime.getRuntime().addShutdownHook(new Thread(
+          ()->{
+            shutdownLatch.countDown();
+            call(()->mainDone.await());
+          },
+          "shutdown"
+        ));
 
-          // Log all uncaught exceptions:
-          Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
-            uncaughtExceptionCount.incrementAndGet();
+        // Log all uncaught exceptions:
+        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+          uncaughtExceptionCount.incrementAndGet();
+          log.error(format("Uncaught exception in thread {}", t), e);
+          if(Exceptions.ASSERTIONS_ON){
+            log.error(format("Uncaught exception in thread {}. Fail-fast: terminating.", t), e);
+            shutdownLatch.countDown();
+          }else{
             log.error(format("Uncaught exception in thread {}", t), e);
-            if(Exceptions.ASSERTIONS_ON){
-              log.error(format("Uncaught exception in thread {}. Fail-fast: terminating.", t), e);
-              shutdownLatch.countDown();
-            }else{
-              log.error(format("Uncaught exception in thread {}", t), e);
-            }
-          });
+          }
+        });
 
-          try(AutoCloseableNt jmxHandle = JmxUtils.registerMBean(this)){
-            try(final AutoCloseableNt service =
-              serviceBuilder.startService(readConfiguration(mainArgs, configurationClass))
-            ){
-              call(()->shutdownLatch.await());
-              resultCode = uncaughtExceptionCount.get()==0L ? 0 : 2;
-            }
+        try(AutoCloseableNt jmxHandle = JmxUtils.registerMBean(this)){
+          try(final AutoCloseableNt service =
+            serviceBuilder.startService(readConfiguration(mainArgs, configurationClass))
+          ){
+            call(()->shutdownLatch.await());
+            resultCode = uncaughtExceptionCount.get()==0L ? 0 : 2;
           }
         }
       }
@@ -208,7 +209,6 @@ public abstract class MainUtils implements MainUtilsMBean, AutoCloseableNt{
       }
       return ()->{
         delete(pidFile);
-        logger.info("Removed pid file {}.", pidFile);
       };
     }
 
@@ -219,10 +219,17 @@ public abstract class MainUtils implements MainUtilsMBean, AutoCloseableNt{
 
     @Override
     public void close() {
-      synchronized(lock){
-        closing = true;
-        if(started) shutdownLatch.countDown();
-        else serviceLoader.close();
+      @Nullable AutoCloseableNt pidLog = null;
+      try{
+        synchronized(lock){
+          closing = true;
+          pidLog = this.pidLog;
+          if(started) shutdownLatch.countDown();
+          else serviceLoader.close();
+        }
+      }
+      finally{
+        if(pidLog!=null) pidLog.close();
       }
     }
 
