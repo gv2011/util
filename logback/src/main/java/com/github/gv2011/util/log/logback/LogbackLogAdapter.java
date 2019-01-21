@@ -142,15 +142,15 @@ public class LogbackLogAdapter implements LogAdapter{
       if(!closing){
         notNull(loggerContext);
         final Logger logger = getLogger(LogbackLogAdapter.class);
-        logger.info("Reconfiguring logback.");
         final Hash256 newHash = config.hash();
         verify(!newHash.equals(configHash));
+        logger.info("Reconfiguring logback.");
+        loggerContext.reset();
         final JoranConfigurator configurator = new JoranConfigurator();
         configurator.setContext(loggerContext);
-        loggerContext.reset();
         callWithCloseable(config::openStream, s->{configurator.doConfigure(s);});
-        configHash = newHash;
         logger.info("Reconfigured logback.");
+        configHash = newHash;
       }
       return !closing;
     }
