@@ -12,10 +12,10 @@ package com.github.gv2011.util.serviceloader;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,7 +25,7 @@ package com.github.gv2011.util.serviceloader;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.util.serviceloader.RecursiveServiceLoader.DATA_TYPE_PROVIDER;
+import static com.github.gv2011.util.serviceloader.RecursiveServiceLoader.*;
 import static com.github.gv2011.util.serviceloader.RecursiveServiceLoader.DEFAULT_DATA_TYPE_PROVIDER;
 import static com.github.gv2011.util.serviceloader.RecursiveServiceLoader.DEFAULT_FILE_WATCH_SERVICE;
 import static com.github.gv2011.util.serviceloader.RecursiveServiceLoader.FILE_WATCH_SERVICE;
@@ -38,6 +38,8 @@ import com.github.gv2011.util.bytes.DataTypeProvider;
 import com.github.gv2011.util.bytes.DefaultDataTypeProvider;
 import com.github.gv2011.util.filewatch.DefaultFileWatchService;
 import com.github.gv2011.util.filewatch.FileWatchService;
+import com.github.gv2011.util.time.Clock;
+import com.github.gv2011.util.time.DefaultClock;
 
 public class RecursiveServiceLoaderTest {
 
@@ -48,6 +50,9 @@ public class RecursiveServiceLoaderTest {
 
     assertThat(DATA_TYPE_PROVIDER, is(DataTypeProvider.class.getName()));
     assertThat(DEFAULT_DATA_TYPE_PROVIDER, is(DefaultDataTypeProvider.class.getName()));
+
+    assertThat(CLOCK, is(Clock.class.getName()));
+    assertThat(DEFAULT_CLOCK, is(DefaultClock.class.getName()));
   }
 
 }

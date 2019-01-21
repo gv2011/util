@@ -44,12 +44,12 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collector;
 import java.util.stream.IntStream;
 
 import com.github.gv2011.util.ex.ThrowingSupplier;
+import com.github.gv2011.util.icol.Opt;
 
 public class ByteUtils {
 
@@ -192,8 +192,8 @@ public class ByteUtils {
   }
 
 
-  public static Optional<Bytes> tryRead(final Path file) {
-    return Files.exists(file) ? Optional.of(read(file)) : Optional.empty();
+  public static Opt<Bytes> tryRead(final Path file) {
+    return Files.exists(file) ? Opt.of(read(file)) : Opt.empty();
   }
 
   //TODO remove

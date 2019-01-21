@@ -43,6 +43,8 @@ import java.util.NavigableSet;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -416,5 +418,13 @@ public class CollectionUtils {
       result = !differenceFound && !e1.hasNext() && !e2.hasNext();
     }
     return result;
+  }
+
+  public static <E> Opt<E> tryGetFirst(final SortedSet<E> sortedSet) {
+    return sortedSet.isEmpty() ? Opt.empty() : Opt.of(sortedSet.first());
+  }
+
+  public static <K> Opt<K> tryGetFirstKey(final SortedMap<K,?> sortedMap) {
+    return sortedMap.isEmpty() ? Opt.empty() : Opt.of(sortedMap.firstKey());
   }
 }

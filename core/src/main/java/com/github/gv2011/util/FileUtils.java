@@ -32,6 +32,7 @@ import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.callWithCloseable;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
+import static com.github.gv2011.util.ex.Exceptions.wrap;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
@@ -39,6 +40,7 @@ import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -49,6 +51,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -57,6 +60,7 @@ import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.bytes.Bytes;
 import com.github.gv2011.util.bytes.FileExtension;
 import com.github.gv2011.util.ex.ThrowingFunction;
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.time.TimeUtils;
 
 public final class FileUtils {
@@ -277,6 +281,12 @@ public final class FileUtils {
     return callWithCloseable(()->Files.newOutputStream(target, CREATE, TRUNCATE_EXISTING), out->{
       return StreamUtils.copy(()->Files.newInputStream(src), out);
     });
+  }
+
+  public static Opt<Instant> tryGetLastModified(final Path file) {
+    try {return Opt.of(Files.getLastModifiedTime(file).toInstant());}
+    catch (final FileNotFoundException | NoSuchFileException e) {return Opt.empty();}
+    catch (final IOException e) {throw wrap(e);}
   }
 
 }

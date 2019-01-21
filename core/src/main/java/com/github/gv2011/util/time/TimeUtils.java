@@ -27,12 +27,12 @@ package com.github.gv2011.util.time;
  */
 
 import static com.github.gv2011.util.Verify.verify;
-import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,8 +45,7 @@ public class TimeUtils {
   private TimeUtils(){staticClass();}
 
   public static void await(final Instant instant){
-    final Duration time = Duration.between(Instant.now(), instant);
-    if(!time.isNegative()) call(()->Thread.sleep(time.toMillis()));
+    Clock.INSTANCE.get().await(instant);
   }
 
   public static Duration parseHours(final String withColons) {
@@ -78,5 +77,9 @@ public class TimeUtils {
 
   public static String fileSafeInstant() {
     return fileSafeFormat(Instant.now());
+  }
+
+  public static boolean olderThan(final Temporal instant, final Duration duration) {
+    return Duration.between(instant, Instant.now()).compareTo(duration) > 0;
   }
 }
