@@ -45,7 +45,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.gv2011.util.AutoCloseableNt;
-import com.github.gv2011.util.Comparison;
 import com.github.gv2011.util.icol.Opt;
 
 public final class DefaultClock implements Clock, AutoCloseableNt {
@@ -73,6 +72,7 @@ public final class DefaultClock implements Clock, AutoCloseableNt {
     while (now.isBefore(instant)) {
       synchronized(awaitLock){
         notifyAt(awaitLock, instant, now);
+        call(()->awaitLock.wait());
       }
       now = instant();
     }
@@ -108,9 +108,13 @@ public final class DefaultClock implements Clock, AutoCloseableNt {
     } else {
       synchronized (lock) {
         final Opt<Instant> actualNext = tryGetFirstKey(notifications);
-        notifications.computeIfAbsent(notifyAt, t -> new ArrayList<>()).add(obj);
+        final List<Object> list = notifications.computeIfAbsent(notifyAt, t -> new ArrayList<>());
+        list.add(obj);
+        LOG.debug("Registered object for notification at {} (count: {}).", notifyAt, list.size());
         if (actualNext.map(n -> notifyAt.isBefore(n)).orElse(true)) {
-          LOG.debug("Next notification at {}.", notifyAt);
+          if(LOG.isDebugEnabled()) {LOG.debug(
+            "Next notification time changed from {} to {}.", toString(actualNext), notifyAt
+          );}
           wakeupClock();
         }
       }
@@ -127,35 +131,39 @@ public final class DefaultClock implements Clock, AutoCloseableNt {
     boolean shouldRun = true;
     while (shouldRun) {
       final Instant now = instant();
-      final Instant sleepUntil;
+      final Opt<Instant> sleepUntil; //empty means unlimited
       final List<Object> objectsToNotify;
       synchronized (lock) {
         if (closing) {
           shouldRun = false;
           objectsToNotify = notifications.values().parallelStream().flatMap(List::parallelStream).collect(toIList());
           notifications.clear();
-          LOG.debug("Closing, selected all for notification.");
-          sleepUntil = now;
+          LOG.trace("Closing, selected all ({} items) for notification.", objectsToNotify.size());
+          sleepUntil = Opt.of(now);
         } else {
           final Opt<Instant> nextTime = tryGetFirstKey(notifications);
           if(nextTime.isPresent()){
             final Instant i = nextTime.get();
             if(now.isBefore(i)){
               objectsToNotify = emptyList();
-              sleepUntil = i;
+              sleepUntil = Opt.of(i);
             }else{
               objectsToNotify = notifications.remove(i).parallelStream().collect(toIList());
-              sleepUntil = now;
+              LOG.trace("Selected {} objects for notification at {}.", objectsToNotify.size(), i);
+              sleepUntil = Opt.of(now);
             }
           }
           else{
             objectsToNotify = emptyList();
-            sleepUntil = now.plus(LOG_TICK_PERIOD);
+            sleepUntil = Opt.empty();
           }
         }
       }
-      objectsToNotify.parallelStream().forEach(this::notify);
-      sleepUntilInternal(sleepUntil);
+      if(!objectsToNotify.isEmpty()){
+        LOG.debug("Notifying {} objects.", objectsToNotify.size());
+        objectsToNotify.parallelStream().forEach(this::notify);
+      }
+      sleepUntilInternal(now, sleepUntil);
     }
   }
 
@@ -164,18 +172,55 @@ public final class DefaultClock implements Clock, AutoCloseableNt {
     synchronized(object){object.notifyAll();}
   }
 
-  private void sleepUntilInternal(final Instant t) {
+  private void sleepUntilInternal(final Instant now, final Opt<Instant> t) {
     assert !Thread.holdsLock(lock);
-    final Duration duration = Comparison.min(Duration.between(instant(), t), LOG_TICK_PERIOD);
+
+    final Duration duration;
+    boolean tickOnly;
+    {
+      if(t.isPresent()){
+        final Duration fullDuration = Duration.between(now, t.get());
+        if(fullDuration.compareTo(LOG_TICK_PERIOD)>0){
+          tickOnly = true;
+          duration = LOG_TICK_PERIOD;
+        }
+        else{
+          tickOnly = false;
+          duration = fullDuration;
+        }
+      }
+      else{
+        tickOnly = true;
+        duration = LOG_TICK_PERIOD;
+      }
+    }
+
     if(greaterThanZero(duration)) {
       try {
-        LOG.debug("Going to sleep for {}.", duration);
+        logSleep(t, duration, tickOnly);
         Thread.sleep(duration.toMillis());
       } catch (final InterruptedException e) {
         Thread.interrupted(); // clear interrupted status
         LOG.debug("Sleep interrupted.", duration);
       }
     }
+  }
+
+  private static void logSleep(final Opt<Instant> t, final Duration duration, final boolean tickOnly) {
+    if(tickOnly) {
+      if(LOG.isTraceEnabled()){
+        LOG.trace("Going to sleep for {} (next tick). Next notification: {}.", duration, toString(t));
+      }
+    }
+    else{
+      if(LOG.isDebugEnabled()){
+        LOG.debug("Going to sleep for {}. Next notification: {}.", duration, toString(t));
+      }
+    }
+  }
+
+  private static String toString(final Opt<Instant> optTime){
+    return optTime.map(Instant::toString).orElse("-none-");
   }
 
   @Override

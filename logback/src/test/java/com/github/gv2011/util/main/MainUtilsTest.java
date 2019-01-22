@@ -34,10 +34,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
 
 import com.github.gv2011.util.AutoCloseableNt;
 import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.main.MainUtils.ServiceBuilder;
+import com.github.gv2011.util.time.Clock;
 import com.github.gv2011.util.time.SimpleLatch;
 
 public class MainUtilsTest {
@@ -46,13 +48,14 @@ public class MainUtilsTest {
     // Files.deleteIfExists(Paths.get("logback.xml"));
     final MainUtils mainUtils = MainUtils.create(args, new TestServiceBuilder(), Nothing.class);
     new Thread(()->{
-      call(()->Thread.sleep(3000));
+      final Clock clock = Clock.INSTANCE.get();
+      clock.sleep(Duration.ofSeconds(3));
       getLogger(MainUtilsTest.class).info("Modify");
       call(()->Files.write(Paths.get("logback.xml"), "\n".getBytes(UTF_8), StandardOpenOption.APPEND));
-      call(()->Thread.sleep(3000));
+      clock.sleep(Duration.ofSeconds(3));
       getLogger(MainUtilsTest.class).info("Modify 2");
       call(()->Files.write(Paths.get("logback.xml"), "\n".getBytes(UTF_8), StandardOpenOption.APPEND));
-      call(()->Thread.sleep(3000));
+      clock.sleep(Duration.ofSeconds(3));
       getLogger(MainUtilsTest.class).info("Closing");
       mainUtils.close();
     }).start();
