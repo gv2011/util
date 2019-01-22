@@ -274,6 +274,7 @@ public final class RecursiveServiceLoader implements AutoCloseableNt{
       while(toClose.isPresent()){
         final AutoCloseable service = toClose.get();
         try {
+          logger.debug("Closing service {}", service);
           service.close();
           logger.debug("Closed service {}", service);
         } catch (final Exception e) {

@@ -34,16 +34,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.concurrent.CountDownLatch;
 
 import com.github.gv2011.util.AutoCloseableNt;
 import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.main.MainUtils.ServiceBuilder;
+import com.github.gv2011.util.time.SimpleLatch;
 
 public class MainUtilsTest {
 
   public static void main(final String[] args) throws IOException{
-    Files.deleteIfExists(Paths.get("logback.xml"));
+    // Files.deleteIfExists(Paths.get("logback.xml"));
     final MainUtils mainUtils = MainUtils.create(args, new TestServiceBuilder(), Nothing.class);
     new Thread(()->{
       call(()->Thread.sleep(3000));
@@ -61,14 +61,14 @@ public class MainUtilsTest {
 
   private static class TestService implements AutoCloseableNt{
     private final Thread thread;
-    private final CountDownLatch latch = new CountDownLatch(1);
+    private final SimpleLatch latch = SimpleLatch.create();
     private TestService(){
       thread = new Thread(()->call(()->latch.await()));
       thread.start();
     }
     @Override
     public void close() {
-      latch.countDown();
+      latch.release();
       call(()->thread.join());
     }
   }

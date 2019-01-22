@@ -1,6 +1,7 @@
 package com.github.gv2011.util.time;
 
 import static com.github.gv2011.util.CollectionUtils.tryGetFirstKey;
+import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verify;
 
 /*-
@@ -30,6 +31,8 @@ import static com.github.gv2011.util.Verify.verify;
  */
 
 import static com.github.gv2011.util.ex.Exceptions.call;
+import static com.github.gv2011.util.icol.ICollections.emptyList;
+import static com.github.gv2011.util.icol.ICollections.toIList;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -97,6 +100,7 @@ public final class DefaultClock implements Clock, AutoCloseableNt {
   }
 
   private void notifyAt(final Object obj, final Instant notifyAt, final Instant now) {
+    notNull(obj);
     if (!notifyAt.isAfter(now)) {
       synchronized (obj) {
         obj.notifyAll();
@@ -115,6 +119,7 @@ public final class DefaultClock implements Clock, AutoCloseableNt {
 
   private void wakeupClock() {
     assert Thread.holdsLock(lock);
+    LOG.debug("Interrupting {}.", thread);
     thread.interrupt();
   }
 
@@ -123,31 +128,46 @@ public final class DefaultClock implements Clock, AutoCloseableNt {
     while (shouldRun) {
       final Instant now = instant();
       final Instant sleepUntil;
+      final List<Object> objectsToNotify;
       synchronized (lock) {
         if (closing) {
           shouldRun = false;
-          LOG.debug("Closing, notifying all.");
-          notifications.values().parallelStream().flatMap(List::parallelStream).forEach(Object::notifyAll);
+          objectsToNotify = notifications.values().parallelStream().flatMap(List::parallelStream).collect(toIList());
+          notifications.clear();
+          LOG.debug("Closing, selected all for notification.");
           sleepUntil = now;
         } else {
-          Opt<Instant> nextNotification = tryGetFirstKey(notifications);
-          while (nextNotification.map(n->!now.isBefore(n)).orElse(false)) {
-            LOG.debug("Notifying.");
-            notifications.remove(nextNotification.get()).parallelStream().forEach(Object::notifyAll);
-            nextNotification = tryGetFirstKey(notifications);
+          final Opt<Instant> nextTime = tryGetFirstKey(notifications);
+          if(nextTime.isPresent()){
+            final Instant i = nextTime.get();
+            if(now.isBefore(i)){
+              objectsToNotify = emptyList();
+              sleepUntil = i;
+            }else{
+              objectsToNotify = notifications.remove(i).parallelStream().collect(toIList());
+              sleepUntil = now;
+            }
           }
-          nextNotification.ifPresent(n->verify(now.isBefore(n)));
-          sleepUntil = nextNotification.orElseGet(()->now.plus(LOG_TICK_PERIOD));
+          else{
+            objectsToNotify = emptyList();
+            sleepUntil = now.plus(LOG_TICK_PERIOD);
+          }
         }
       }
+      objectsToNotify.parallelStream().forEach(this::notify);
       sleepUntilInternal(sleepUntil);
     }
   }
 
+  private void notify(final Object object){
+    verify(!Thread.holdsLock(lock));
+    synchronized(object){object.notifyAll();}
+  }
+
   private void sleepUntilInternal(final Instant t) {
     assert !Thread.holdsLock(lock);
-    Duration duration = Duration.between(instant(), t);
-    while (!duration.isNegative() && !duration.isZero()) {
+    final Duration duration = Comparison.min(Duration.between(instant(), t), LOG_TICK_PERIOD);
+    if(greaterThanZero(duration)) {
       try {
         LOG.debug("Going to sleep for {}.", duration);
         Thread.sleep(duration.toMillis());
@@ -155,17 +175,22 @@ public final class DefaultClock implements Clock, AutoCloseableNt {
         Thread.interrupted(); // clear interrupted status
         LOG.debug("Sleep interrupted.", duration);
       }
-      duration = Comparison.max(Duration.between(instant(), t), LOG_TICK_PERIOD);
     }
   }
 
   @Override
   public void close() {
+    LOG.debug("Closing.");
     synchronized (lock) {
       closing = true;
       wakeupClock();
     }
+    LOG.debug("Waiting for {}.", thread);
     call(() -> thread.join());
     LOG.info("Closed {}.", this);
+  }
+
+  private static boolean greaterThanZero(final Duration duration){
+    return !duration.isNegative() && !duration.isZero();
   }
 }
