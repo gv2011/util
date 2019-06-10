@@ -1,5 +1,9 @@
 package com.github.gv2011.util.icol;
 
+import static com.github.gv2011.util.icol.ICollections.toISortedSet;
+
+import java.util.Collection;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -34,8 +38,8 @@ import java.util.Iterator;
 import java.util.NavigableSet;
 import java.util.NoSuchElementException;
 
-
-public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, NavigableSet<E>{
+import com.github.gv2011.util.XStream;
+public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, NavigableSet<E>, ListAccess<E>{
 
   public static interface Builder<E extends Comparable<? super E>> extends CollectionBuilder<ISortedSet<E>,E,Builder<E>>{}
 
@@ -89,6 +93,16 @@ public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, Na
     return descendingSet().iterator();
   }
 
+  @Override
+  default ISortedSet<E> subtract(final Collection<?> other) {
+    if(other.isEmpty()) return this;
+    else{
+      return parallelStream().filter(e->!other.contains(e)).collect(toISortedSet());
+    }
+  }
+
+  @Override
+  XStream<E> stream();
 
   Opt<E> tryGetLast();
 
@@ -156,6 +170,7 @@ public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, Na
     throw new UnsupportedOperationException();
   }
 
+  @Override
   default E get(final int index){
     //TODO more efficient implementation
     final Iterator<E> it = iterator();
@@ -163,6 +178,7 @@ public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, Na
     return it.next();
   }
 
+  @Override
   default int indexOf(final Object child){
     //TODO more efficient implementation
     final Iterator<E> it = this.iterator();
@@ -174,5 +190,10 @@ public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, Na
     }
     return result;
   }
+  
+  
+  @Override
+  ISortedSet<E> intersection(Collection<?> other);
+
 
 }

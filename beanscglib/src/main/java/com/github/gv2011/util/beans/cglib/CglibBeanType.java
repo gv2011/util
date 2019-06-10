@@ -38,7 +38,7 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 
 import com.github.gv2011.util.beans.AnnotationHandler;
-import com.github.gv2011.util.beans.BeanBuilder;
+import com.github.gv2011.util.beans.ExtendedBeanBuilder;
 import com.github.gv2011.util.beans.imp.BeanFactory;
 import com.github.gv2011.util.beans.imp.BeanTypeSupport;
 import com.github.gv2011.util.json.JsonFactory;
@@ -63,8 +63,8 @@ final class CglibBeanType<T> extends BeanTypeSupport<T>{
   }
 
   @Override
-  public final BeanBuilder<T> createBuilder() {
-      return new CglibBeanBuilder<>(this);
+  public final ExtendedBeanBuilder<T> createBuilder() {
+      return new CglibBeanBuilder<>(this, resultWrapper, validator);
   }
 
   @Override

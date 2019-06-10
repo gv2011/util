@@ -75,6 +75,11 @@ public final class Verify {
     return actual;
   }
 
+  public static <T> T verifyEqualsResult(final @Nullable T actual, final Function<T,T> expectedProducingFunction) {
+    notNull(actual);
+    return verifyEqual(actual, expectedProducingFunction.apply(actual));
+  }
+
   public static <T> T verifyEqual(final T actual, final T expected, final BiFunction<T,T,String> msg) {
     if(!actual.equals(expected)){
       throw new IllegalStateException(msg.apply(expected, actual));

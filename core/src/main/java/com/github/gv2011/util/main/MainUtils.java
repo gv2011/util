@@ -1,6 +1,9 @@
 package com.github.gv2011.util.main;
 
 import static com.github.gv2011.util.FileUtils.delete;
+import static com.github.gv2011.util.Nothing.nothing;
+import static com.github.gv2011.util.Verify.verify;
+import static com.github.gv2011.util.ex.Exceptions.call;
 
 /*-
  * #%L
@@ -28,161 +31,217 @@ import static com.github.gv2011.util.FileUtils.delete;
  * #L%
  */
 
-
-
-
 import static com.github.gv2011.util.ex.Exceptions.format;
-import static com.github.gv2011.util.ex.Exceptions.tryAll;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.github.gv2011.util.AutoCloseableNt;
+import com.github.gv2011.util.BeanUtils;
+import com.github.gv2011.util.FileUtils;
 import com.github.gv2011.util.JmxUtils;
-import com.github.gv2011.util.ServiceLoaderUtils;
+import com.github.gv2011.util.Nothing;
+import com.github.gv2011.util.ResourceUtils;
 import com.github.gv2011.util.ann.Nullable;
+import com.github.gv2011.util.ex.Exceptions;
+import com.github.gv2011.util.json.JsonUtils;
 import com.github.gv2011.util.log.LogAdapter;
+import com.github.gv2011.util.serviceloader.RecursiveServiceLoader;
 
-public class MainUtils implements MainUtilsMBean{
+public abstract class MainUtils implements MainUtilsMBean, AutoCloseableNt{
 
-	public static interface ServiceBuilder<S extends AutoCloseableNt> extends AutoCloseableNt{
-		S startService(String[] args) throws Exception;
-	}
+  public static interface ServiceBuilder<S extends AutoCloseableNt, C>{
+    S startService(C configuration);
+  }
 
-	private final Logger LOG;
-
-	private final AtomicBoolean started;
-	private final Path pidFile;
-	private final AtomicLong uncaughtExceptionCount = new AtomicLong();
-	private final Instant startTime = Instant.now();
-  private final LogAdapter logAdapter;
-
-  private volatile @Nullable ServiceBuilder<?> serverFactory;
-  private volatile @Nullable AutoCloseableNt jmxHandle;
-
-	public MainUtils() {
-	  logAdapter = ServiceLoaderUtils.loadService(LogAdapter.class);
-	  logAdapter.configureLogging();
-		LOG = LoggerFactory.getLogger(MainUtils.class);
-		pidFile = FileSystems.getDefault().getPath("log/pid").toAbsolutePath();
-		started = new AtomicBoolean();
-	}
+  public static <C> MainUtils create(
+    final String[] args, final ServiceBuilder<?,C> serviceBuilder, final Class<C> configurationClass
+  ) {
+    return new MainRunner<>(args, serviceBuilder, configurationClass);
+  }
 
 
-	/**
-	 * Runs a service. Shutdown by SIGINT.
-	 */
-	public void runMain(final String[] mainArgs, final ServiceBuilder<?> serviceBuilder){
-		if(started.getAndSet(true)) throw new IllegalStateException("Started before.");
-		final String[] args = mainArgs.clone();
-		serverFactory = serviceBuilder;
-		//Log all uncaught exceptions:
-		Thread.setDefaultUncaughtExceptionHandler(
-			(final Thread t, final Throwable e) -> {
-				uncaughtExceptionCount.incrementAndGet();
-				LOG.error(format("Uncaught exception in thread {}", t), e);
-			}
-		);
-		logPid();
-		jmxHandle = JmxUtils.registerMBean(this);
-		try {
-			final AutoCloseableNt service = serviceBuilder.startService(args.clone());
-			prepareShutdownAndWaitForIt(service);
-		} catch (final Throwable t) {
-			//Don't rely on System.out.
-			LOG.error("Error in main method. Terminating.", t);
-			System.exit(1);
-		}
-	}
+  public static <C> int run(
+    final String[] mainArgs,
+    final ServiceBuilder<?, C> serviceBuilder,
+    final Class<C> configurationClass
+  ) {
+    return create(mainArgs, serviceBuilder, configurationClass).runMain();
+  }
 
-	private void logPid() {
-		int pid = -1;
-		try {
-			final String runTimeName = ManagementFactory.getRuntimeMXBean().getName();
-			pid = Integer.parseInt(runTimeName.substring(0, runTimeName.indexOf('@')));
-			LOG.warn("Started. Process ID (pid) is {}.", pid);
-			Files.createDirectories(pidFile.getParent());
-			Files.write(pidFile, Integer.toString(pid).getBytes(StandardCharsets.UTF_8),
-				StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
-			LOG.debug("Written process id {} to {}.", pid, pidFile);
-		} catch (final Exception e) {
-			LOG.warn(format("Could not determine or write process ID (pid) {}.", pid), e);
-		}
-		LOG.info("Running as user {}.", System.getProperty("user.name"));
-	}
+  public static int run(final Supplier<AutoCloseableNt> serviceBuilder){
+    return run(
+      new String[]{},
+      new ServiceBuilder<>(){
+        @Override
+        public AutoCloseableNt startService(final Nothing noConfiguration){
+          return serviceBuilder.get();
+        }
+      },
+      Nothing.class
+    );
+  }
 
-	private void removePid(){
-	  delete(pidFile);
-		LOG.info("Removed pid file {}.", pidFile);
-	}
+  private MainUtils(){}
+
+  public abstract int runMain();
+
+  private static final class MainRunner<C> extends MainUtils{
+
+    private final AutoCloseableNt serviceLoader;
+    private final AtomicLong uncaughtExceptionCount = new AtomicLong();
+    private final Instant startTime = Instant.now();
+    private final CountDownLatch shutdownLatch = new CountDownLatch(1);
+    private final String[] mainArgs;
+    private final ServiceBuilder<?,C> serviceBuilder;
+    private final Class<C> configurationClass;
+    private final Object lock = new Object();
+    private boolean started = false;
+    private boolean closing = false;
+    private final Logger log;
+    private @Nullable AutoCloseableNt pidLog = null;
 
 
-	public void prepareShutdownAndWaitForIt(final AutoCloseableNt service)
-			throws InterruptedException {
-		final CountDownLatch latch = new CountDownLatch(1);
-		Runtime.getRuntime().addShutdownHook(new Thread(()->{
-			latch.countDown();
-			runShutdown(service);
-		},"shutdown-hook"));
-		latch.await();
-	}
+    private MainRunner(
+      final String[] mainArgs, final ServiceBuilder<?, C> serviceBuilder, final Class<C> configurationClass
+    ) {
+      this.mainArgs = mainArgs;
+      this.serviceBuilder = serviceBuilder;
+      this.configurationClass = configurationClass;
+      serviceLoader = RecursiveServiceLoader.externallyClosedInstance();
+      RecursiveServiceLoader.service(LogAdapter.class).ensureInitialized();
+      log = getLogger(MainUtils.class);
+    }
 
-	private void runShutdown(final AutoCloseableNt service){
-		LOG.info("Server shutdown started.");
-		try{
-			tryAll(
-				()->{
-					service.close();
-					LOG.info("Server succesfully shut down.");
-				},
-				()->{
-					serverFactory.close();
-					LOG.info("Server factory closed.");
-				},
-				()->{
-					jmxHandle.close();
-					LOG.info("Unregistered MBean.");
-				},
-				()->{
-					removePid();
-				}
-			);
-		}catch(final Throwable t){
-			LOG.error("", t);
-		} finally{
-		  LOG.info("Shutting down log system now. Goodbye.");
-		  logAdapter.shutdownLogging();
-		}
-	}
+    @Override
+    public int runMain() {
+      synchronized(lock){
+        verify(!closing);
+        started = true;
+      }
+      int resultCode = 3;
+      final CountDownLatch mainDone = new CountDownLatch(1);
+      try{
+        pidLog = logPid(log);
+        Runtime.getRuntime().addShutdownHook(new Thread(
+          ()->{
+            shutdownLatch.countDown();
+            call(()->mainDone.await());
+          },
+          "shutdown"
+        ));
 
-	@Override
-	public void shutdown() {
-		System.exit(0);
-	}
+        // Log all uncaught exceptions:
+        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+          uncaughtExceptionCount.incrementAndGet();
+          log.error(format("Uncaught exception in thread {}", t), e);
+          if(Exceptions.ASSERTIONS_ON){
+            log.error(format("Uncaught exception in thread {}. Fail-fast: terminating.", t), e);
+            shutdownLatch.countDown();
+          }else{
+            log.error(format("Uncaught exception in thread {}", t), e);
+          }
+        });
+
+        try(AutoCloseableNt jmxHandle = JmxUtils.registerMBean(this)){
+          try(final AutoCloseableNt service =
+            serviceBuilder.startService(readConfiguration(mainArgs, configurationClass))
+          ){
+            call(()->shutdownLatch.await());
+            resultCode = uncaughtExceptionCount.get()==0L ? 0 : 2;
+          }
+        }
+      }
+      catch(final Throwable t){
+        log.error("Error in main method. Terminating.", t);
+        resultCode = 1;
+      }
+      finally{
+        try{serviceLoader.close();}
+        finally{mainDone.countDown();}
+      }
+      return resultCode;
+    }
+
+    public static <C> C readConfiguration(final String[] mainArgs, final Class<C> configurationClass) {
+      if(configurationClass.equals(Nothing.class)) return configurationClass.cast(nothing());
+      else{
+        final Path configFile = Paths.get("configuration.json");
+        if(!Files.exists(configFile)) copyDefaultConfigFile(configFile);
+        return BeanUtils.typeRegistry().beanType(configurationClass)
+          .parse(JsonUtils.jsonFactory().deserialize(
+            FileUtils.readText(configFile)
+          ))
+        ;
+      }
+    }
 
 
-	@Override
-	public long getUncaughtExceptionCount() {
-		return uncaughtExceptionCount.get();
-	}
+    private static void copyDefaultConfigFile(final Path configFile) {
+      FileUtils.writeText(ResourceUtils.getTextResource("default-configuration.json"), configFile);
+    }
 
+    private AutoCloseableNt logPid(final Logger logger) {
+      final String user = System.getProperty("user.name");
+      int pid = -1;
+      final Path pidFile = Paths.get("log", "pid.txt").toAbsolutePath();
+      try {
+        final String runTimeName = ManagementFactory.getRuntimeMXBean().getName();
+        pid = Integer.parseInt(runTimeName.substring(0, runTimeName.indexOf('@')));
+        logger.warn("Started. Process ID (pid) is {}. Running as user {}.", pid, user);
+        Files.createDirectories(pidFile .getParent());
+        Files.write(pidFile, Integer.toString(pid).getBytes(StandardCharsets.UTF_8), TRUNCATE_EXISTING, CREATE);
+        logger.debug("Written process id {} to {}.", pid, pidFile);
+      } catch (final Exception e) {
+        logger.warn(format("Could not determine or write process ID (pid) {} (user {}).", pid, user), e);
+      }
+      return ()->{
+        delete(pidFile);
+      };
+    }
 
-	@Override
-	public Instant getStartTime() {
-		return startTime;
-	}
+    @Override
+    public void shutdown() {
+      close();
+    }
 
+    @Override
+    public void close() {
+      @Nullable AutoCloseableNt pidLog = null;
+      try{
+        synchronized(lock){
+          closing = true;
+          pidLog = this.pidLog;
+          if(started) shutdownLatch.countDown();
+          else serviceLoader.close();
+        }
+      }
+      finally{
+        if(pidLog!=null) pidLog.close();
+      }
+    }
 
+    @Override
+    public long getUncaughtExceptionCount() {
+      return uncaughtExceptionCount.get();
+    }
+
+    @Override
+    public Instant getStartTime() {
+      return startTime ;
+    }
+  }
 
 }

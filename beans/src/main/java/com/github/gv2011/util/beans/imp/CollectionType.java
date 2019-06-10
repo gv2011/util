@@ -133,5 +133,15 @@ final class CollectionType<C,K,E> extends TypeSupport<C>{
     return structure.createCollection(collection);
   }
 
+  @Override
+  public final boolean hasStringForm() {
+    return false;
+  }
+
+  @Override
+  public boolean isForeignType() {
+    return false;
+  }
+
 
 }

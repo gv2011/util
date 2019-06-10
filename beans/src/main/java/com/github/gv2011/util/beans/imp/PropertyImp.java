@@ -1,5 +1,6 @@
 package com.github.gv2011.util.beans.imp;
 
+import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.bug;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
@@ -33,6 +34,7 @@ import java.lang.reflect.Proxy;
  * #L%
  */
 import java.util.Optional;
+import java.util.function.Function;
 
 import com.github.gv2011.util.beans.Property;
 import com.github.gv2011.util.icol.Opt;
@@ -45,6 +47,7 @@ public final class PropertyImp<B,T> implements Property<T> {
     private final TypeSupport<T> type;
     private final Opt<T> defaultValue;
     private final Opt<T> fixedValue;
+    private final Opt<Function<B,T>> function;
 
     static <B,T> PropertyImp<B,T> create(
       final BeanTypeSupport<B> owner,
@@ -52,7 +55,16 @@ public final class PropertyImp<B,T> implements Property<T> {
       final TypeSupport<T> type,
       final Opt<T> defaultValue
     ) {
-      return new PropertyImp<>(owner, method, method.getName(), type, defaultValue, Opt.empty());
+      return new PropertyImp<>(owner, method, method.getName(), type, defaultValue, Opt.empty(), Opt.empty());
+    }
+
+    static <B,T> PropertyImp<B,T> createComputed(
+        final BeanTypeSupport<B> owner,
+        final Method method,
+        final TypeSupport<T> type,
+        final Function<B,T> function
+    ) {
+      return new PropertyImp<>(owner, method, method.getName(), type, Opt.empty(), Opt.empty(), Opt.of(function));
     }
 
     static <B,T> PropertyImp<B,T> createFixed(
@@ -63,7 +75,7 @@ public final class PropertyImp<B,T> implements Property<T> {
       final T fixedValue
     ) {
       final Opt<T> fixed = Opt.of(fixedValue);
-      return new PropertyImp<>(owner, method, name, type, fixed, fixed);
+      return new PropertyImp<>(owner, method, name, type, fixed, fixed, Opt.empty());
     }
 
     private PropertyImp(
@@ -72,7 +84,8 @@ public final class PropertyImp<B,T> implements Property<T> {
       final String name,
       final TypeSupport<T> type,
       final Opt<T> defaultValue,
-      final Opt<T> fixedValue
+      final Opt<T> fixedValue,
+      final Opt<Function<B,T>> function
     ) {
       this.method = method;
       this.name = name;
@@ -80,6 +93,8 @@ public final class PropertyImp<B,T> implements Property<T> {
       assert fixedValue.isPresent() ? defaultValue.get().equals(fixedValue.get()) : true;
       this.defaultValue = defaultValue;
       this.fixedValue = fixedValue;
+      this.function = function;
+      verify(type.isForeignType() ? function.isPresent() : true);
     }
 
     @Override
@@ -105,6 +120,10 @@ public final class PropertyImp<B,T> implements Property<T> {
     @Override
     public Opt<T> fixedValue() {
        return fixedValue;
+    }
+
+    public Opt<Function<B,T>> function() {
+      return function;
     }
 
     boolean isOptional() {

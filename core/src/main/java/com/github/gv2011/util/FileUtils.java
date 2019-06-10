@@ -30,26 +30,38 @@ import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.callWithCloseable;
+import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
+import static com.github.gv2011.util.ex.Exceptions.wrap;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributeView;
+import java.nio.file.Paths;
+import java.time.Instant;
+import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.bytes.Bytes;
+import com.github.gv2011.util.bytes.FileExtension;
 import com.github.gv2011.util.ex.ThrowingFunction;
+import com.github.gv2011.util.icol.Opt;
+import com.github.gv2011.util.time.TimeUtils;
 
 public final class FileUtils {
 
@@ -57,8 +69,9 @@ public final class FileUtils {
 
   public static final Path WORK_DIR = call(()->FileSystems.getDefault().getPath(".").toRealPath());
 
+  @Deprecated(forRemoval=true) //Use Paths.get(first, more)
   public static Path path(final String first, final String... more){
-    return FileSystems.getDefault().getPath(first, more);
+    return Paths.get(first, more);
   }
 
   public static boolean sameFile(final Path f1, final Path f2){
@@ -115,7 +128,10 @@ public final class FileUtils {
   }
 
   public static String readText(final Path path){
-    return tryReadText(path).get();
+    return
+      tryReadText(path)
+      .orElseThrow(()->new NoSuchElementException(format("File {} does not exist.", path.toAbsolutePath())))
+    ;
   }
 
   public static Reader reader(final Path path){
@@ -143,12 +159,37 @@ public final class FileUtils {
     call(()->Files.write(path, text.getBytes(UTF_8), TRUNCATE_EXISTING, CREATE));
   }
 
+  public static Path writeTextWithTimestamp(final String text, final Path directory, final String suffix){
+    return writeBytesWithTimestamp(ByteUtils.asUtf8(text).content(), directory, suffix);
+  }
+
+  public static Path writeBytesWithTimestamp(final Bytes bytes, final Path directory, final String suffix){
+    boolean written = false;
+    Path path = directory.resolve(TimeUtils.fileSafeInstant()+suffix);
+    int failedCount = 0;
+    while(!written){
+      try {
+        try(OutputStream out = Files.newOutputStream(path, CREATE_NEW)){
+          bytes.write(out);
+        }
+        written = true;
+      } catch (final IOException e) {
+        if(++failedCount==10){
+          throw new RuntimeException(format("Could not write text file with timestamp {}.", path), e);
+        }
+        call(()->Thread.sleep(1));
+        path = directory.resolve(TimeUtils.fileSafeInstant()+suffix);
+      }
+    }
+    return path;
+  }
+
   public static long getSize(final String first, final String... more){
     return getSize(path(first, more));
   }
 
   public static long getSize(final Path path){
-    return call(()->Files.getFileAttributeView(path, BasicFileAttributeView.class).readAttributes().size());
+    return call(()->Files.size(path));
   }
 
   public static String removeExtension(final Path path){
@@ -157,6 +198,14 @@ public final class FileUtils {
     final String n = fileName.toString();
     final int i = n.lastIndexOf('.');
     return i==-1?n:n.substring(0, i);
+  }
+
+  public static FileExtension getExtension(final Path path){
+    final Path fileName = path.getFileName();
+    if(fileName==null) throw new IllegalArgumentException();
+    final String n = fileName.toString();
+    final int i = n.lastIndexOf('.');
+    return new FileExtension(i==-1?"":n.substring(i+1, n.length()).toLowerCase(Locale.ENGLISH));
   }
 
   public static void delete(final Path file) {
@@ -232,6 +281,12 @@ public final class FileUtils {
     return callWithCloseable(()->Files.newOutputStream(target, CREATE, TRUNCATE_EXISTING), out->{
       return StreamUtils.copy(()->Files.newInputStream(src), out);
     });
+  }
+
+  public static Opt<Instant> tryGetLastModified(final Path file) {
+    try {return Opt.of(Files.getLastModifiedTime(file).toInstant());}
+    catch (final FileNotFoundException | NoSuchFileException e) {return Opt.empty();}
+    catch (final IOException e) {throw wrap(e);}
   }
 
 }

@@ -25,19 +25,21 @@ package com.github.gv2011.util.beans.imp;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.util.CollectionUtils.listBuilder;
-import static com.github.gv2011.util.CollectionUtils.setOf;
 import static com.github.gv2011.util.CollectionUtils.single;
 import static com.github.gv2011.util.CollectionUtils.stream;
-import static com.github.gv2011.util.CollectionUtils.toISet;
 import static com.github.gv2011.util.CollectionUtils.toOpt;
 import static com.github.gv2011.util.Nothing.nothing;
 import static com.github.gv2011.util.Verify.notNull;
+import static com.github.gv2011.util.ex.Exceptions.format;
+import static com.github.gv2011.util.icol.ICollections.listBuilder;
+import static com.github.gv2011.util.icol.ICollections.setOf;
+import static com.github.gv2011.util.icol.ICollections.toISet;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.WildcardType;
 import java.util.Collection;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.stream.Stream;
@@ -96,8 +98,6 @@ public class DefaultTypeRegistry implements TypeRegistry{
   private final DefaultElementaryTypeHandlerFactory defaultFactory = new DefaultElementaryTypeHandlerFactory();
   private final IList<ElementaryTypeHandlerFactory> additionalTypeHandlerFactories;
 
-  private final TypeSupport<String> stringType;
-
   final AnnotationHandler annotationHandler = new DefaultAnnotationHandler();
 
   public DefaultTypeRegistry() {
@@ -123,13 +123,17 @@ public class DefaultTypeRegistry implements TypeRegistry{
       b.add(tf);
     }
     additionalTypeHandlerFactories = b.build();
-    LOG.info("additionalTypeHandlerFactories:{}", additionalTypeHandlerFactories);
-    stringType = (TypeSupport<String>) type(String.class);
+    LOG.debug("additionalTypeHandlerFactories: {}", additionalTypeHandlerFactories);
   }
 
   @Override
   public <T> BeanTypeSupport<T> beanType(final Class<T> beanClass) {
-    return (BeanTypeSupport<T>) type(beanClass);
+    try {
+      return (BeanTypeSupport<T>) type(beanClass);
+    } catch (final RuntimeException e) {
+      final String reason = beanFactory.notBeanReason(beanClass);
+      throw new IllegalArgumentException(format("{}---: {}", beanClass, reason), e);
+    }
   }
 
   <T> AbstractPolymorphicSupport<T> abstractBeanType(final Class<T> abstractBeanClass) {
@@ -142,7 +146,9 @@ public class DefaultTypeRegistry implements TypeRegistry{
 
   @SuppressWarnings("unchecked")
   public <T> TypeSupport<T> type(final Class<T> clazz) {
-    return (TypeSupport<T>) typeMap.get(clazz);
+    return (TypeSupport<T>) typeMap.tryGet(clazz)
+      .orElseThrow(()->new NoSuchElementException(format("{} is not supported.", clazz)))
+    ;
   }
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -185,13 +191,13 @@ public class DefaultTypeRegistry implements TypeRegistry{
         assert pType.getActualTypeArguments().length==2;
         final TypeSupport keyType = type(filterWildCard(pType.getActualTypeArguments()[0]));
         final TypeSupport valueType = type(filterWildCard(pType.getActualTypeArguments()[1]));
-        if(keyType.equals(stringType)) {
+        if(keyType.hasStringForm()) {
           return keyType.mapType(Structure.stringMap(), valueType);
         }
-        else if(TypedString.class.isAssignableFrom(keyType.clazz)) {
-          return keyType.mapType(Structure.stringMap(), valueType);
+        else {
+          if(rawType.equals(ISORTEDMAP)) throw new UnsupportedOperationException();
+          return keyType.mapType(Structure.map(), valueType);
         }
-        else return keyType.mapType(Structure.map(), valueType);
       }
       else throw new UnsupportedOperationException();
     }
@@ -221,8 +227,15 @@ public class DefaultTypeRegistry implements TypeRegistry{
       else result = tryCreateElementaryType(clazz).map(t->t);
     }
     if(result.isPresent()) LOG.debug("Created {} for {}.", result.get(), clazz);
-    else LOG.info("{} is not supported.", clazz);
+    else {
+      LOG.debug("{} is not supported, creating foreign type.", clazz);
+      result = Opt.of(createForeignType(clazz));
+    }
     return result;
+  }
+
+  private <T> ForeignType<T> createForeignType(final Class<T> clazz) {
+    return new ForeignType<T>(jf, clazz);
   }
 
   private boolean isTypedStringType(final Class<?> clazz) {
@@ -329,8 +342,7 @@ public class DefaultTypeRegistry implements TypeRegistry{
         .filter(i->isSupported(i))
         .collect(toISet())
       ;
-      if(types.size()==1) result = Opt.of((TypeSupport<? super T>) type(single(types)));
-      ;
+      if(types.size()==1) result = Opt.of((TypeSupport<? super T>) type(types.single()));
     }
     return (Opt<TypeSupport<? super T>>)(Opt)result;
   }

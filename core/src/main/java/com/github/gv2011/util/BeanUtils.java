@@ -27,7 +27,6 @@ package com.github.gv2011.util;
  */
 
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
-import static com.github.gv2011.util.json.JsonUtils.jsonFactory;
 
 import com.github.gv2011.util.beans.BeanBuilder;
 import com.github.gv2011.util.beans.TypeRegistry;
@@ -44,14 +43,14 @@ public final class BeanUtils {
   }
 
   public static <B> BeanBuilder<B> beanBuilder(final Class<B> beanClass){
-      return typeRegistry().createBuilder(beanClass);
+      return typeRegistry().beanType(beanClass).createBuilder();
   }
 
   public static <B> B parse(final Class<B> beanClass, final JsonObject json) {
       return typeRegistry().beanType(beanClass).parse(json);
   }
 
-  public static <B> B parse(final Class<B> beanClass, final String json) {
-      return parse(beanClass, jsonFactory().deserialize(json).asObject());
+  public static <B> B parse(final Class<B> beanClass, final String string) {
+    return typeRegistry().beanType(beanClass).parse(string);
   }
 }

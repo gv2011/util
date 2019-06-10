@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,11 +26,12 @@ package com.github.gv2011.util.beans.imp;
  * #L%
  */
 
-import static com.github.gv2011.util.CollectionUtils.setOf;
 import static com.github.gv2011.util.CollectionUtils.stream;
 import static com.github.gv2011.util.CollectionUtils.toOpt;
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verify;
+import static com.github.gv2011.util.icol.ICollections.asSet;
+import static com.github.gv2011.util.icol.ICollections.emptySet;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.annotation.Annotation;
@@ -40,16 +41,18 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 
 import com.github.gv2011.util.Nothing;
-import com.github.gv2011.util.beans.Abstract;
+import com.github.gv2011.util.beans.AbstractRoot;
 import com.github.gv2011.util.beans.AnnotationHandler;
-import com.github.gv2011.util.beans.Bean;
+import com.github.gv2011.util.beans.Final;
 import com.github.gv2011.util.beans.Computed;
 import com.github.gv2011.util.beans.DefaultValue;
 import com.github.gv2011.util.beans.FixedBooleanValue;
 import com.github.gv2011.util.beans.FixedValue;
+import com.github.gv2011.util.beans.Parser;
 import com.github.gv2011.util.beans.TypeName;
 import com.github.gv2011.util.beans.TypeNameStrategy;
 import com.github.gv2011.util.beans.TypeResolver;
+import com.github.gv2011.util.beans.Validator;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.Opt;
 
@@ -59,7 +62,7 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
 
   @Override
   public <B> Opt<Class<? extends TypeResolver<B>>> typeResolver(final Class<? extends B> clazz) {
-    return Opt.ofNullable(clazz.getAnnotation(Abstract.class))
+    return Opt.ofNullable(clazz.getAnnotation(AbstractRoot.class))
       .flatMap(a->{
         @SuppressWarnings({"unchecked"})
         final Class<? extends TypeResolver<B>> typeResolver = (Class<? extends TypeResolver<B>>) a.typeResolver();
@@ -71,7 +74,7 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
 
   @Override
   public Opt<Class<? extends TypeNameStrategy>> typeNameStrategy(final Class<?> clazz) {
-    return Opt.ofNullable(clazz.getAnnotation(Abstract.class))
+    return Opt.ofNullable(clazz.getAnnotation(AbstractRoot.class))
       .flatMap(a->{
         final Class<? extends TypeNameStrategy> typeNameStrategy = a.typeNameStrategy();
         if(typeNameStrategy.equals(TypeNameStrategy.class)) return Opt.empty();
@@ -82,21 +85,21 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
 
   @Override
   public boolean annotatedAsBean(final Class<?> clazz) {
-    final boolean result = clazz.getAnnotation(Bean.class)!=null;
+    final boolean result = clazz.getAnnotation(Final.class)!=null;
     if(result) verify(!declaredAsAbstract(clazz));
     return result;
   }
 
   @Override
   public boolean declaredAsAbstract(final Class<?> clazz) {
-    final boolean result = clazz.getAnnotation(Abstract.class)!=null;
+    final boolean result = clazz.getAnnotation(AbstractRoot.class)!=null;
     if(result) verify(!annotatedAsBean(clazz));
     return result;
   }
 
   @Override
   public boolean isPolymorphicRoot(final Class<?> clazz) {
-    final boolean result = Opt.ofNullable(clazz.getAnnotation(Abstract.class))
+    final boolean result = Opt.ofNullable(clazz.getAnnotation(AbstractRoot.class))
       .map(a->!subClasses(a).isEmpty())
       .orElse(false)
     ;
@@ -126,14 +129,14 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
 
   @Override
   public ISet<Class<?>> subClasses(final Class<?> clazz) {
-    return subClasses(notNull(clazz.getAnnotation(Abstract.class)));
+    return subClasses(notNull(clazz.getAnnotation(AbstractRoot.class)));
   }
 
-  private ISet<Class<?>> subClasses(final Abstract annotation) {
+  private ISet<Class<?>> subClasses(final AbstractRoot annotation) {
     final Class<?>[] subClasses = annotation.subClasses();
     verify(subClasses.length>0);
-    if(subClasses.length==1 && subClasses[0].equals(Nothing.class)) return setOf();
-    else return setOf(subClasses);
+    if(subClasses.length==1 && subClasses[0].equals(Nothing.class)) return emptySet();
+    else return asSet(subClasses);
   }
 
   @Override
@@ -152,6 +155,33 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
         .flatOpt(m->Opt.ofNullable(m.getAnnotation(annotationClass)))
         .collect(toOpt())
         .map(annotationProperty)
+      ;
+  }
+
+  @Override
+  public Opt<Class<?>> getImplementingClass(final Class<?> clazz) {
+    return
+      Opt.ofNullable(clazz.getAnnotation(Final.class))
+      .map(Final::implementation)
+      .flatMap(impl->impl.equals(Void.class) ? Opt.empty() : Opt.of(impl))
+    ;
+  }
+
+  @Override
+  public Opt<Class<? extends Validator<?>>> getValidatorClass(final Class<?> clazz) {
+    return
+      Opt.ofNullable(clazz.getAnnotation(Final.class))
+      .map(Final::validator)
+      .flatMap(impl->impl.equals(Final.NoopValidator.class) ? Opt.empty() : Opt.of(impl))
+    ;
+  }
+
+  @Override
+  public Opt<Class<? extends Parser<?>>> getParser(final Class<?> clazz) {
+    return
+        Opt.ofNullable(clazz.getAnnotation(Final.class))
+        .map(Final::parser)
+        .flatMap(impl->impl.equals(Final.NoopParser.class) ? Opt.empty() : Opt.of(impl))
       ;
   }
 

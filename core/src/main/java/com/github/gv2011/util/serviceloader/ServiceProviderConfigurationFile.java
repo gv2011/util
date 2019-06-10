@@ -1,6 +1,5 @@
 package com.github.gv2011.util.serviceloader;
 
-import static com.github.gv2011.util.CollectionUtils.iCollections;
 
 /*-
  * #%L
@@ -28,11 +27,13 @@ import static com.github.gv2011.util.CollectionUtils.iCollections;
  * #L%
  */
 
-import static com.github.gv2011.util.StreamUtils.readText;
 import static com.github.gv2011.util.ex.Exceptions.call;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toList;
 
 import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
@@ -48,84 +49,99 @@ import java.util.stream.StreamSupport;
 
 import com.github.gv2011.util.LegacyCollections;
 import com.github.gv2011.util.icol.ICollectionFactory;
+import static com.github.gv2011.util.icol.ICollections.*;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.ISet;
 
 
 public final class ServiceProviderConfigurationFile<S> {
 
-    public static <S> ISet<ServiceProviderConfigurationFile<S>> files(final Class<S> service){
-        final ICollectionFactory iCollections = iCollections();
-        return filesInternal(service).collect(iCollections.setCollector())
-        ;
+  public static <S> ISet<ServiceProviderConfigurationFile<S>> files(final Class<S> service){
+    final ICollectionFactory iCollections = iCollections();
+    return call(()->filesInternal(service).collect(iCollections.setCollector()));
+  }
+
+
+  static <S> Stream<ServiceProviderConfigurationFile<S>> filesInternal(final Class<S> service) throws IOException{
+    return
+      StreamSupport.stream(
+        Spliterators.spliteratorUnknownSize(
+          LegacyCollections.asIterator(
+            Thread.currentThread().getContextClassLoader().getResources("META-INF/services/"+service.getName())
+          ),
+          Spliterator.ORDERED
+        ),
+        false
+      )
+      .map(u->{
+        try {return new ServiceProviderConfigurationFile<>(service, u);}
+        catch (final IOException e) {throw new RuntimeException(e);}
+      })
+    ;
+  }
+
+  private final Class<S> service;
+  private final List<String> implementations;
+  private final URL url;
+
+
+  private ServiceProviderConfigurationFile(final Class<S> service, final URL url) throws IOException {
+    this.service = service;
+    this.url = url;
+    final Set<String> set = new HashSet<>();
+    implementations = Collections.unmodifiableList(
+      lines(readText(url)).stream()
+      .map(this::stripComment)
+      .map(String::trim)
+      .filter(not(String::isEmpty))
+      .filter(l->set.add(l)) //ignore duplicates
+      .collect(toList())
+    );
+  }
+
+  private String readText(final URL url) throws IOException {
+    try(InputStream in = url.openStream()){
+      return new String(in.readAllBytes(), UTF_8);
     }
+  }
 
 
-    static <S> Stream<ServiceProviderConfigurationFile<S>> filesInternal(final Class<S> service){
-        return
-          StreamSupport.stream(
-            Spliterators.spliteratorUnknownSize(
-              LegacyCollections.asIterator(call(()->
-                Thread.currentThread().getContextClassLoader().getResources("META-INF/services/"+service.getName())
-              ))
-              ,Spliterator.ORDERED
-            )
-            ,false
-          )
-          .map(u->new ServiceProviderConfigurationFile<>(service, u))
-        ;
-    }
+  public Class<S> service(){
+      return service;
+  }
 
-    private final Class<S> service;
-    private final List<String> implementations;
-    private final URL url;
+  public URL url(){
+      return url;
+  }
 
+  @Override
+  public String toString() {
+    return url.toString();
+  }
 
-    private ServiceProviderConfigurationFile(final Class<S> service, final URL url) {
-        this.service = service;
-        this.url = url;
-        final Set<String> set = new HashSet<>();
-        implementations = Collections.unmodifiableList(
-            lines(readText(url::openStream)).stream()
-            .map(this::stripComment)
-            .map(String::trim)
-            .filter(not(String::isEmpty))
-            .filter(l->set.add(l)) //ignore duplicates
-            .collect(toList())
-        );
-    }
+  public IList<String> implementations(){
+      final ICollectionFactory iCollections = iCollections();
+      return implementationsInternal().collect(iCollections.listCollector());
+  }
 
-    public Class<S> service(){
-        return service;
-    }
+  Stream<String> implementationsInternal(){
+      return implementations.stream();
+  }
 
-    public URL url(){
-        return url;
-    }
+  private static List<String> lines(final String text){
+    return lines(new StringReader(text)).collect(toList());
+  }
 
-    public IList<String> implementations(){
-        final ICollectionFactory iCollections = iCollections();
-        return implementationsInternal().collect(iCollections.listCollector());
-    }
+  private static Stream<String> lines(final Reader text){
+    return new BufferedReader(text).lines();
+  }
 
-    Stream<String> implementationsInternal(){
-        return implementations.stream();
-    }
+  private static <T> Predicate<T> not(final Predicate<T> p){
+    return o->!p.test(o);
+  }
 
-    private static List<String> lines(final String text){
-        return lines(new StringReader(text)).collect(toList());
-    }
-
-    private static Stream<String> lines(final Reader text){
-        return new BufferedReader(text).lines();
-    }
-
-    private static <T> Predicate<T> not(final Predicate<T> p){
-        return o->!p.test(o);
-    }
-
-    private final String stripComment(final String line) {
-        final int i = line.indexOf('#');
-        return i==-1 ? line : line.substring(0, i);
-    }
+  private final String stripComment(final String line) {
+    final int i = line.indexOf('#');
+    return i==-1 ? line : line.substring(0, i);
+  }
 }

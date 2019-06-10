@@ -43,4 +43,9 @@ final class ElementaryTypeImp<E> extends AbstractElementaryType<E>{
     return handler;
   }
 
+  @Override
+  public boolean hasStringForm() {
+    return handler.hasStringForm();
+  }
+
 }

@@ -30,7 +30,6 @@ package com.github.gv2011.util.bytes;
 
 
 import static com.github.gv2011.util.NumUtils.isOdd;
-import static com.github.gv2011.util.StringUtils.removeWhitespace;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.callWithCloseable;
@@ -45,10 +44,12 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.Random;
+import java.util.stream.Collector;
+import java.util.stream.IntStream;
 
 import com.github.gv2011.util.ex.ThrowingSupplier;
+import com.github.gv2011.util.icol.Opt;
 
 public class ByteUtils {
 
@@ -58,6 +59,12 @@ public class ByteUtils {
 
   public static Bytes newBytes(final byte... bytes){
     return newBytes(bytes, 0, bytes.length);
+  }
+
+  public static Bytes newBytes(final int... bytes){
+    final byte[] a = new byte[bytes.length];
+    for(int i=0; i<a.length; i++) a[i] = (byte) bytes[i];
+    return new ArrayBytes(a);
   }
 
   public static Bytes newBytes(final byte[] bytes, final int from, final int to) {
@@ -71,8 +78,8 @@ public class ByteUtils {
     return new ArrayBytes(hexToByteArray(hex));
   }
 
-  public static byte[] hexToByteArray(final String hex){
-    final String noWhitespace = removeWhitespace(hex);
+  public static byte[] hexToByteArray(final CharSequence hex){
+    final String noWhitespace = removeWhitespaceAndColon(hex);
     if(isOdd(noWhitespace.length())) throw new IllegalArgumentException();
     final int size = noWhitespace.length()/2;
     final byte[] b = new byte[size];
@@ -84,6 +91,11 @@ public class ByteUtils {
     }
     return b;
   }
+
+  static String removeWhitespaceAndColon(final CharSequence s) {
+    return s.toString().replaceAll("[\\s:]+", "");
+  }
+
 
   public static Bytes newBytes(final Bytes bytes){
     return new ArrayBytes(bytes.toByteArray());
@@ -99,7 +111,7 @@ public class ByteUtils {
   }
 
   public static TypedBytes asUtf8(final String text){
-    return new ArrayBytes(text.getBytes(UTF_8)).typed(DataTypeImp.TEXT);
+    return new ArrayBytes(text.getBytes(UTF_8)).typed(DataTypes.TEXT_PLAIN_UTF_8);
   }
 
   public static Hash256 hash(final String text){
@@ -172,10 +184,16 @@ public class ByteUtils {
     }
   }
 
+  public static Bytes collectBytes(final IntStream intStream) {
+    return intStream
+      .collect(BytesBuilder::new, BytesBuilder::write, (b1,b2)->b1.append(b2.build()))
+      .build()
+    ;
+  }
 
 
-  public static Optional<Bytes> tryRead(final Path file) {
-    return Files.exists(file) ? Optional.of(read(file)) : Optional.empty();
+  public static Opt<Bytes> tryRead(final Path file) {
+    return Files.exists(file) ? Opt.of(read(file)) : Opt.empty();
   }
 
   //TODO remove
@@ -208,5 +226,8 @@ public class ByteUtils {
     return new ArrayBytes(i.toByteArray());
   }
 
+  public static Collector<Bytes,?,Bytes> joining(){
+    return new JoiningBytesCollector();
+  }
 
 }

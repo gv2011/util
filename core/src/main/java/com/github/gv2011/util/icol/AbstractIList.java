@@ -26,12 +26,9 @@ package com.github.gv2011.util.icol;
  * #L%
  */
 
-
-
-
-import static com.github.gv2011.util.CollectionUtils.toIList;
-import static com.github.gv2011.util.CollectionUtils.toISortedMap;
 import static com.github.gv2011.util.Verify.verify;
+import static com.github.gv2011.util.icol.ICollections.toIList;
+import static com.github.gv2011.util.icol.ICollections.toISortedMap;
 import static java.util.stream.Collectors.joining;
 
 import java.util.Collection;
@@ -106,6 +103,8 @@ public abstract class AbstractIList<E> implements IList<E>{
     final int s = size();
     return IntStream.range(1, s-1).map(i->s-i).filter(i->o.equals(get(i))).findFirst().orElse(-1);
   }
+
+
 
   @Override
   public ListIterator<E> listIterator() {
@@ -196,5 +195,23 @@ public abstract class AbstractIList<E> implements IList<E>{
     return hash.get();
   }
 
+  @Override
+  public ISet<E> intersection(final Collection<?> other) {
+    return ICollections.intersection(this, other);
+  }
+
+  @Override
+  public IList<E> reversed() {
+    return new ReversedIList();
+  }
+
+  private final class ReversedIList extends AbstractIList<E>{
+    @Override
+    public E get(final int index) {return AbstractIList.this.get(AbstractIList.this.size()-1-index);}
+    @Override
+    public int size() {return AbstractIList.this.size();}
+    @Override
+    public IList<E> reversed() {return AbstractIList.this;}
+  }
 
 }

@@ -52,8 +52,10 @@ import java.util.Optional;
 import com.github.gv2011.util.Constant;
 import com.github.gv2011.util.Constants;
 import com.github.gv2011.util.Pair;
+import com.github.gv2011.util.ann.Immutable;
+import com.github.gv2011.util.uc.UChars;
+import com.github.gv2011.util.uc.UStr;
 
-import net.jcip.annotations.Immutable;
 
 @Immutable
 public abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
@@ -170,6 +172,11 @@ public abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
 
 
   @Override
+  public UStr utf8ToUStr() throws TooBigException {
+    return UChars.uStr(utf8ToString());
+  }
+
+  @Override
   public String toString(final Charset charset) {
     return new String(toByteArray(), charset);
   }
@@ -280,6 +287,15 @@ public abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
   }
 
   @Override
+  public String toHex() {
+    final StringBuilder sb = new StringBuilder();
+    for(int i=0; i<size(); i++){
+      sb.append(toHex(getUnsigned(i)));
+    }
+    return sb.toString();
+  }
+
+  @Override
   public String toHexMultiline() {
     final StringBuilder sb = new StringBuilder();
     int column = 0;
@@ -293,6 +309,19 @@ public abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
       }
       sb.append(toHex(getUnsigned(i)));
       column++;
+    }
+    return sb.toString();
+  }
+
+  @Override
+  public final String toHexColon() {
+    final StringBuilder sb = new StringBuilder();
+    if(!isEmpty()) {
+    	sb.append(toHex(getUnsigned(0)));
+	    for(int i=1; i<size(); i++){
+	      sb.append(':');
+	      sb.append(toHex(getUnsigned(i)));
+	    }
     }
     return sb.toString();
   }
@@ -419,7 +448,7 @@ public abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
 
   @Override
   public TypedBytes typed() {
-    return typed(DataTypeImp.APPLICATION_OCTET_STREAM);
+    return typed(DataTypes.APPLICATION_OCTET_STREAM);
   }
 
   @Override

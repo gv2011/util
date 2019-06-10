@@ -26,15 +26,12 @@ package com.github.gv2011.util.bytes;
  * #L%
  */
 
-
-
-
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static java.lang.Math.min;
 
 import java.io.InputStream;
 
-import net.jcip.annotations.NotThreadSafe;
+import com.github.gv2011.util.ann.NotThreadSafe;
 
 @NotThreadSafe
 public class TruncatedStream extends InputStream{

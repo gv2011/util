@@ -26,11 +26,8 @@ package com.github.gv2011.util.icol;
  * #L%
  */
 
-
-
-
 import static com.github.gv2011.util.CollectionUtils.pair;
-import static com.github.gv2011.util.CollectionUtils.toISortedMap;
+import static com.github.gv2011.util.icol.ICollections.toISortedMap;
 
 
 public abstract class AbstractISortedMap<K extends Comparable<? super K>, V>

@@ -1,6 +1,7 @@
 package com.github.gv2011.util.icol;
 
-import static com.github.gv2011.util.ex.Exceptions.format;
+import static com.github.gv2011.util.CollectionUtils.pair;
+import static com.github.gv2011.util.icol.ICollections.toIMap;
 
 /*-
  * #%L
@@ -32,12 +33,12 @@ import static com.github.gv2011.util.ex.Exceptions.format;
 
 
 import java.util.Map;
-import java.util.NoSuchElementException;
-
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public interface IMap<K,V> extends Map<K,V>{
+import com.github.gv2011.util.NullSafeMap;
+
+public interface IMap<K,V> extends NullSafeMap<K,V>{
 
   public static interface Builder<K,V> extends MapBuilder<IMap<K,V>,K,V,Builder<K,V>>{}
 
@@ -54,11 +55,8 @@ public interface IMap<K,V> extends Map<K,V>{
   @Override
   ISet<Entry<K, V>> entrySet();
 
-  @Override
-  default V get(final Object key) {
-    return tryGet(key).orElseThrow(()->new NoSuchElementException(format("No entry for key {}.", key)));
-  }
 
+  @Override
   Opt<V> tryGet(Object key);
 
   @Override
@@ -66,16 +64,20 @@ public interface IMap<K,V> extends Map<K,V>{
     return tryGet(key).orElse(defaultValue);
   }
 
-  Entry<K, V> single();
+  default Entry<K, V> single(){
+    return entrySet().single();
+  }
 
   default Entry<K, V> first(){
-    if(isEmpty()) throw new NoSuchElementException();
-    else return entrySet().iterator().next();
+    return entrySet().first();
   }
 
   default Opt<Entry<K, V>> tryGetFirst(){
-    if(isEmpty()) return Opt.empty();
-    else return Opt.of(entrySet().iterator().next());
+    return isEmpty() ? Opt.empty() : Opt.of(entrySet().first());
+  }
+
+  default IMap<V,K> reverted(){
+    return entrySet().stream().map(e->pair(e.getValue(), e.getKey())).collect(toIMap());
   }
 
   @Override
@@ -153,6 +155,12 @@ public interface IMap<K,V> extends Map<K,V>{
   @Override
   @Deprecated
   default V merge(final K key, final V value, final BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  @Deprecated
+  default Opt<V> tryRemove(final Object key) {
     throw new UnsupportedOperationException();
   }
 

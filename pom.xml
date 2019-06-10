@@ -2,7 +2,7 @@
 <!--
   The MIT License (MIT)
 
-  Copyright (c) 2016 - 2017, Vinz (https://github.com/gv2011)
+  Copyright (c) 2016 - 2019, Vinz (https://github.com/gv2011)
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +28,10 @@
   <parent>
     <groupId>com.github.gv2011</groupId>
     <artifactId>parent-gv</artifactId>
-    <version>0.3.0</version>
+    <version>0.4.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>util-parent</artifactId>
-  <version>0.3.11-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <description>General purpose utilities - parent.</description>
@@ -46,9 +45,12 @@
   </scm>
 
   <modules>
+    <module>bc</module>
+    <module>context</module>
     <module>core</module>
     <module>beans</module>
     <module>beanscglib</module>
+    <module>filetypes-tika</module>
     <module>gcol</module>
     <module>http</module>
     <module>jacksonadapter</module>
@@ -57,6 +59,7 @@
     <module>logback</module>
     <module>swing</module>
     <module>test</module>
+    <module>testutils</module>
   </modules>
   
   <properties>
@@ -72,6 +75,13 @@
           <inceptionYear>2016</inceptionYear>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>pl.project13.maven</groupId>
+        <artifactId>git-commit-id-plugin</artifactId>
+        <configuration>
+          <dotGitDirectory>${project.basedir}/../.git</dotGitDirectory>
+        </configuration>
+      </plugin> 
     </plugins>
   </build>
 </project>

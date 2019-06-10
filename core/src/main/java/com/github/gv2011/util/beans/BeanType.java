@@ -26,18 +26,14 @@ package com.github.gv2011.util.beans;
  * #L%
  */
 import com.github.gv2011.util.icol.ISortedMap;
-import com.github.gv2011.util.json.JsonObject;
 
 public interface BeanType<T> extends Type<T>{
 
-    BeanBuilder<T> createBuilder();
+    ExtendedBeanBuilder<T> createBuilder();
 
     Partial<T> emptyPartial();
 
     ISortedMap<String,? extends Property<?>> properties();
-
-    @Override
-    JsonObject toJson(T object);
 
     <V> V get(T bean, Property<V> property);
 

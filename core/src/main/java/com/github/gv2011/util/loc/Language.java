@@ -26,13 +26,10 @@ package com.github.gv2011.util.loc;
  * #L%
  */
 
-
-
-
 import static com.github.gv2011.util.CollectionUtils.pair;
-import static com.github.gv2011.util.CollectionUtils.toISet;
-import static com.github.gv2011.util.CollectionUtils.toISortedMap;
-import static com.github.gv2011.util.CollectionUtils.toISortedSet;
+import static com.github.gv2011.util.icol.ICollections.toISet;
+import static com.github.gv2011.util.icol.ICollections.toISortedMap;
+import static com.github.gv2011.util.icol.ICollections.toISortedSet;
 
 import java.util.Arrays;
 import java.util.Locale;

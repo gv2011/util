@@ -1,7 +1,5 @@
 package com.github.gv2011.util.icol;
 
-import static com.github.gv2011.util.CollectionUtils.toIList;
-
 /*-
  * #%L
  * The MIT License (MIT)
@@ -28,23 +26,36 @@ import static com.github.gv2011.util.CollectionUtils.toIList;
  * #L%
  */
 
-
-
+import static com.github.gv2011.util.icol.ICollections.toISet;
 
 import java.util.Collection;
 import java.util.Set;
 
-public interface ISet<E> extends Set<E>, ICollection<E>{
+import com.github.gv2011.util.XStream;
+
+public interface ISet<E> extends Set<E>, ICollectionG<E, ISet<E>>{
 
   public static interface Builder<E> extends CollectionBuilder<ISet<E>,E,Builder<E>>{}
 
   @SuppressWarnings("unchecked")
   static <E> ISet<E> cast(final ISet<? extends E> set){return (ISet<E>) set;}
 
-
   @Override
   default boolean isEmpty() {
     return size()==0;
+  }
+
+  @Override
+  default Object[] toArray() {
+    return asList().toArray();
+  }
+
+  @Override
+  default ISet<E> subtract(final Collection<?> other) {
+    if(other.isEmpty()) return this;
+    else{
+      return parallelStream().filter(e->!other.contains(e)).collect(toISet());
+    }
   }
 
   @Deprecated
@@ -84,12 +95,19 @@ public interface ISet<E> extends Set<E>, ICollection<E>{
   }
 
   @Override
-  @Deprecated
-  default <T> T[] toArray(final T[] a) {
-    throw new UnsupportedOperationException();
+  default XStream<E> stream() {
+      return XStream.stream(spliterator(), false);
   }
 
-  default IList<E> asList(){
-    return stream().collect(toIList());
+
+  @Override
+  default XStream<E> parallelStream() {
+      return XStream.stream(spliterator(), true);
   }
+
+  @Override
+  default ISet<E> join(final Collection<? extends E> other) {
+    return parallelStream().concat(other.parallelStream()).collect(toISet());
+  }
+
 }

@@ -4,7 +4,7 @@ package com.github.gv2011.util.sec;
  * #%L
  * util-test
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2019 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,16 +26,16 @@ package com.github.gv2011.util.sec;
  * #L%
  */
 
-import static com.github.gv2011.testutil.Matchers.hasSize;
-import static com.github.gv2011.testutil.Matchers.is;
-import static com.github.gv2011.util.CollectionUtils.iCollections;
+import static com.github.gv2011.testutils.Matchers.hasSize;
+import static com.github.gv2011.testutils.Matchers.is;
+import static com.github.gv2011.util.icol.ICollections.listOf;
 import static org.junit.Assert.assertThat;
 
 import java.security.cert.X509Certificate;
 
 import org.junit.Test;
 
-import com.github.gv2011.testutil.AbstractTest;
+import com.github.gv2011.testutils.AbstractTest;
 import com.github.gv2011.util.icol.IList;
 
 public class SecUtilsTest extends AbstractTest{
@@ -44,7 +44,7 @@ public class SecUtilsTest extends AbstractTest{
   public void testCreateJKSKeyStore() {
     final RsaKeyPair privKey = RsaKeyPair.parse(getResourceBytes("rsaprivcrt.pkcs8"));
     final X509Certificate cert = SecUtils.readCertificate(getResourceBytes("cert.der"));
-    SecUtils.createJKSKeyStore(privKey, iCollections().listOf(cert));
+    SecUtils.createJKSKeyStoreBytes(privKey, listOf(cert));
   }
 
   @Test

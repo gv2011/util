@@ -4,7 +4,7 @@ package com.github.gv2011.util.icol;
  * #%L
  * util-test
  * %%
- * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2019 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,9 @@ package com.github.gv2011.util.icol;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.testutil.Matchers.is;
-import static com.github.gv2011.util.CollectionUtils.iCollections;
+
+import static com.github.gv2011.testutils.Matchers.is;
+import static com.github.gv2011.util.icol.ICollections.sortedMapBuilder;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
@@ -35,7 +36,7 @@ public class ISortedMapTest {
 
   @Test
   public void test() {
-    final ISortedMap.Builder<String,String> b = iCollections().sortedMapBuilder();
+    final ISortedMap.Builder<String,String> b = sortedMapBuilder();
     b.put("b", "lala");
     b.put("a", "lulu");
     final ISortedMap<String, String> map = b.build();

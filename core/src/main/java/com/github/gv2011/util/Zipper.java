@@ -26,10 +26,10 @@ package com.github.gv2011.util;
  * #L%
  */
 
-import static com.github.gv2011.util.CollectionUtils.toISortedSet;
 import static com.github.gv2011.util.FileUtils.contains;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.callWithCloseable;
+import static com.github.gv2011.util.icol.ICollections.toISortedSet;
 
 import java.io.IOException;
 import java.io.InputStream;

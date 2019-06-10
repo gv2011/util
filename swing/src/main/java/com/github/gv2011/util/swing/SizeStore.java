@@ -4,7 +4,7 @@ package com.github.gv2011.util.swing;
  * #%L
  * util-swing
  * %%
- * Copyright (C) 2018 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2018 - 2019 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -12,10 +12,10 @@ package com.github.gv2011.util.swing;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,13 +25,13 @@ package com.github.gv2011.util.swing;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.util.FileUtils.path;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.awt.Dimension;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.swing.JFrame;
 import javax.swing.JSplitPane;
@@ -47,10 +47,9 @@ import com.github.gv2011.util.PropertyUtils.SafeProperties;
 
 public class SizeStore implements AutoCloseableNt{
 
-  @SuppressWarnings("unused")
   private static final Logger LOG = getLogger(SizeStore.class);
 
-  private static final Path PATH = path("sizes.properties");
+  private static final Path PATH = Paths.get("sizes.properties");
   private final SafeProperties sizes;
 
   public SizeStore() {

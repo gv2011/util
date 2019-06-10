@@ -4,7 +4,7 @@ package com.github.gv2011.util.icol;
  * #%L
  * The MIT License (MIT)
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,28 +25,44 @@ package com.github.gv2011.util.icol;
  * THE SOFTWARE.
  * #L%
  */
+import static com.github.gv2011.util.CollectionUtils.intRange;
+import static com.github.gv2011.util.icol.ICollections.toIList;
+import static com.github.gv2011.util.icol.ICollections.toISortedMap;
 
-
-
-
-import static com.github.gv2011.util.CollectionUtils.iCollections;
-
+import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.UnaryOperator;
+import java.util.stream.IntStream;
 
-public interface IList<E> extends List<E>, ICollection<E>{
+import com.github.gv2011.util.XStream;
 
-  public static interface Builder<E> extends CollectionBuilder<IList<E>,E,Builder<E>>{}
+public interface IList<E> extends List<E>, ICollectionG<E,IList<E>>, ListAccess<E>{
 
-  @SuppressWarnings("unchecked")
-  static <E> IList<E> cast(final IList<? extends E> list){return (IList<E>) list;}
+  public static interface Builder<E> extends CollectionBuilder<IList<E>,E,Builder<E>>{
+
+    int size();
+
+    E get(int index);
+
+    E set(int index, E element);
+
+    default E getLast(){return get(size()-1);}
+
+    default E setLast(final E element){return set(size()-1, element);}
+
+  }
 
   @Override
-  IList<E> subList(int fromIndex, int toIndex);
-
-  ISortedMap<Integer,E> asMap();
+  default ISortedMap<Integer,E> asMap(){
+    return IntStream.range(0, size()).parallel().mapToObj(Integer::valueOf)
+      .collect(toISortedMap(
+          i->i,
+          this::get
+      ))
+    ;
+  }
 
   @Deprecated
   @Override
@@ -121,23 +137,74 @@ public interface IList<E> extends List<E>, ICollection<E>{
   }
 
   @Override
-  default <T> T[] toArray(final T[] a) {
-    throw new UnsupportedOperationException();
-  }
-
   default IList<E> tail(){
     return subList(1, size());
   }
 
-  default IList<E> append(final E element){
-    return iCollections().<E>listBuilder().addAll(this).add(element).build();
+  @Override
+  default IList<E> asList() {
+    return this;
   }
 
-  default IList<E> appendAll(final Iterable<? extends E> elements){
-    final Builder<E> b = iCollections().<E>listBuilder();
-    b.addAll(this);
-    for(final E e: elements) b.add(e);
-    return b.build();
+  @Override
+  default Object[] toArray() {
+    final int size = size();
+    final Object[] result = new Object[size];
+    for(int i=0; i<size; i++) result[i]=get(i);
+    return result;
   }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  default <T> T[] toArray(T[] a) {
+    final int size = size();
+    if(a.length<size){
+      a = (T[]) Array.newInstance(a.getClass().getComponentType(),size);
+    }
+    for(int i=0; i<size; i++) a[i]=(T) get(i);
+    if(a.length>size) a[size] = null;
+    return a;
+  }
+
+
+  @Override
+  default int indexOf(final Object o){
+    return IntStream.range(0,size()).filter(i->get(i).equals(o)).findFirst().orElse(-1);
+  }
+
+  @Override
+  default int lastIndexOf(final Object o) {
+    return intRange(size()-1,-1).filter(i->get(i).equals(o)).findFirst().orElse(-1);
+  }
+
+
+
+  @Override
+  default IList<E> addElement(final E element) {
+    return ICollections.<E>listBuilder().addAll(this).add(element).build();
+  }
+
+  @Override
+  default XStream<E> stream() {
+      return XStream.stream(spliterator(), false);
+  }
+
+
+  @Override
+  default XStream<E> parallelStream() {
+      return XStream.stream(spliterator(), true);
+  }
+
+  @Override
+  default IList<E> join(final Collection<? extends E> other) {
+    return stream().concat(other.stream()).collect(toIList());
+  }
+
+  @Override
+  default IList<E> subtract(final Collection<?> other) {
+    return stream().filter(e->!other.contains(e)).collect(toIList());
+  }
+
+  IList<E> reversed();
 
 }

@@ -27,20 +27,24 @@ package com.github.gv2011.util.beans.imp;
  */
 
 import static com.github.gv2011.util.CollectionUtils.pair;
-import static com.github.gv2011.util.CollectionUtils.toISortedMap;
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
+import static com.github.gv2011.util.ex.Exceptions.wrap;
+import static com.github.gv2011.util.icol.ICollections.toISortedMap;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -52,8 +56,10 @@ import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.beans.AnnotationHandler;
 import com.github.gv2011.util.beans.BeanBuilder;
 import com.github.gv2011.util.beans.BeanType;
+import com.github.gv2011.util.beans.Parser;
 import com.github.gv2011.util.beans.Partial;
 import com.github.gv2011.util.beans.Property;
+import com.github.gv2011.util.beans.Validator;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonFactory;
@@ -71,8 +77,11 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
 
   private final JsonFactory jf;
   final AnnotationHandler annotationHandler;
-  //private final Function<Type,AbstractType<?>> registry;
   private final BeanFactory beanFactory;
+  private final boolean writeAsJsonString;
+  private final Function<String,T> parser;
+  protected final UnaryOperator<T> resultWrapper;
+  protected final UnaryOperator<T> validator;
 
   //recursion, init later
   private @Nullable ISortedMap<String, PropertyImp<T,?>> properties;
@@ -89,6 +98,43 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
     this.jf = jf;
     this.annotationHandler = annotationHandler;
     this.beanFactory = beanFactory;
+    final Opt<Class<? extends Parser<?>>> annotatedParser = annotationHandler.getParser(clazz);
+    writeAsJsonString = annotatedParser.isPresent();
+    parser = annotatedParser
+      .map(this::createParserFromClass)
+      .orElseGet(()->
+        s->parse(jf().deserialize(s).asObject())
+      )
+    ;
+    resultWrapper = annotationHandler.getImplementingClass(clazz)
+      .map(this::createResultWrapperFromClass)
+      .orElseGet(UnaryOperator::identity)
+    ;
+    validator = annotationHandler.getValidatorClass(clazz)
+      .map(this::createValidatorFromClass)
+      .orElseGet(UnaryOperator::identity)
+    ;
+  }
+
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  private final Function<String,T> createParserFromClass(final Class<? extends Parser<?>> parserClass){
+    final Parser parserInstance = call(()->parserClass.getConstructor().newInstance());
+    return s->clazz.cast(parserInstance.parse(s, createBuilder()));
+  }
+
+  private final UnaryOperator<T> createResultWrapperFromClass(final Class<?> implementingClass){
+    final Constructor<? extends T> constructor = call(()->implementingClass.asSubclass(clazz).getConstructor(clazz));
+    return core->call(()->constructor.newInstance(core));
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  private final UnaryOperator<T> createValidatorFromClass(final Class<? extends Validator<?>> validatingClass){
+    final Validator validatorInstance = call(()->validatingClass.getConstructor().newInstance());
+    return unvalidated->{
+      final String msg = validatorInstance.invalidMessage(unvalidated);
+      verify(msg, String::isEmpty);
+      return unvalidated;
+    };
   }
 
   @Override
@@ -127,6 +173,7 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   @Override
   public final int hashCode(final T bean) {
     return clazz.hashCode() * 31 + properties.values().stream()
+      .filter(p->p.function().isEmpty())
       .mapToInt(p->p.name().hashCode() ^ p.getValue(bean).hashCode())
       .sum()
     ;
@@ -182,7 +229,7 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
 
   private ISortedMap<String, PropertyImp<T,?>> createProperties() {
     return Arrays.stream(clazz.getMethods())
-    .filter(beanFactory::isPropertyMethod)
+    .filter(m->beanFactory.isPropertyMethod(clazz, m))
     .map(this::createProperty)
     .collect(toISortedMap(
         p->p.name(),
@@ -213,9 +260,19 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
       annotationHandler.defaultValue(m)
       .map(v->type.parse(parseTolerant(type, jf, v)))
     ;
+    final Opt<Function<T,V>> function =
+      annotationHandler.annotatedAsComputed(m)
+      ? Opt.of(createFunction(m))
+      : Opt.empty()
+    ;
     if(fixedValue.isPresent()) {
+      verify(!function.isPresent());
       if(annotatedDefaultValue.isPresent()) verifyEqual(annotatedDefaultValue, fixedValue);
       return PropertyImp.createFixed(this, m, m.getName(), type, fixedValue.get());
+    }
+    else if(function.isPresent()) {
+      verify(!annotatedDefaultValue.isPresent());
+      return PropertyImp.createComputed(this, m, type, function.get());
     }
     else{
       final Opt<V> defaultValue = annotatedDefaultValue
@@ -223,6 +280,26 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
       ;
       return PropertyImp.create(this, m, type, defaultValue);
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  private <V> Function<T,V> createFunction(final Method m) {
+    if(annotationHandler.getImplementingClass(clazz).isPresent()) return unsupported();
+    else {
+      final Method staticMethod;
+      try {
+        staticMethod = clazz.getMethod(m.getName(), new Class<?>[] {clazz});
+      } catch (final NoSuchMethodException e) {
+        throw new RuntimeException(format("No implementation found for computed attribute {}.", m.getName()), e) ;
+      }
+      verify(Modifier.isStatic(staticMethod.getModifiers()));
+      verify(m.getReturnType().isAssignableFrom(staticMethod.getReturnType()));
+      return t->(V)call(()->staticMethod.invoke(null, t));
+    }
+  }
+
+  private <V> Function<T, V> unsupported() {
+    return t->{throw new UnsupportedOperationException();};
   }
 
   static final JsonNode parseTolerant(final TypeSupport<?> type, final JsonFactory jf, final String string) {
@@ -276,6 +353,12 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
     return b.build();
   }
 
+  @Override
+  public final T parse(final String string) {
+    return parser.apply(string);
+  }
+
+
   private void verifyJsonHasNoAdditionalProperties(final JsonObject obj) {
     final TreeSet<String> additional = new TreeSet<>(obj.keySet());
     additional.removeAll(properties().keySet());
@@ -297,8 +380,13 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   }
 
   @Override
-  public final JsonObject toJson(final T object) {
+  public final JsonNode toJson(final T object) {
+    return writeAsJsonString ? jf.primitive(object.toString()) : toJsonObject(object);
+  }
+
+  public final JsonObject toJsonObject(final T object) {
     return properties().values().stream()
+      .filter(p->!p.function().isPresent())
       .flatOpt(p->toJson(object, p).map(j->pair(p.name(), j)))
       .collect(jf.toJsonObject())
     ;
@@ -331,7 +419,11 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
 
   @Override
   public final <V> V get(final T bean, final Property<V> property) {
-    return property.type().cast(call(()->clazz.getMethod(property.name()).invoke(bean)));
+    try {
+      return property.type().cast(clazz.getMethod(property.name()).invoke(bean));
+    } catch (final Exception e) {
+      throw wrap(e, format("Could not read property {} of {}.", property, this));
+    }
   }
 
 
@@ -358,6 +450,5 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   protected <V> Method getMethod(final Function<T, V> method) {
     return ReflectionUtils.method(clazz, method);
   }
-
 
 }

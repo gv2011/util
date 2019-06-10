@@ -4,7 +4,7 @@ package com.github.gv2011.util.json;
  * #%L
  * util-test
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2019 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -12,10 +12,10 @@ package com.github.gv2011.util.json;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,20 +25,21 @@ package com.github.gv2011.util.json;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.testutil.Matchers.is;
-import static com.github.gv2011.testutil.Matchers.isA;
-import static com.github.gv2011.testutil.Matchers.meets;
-import static com.github.gv2011.util.CollectionUtils.listOf;
+
+import static com.github.gv2011.testutils.Matchers.is;
+import static com.github.gv2011.testutils.Matchers.isA;
+import static com.github.gv2011.testutils.Matchers.meets;
 import static com.github.gv2011.util.CollectionUtils.pair;
+import static com.github.gv2011.util.icol.ICollections.listOf;
 import static org.junit.Assert.assertThat;
 
 import java.util.stream.Stream;
 
 import org.junit.Test;
 
-import com.github.gv2011.util.CollectionUtils;
 import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.ResourceUtils;
+import com.github.gv2011.util.icol.ICollections;
 
 public class JsonFactoryTest {
 
@@ -81,11 +82,11 @@ public class JsonFactoryTest {
       Pair::getKey,
       Pair::getValue
     ));
-    CollectionUtils.<String,JsonNode>sortedMapBuilder().put(k1, v1).build();
+    ICollections.<String,JsonNode>sortedMapBuilder().put(k1, v1).build();
     assertThat(
       obj,
       is(
-        CollectionUtils.<String,JsonNode>sortedMapBuilder()
+        ICollections.<String,JsonNode>sortedMapBuilder()
         .put(k1, v1)
         .put(k2, v2)
         .build()

@@ -26,12 +26,9 @@ package com.github.gv2011.util.icol;
  * #L%
  */
 
-
-
-
 import static com.github.gv2011.util.CollectionUtils.pair;
-import static com.github.gv2011.util.CollectionUtils.toIList;
-import static com.github.gv2011.util.CollectionUtils.toISet;
+import static com.github.gv2011.util.icol.ICollections.toIList;
+import static com.github.gv2011.util.icol.ICollections.toISet;
 import static java.util.stream.Collectors.joining;
 
 import java.util.Map;
@@ -103,6 +100,5 @@ public abstract class AbstractIMap<K, V> implements IMap<K,V>{
   public String toString() {
     return keySet().stream().map(k->k+"="+get(k)).collect(joining(", ","{","}"));
   }
-
 
 }

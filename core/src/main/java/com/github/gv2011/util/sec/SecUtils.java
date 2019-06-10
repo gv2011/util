@@ -26,18 +26,14 @@ package com.github.gv2011.util.sec;
  * #L%
  */
 
-
-
-
-
-import static com.github.gv2011.util.CollectionUtils.iCollections;
-import static com.github.gv2011.util.CollectionUtils.toIList;
 import static com.github.gv2011.util.NumUtils.withLeadingZeros;
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.callWithCloseable;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
+import static com.github.gv2011.util.icol.ICollections.listBuilder;
+import static com.github.gv2011.util.icol.ICollections.toIList;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -69,33 +65,40 @@ import com.github.gv2011.util.FileUtils;
 import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.bytes.Bytes;
 import com.github.gv2011.util.bytes.BytesBuilder;
+import com.github.gv2011.util.bytes.Hash256;
 import com.github.gv2011.util.ex.ThrowingConsumer;
 import com.github.gv2011.util.ex.ThrowingSupplier;
 import com.github.gv2011.util.icol.IList;
+import com.github.gv2011.util.icol.Opt;
 
 public final class SecUtils {
 
-  private static final String PKIX = "PKIX";
-  private static final String TLSV12 = "TLSv1.2";
-  private static final String SUN_X509 = "SunX509";
-  private static final String CERT_FILE_PATTERN = "cert{}.crt";
-  private static final String CERT_ALIAS = "cert";
+  public static final String TLSV12 = "TLSv1.2";
   public static final String JKS = "JKS";
-  private static final String X_509 = "X.509";
   public static final String RSA = "RSA";
   public static final String JKS_DEFAULT_PASSWORD = "changeit";
   public static final String KEY_FILE_NAME = "key.pkcs8";
+  public static final String PKCS12 = "PKCS12";
+  public static final String PKCS12_FILE_EXTENSION = "p12";
+  public static final String JAVAX_NET_DEBUG_SYS_PROP = "javax.net.debug";
+  public static final String JAVAX_NET_DEBUG_SYS_PROP_ALL = "all";
+
+  private static final String PKIX = "PKIX";
+  private static final String SUN_X509 = "SunX509";
+  private static final String CERT_FILE_PATTERN = "cert{}.crt";
+  private static final String CERT_ALIAS = "cert";
+  private static final String X_509 = "X.509";
 
   private SecUtils(){staticClass();}
 
-	@SuppressWarnings("unused")
+  @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SecUtils.class);
 
-	public static RSAPublicKey createRsaPublicKey(final BigInteger modulus, final BigInteger publicExponent){
+  public static RSAPublicKey createRsaPublicKey(final BigInteger modulus, final BigInteger publicExponent){
     return (RSAPublicKey) call(()->
       KeyFactory.getInstance(RSA).generatePublic(new RSAPublicKeySpec(modulus, publicExponent))
     );
-	}
+  }
 
   public static final X509Certificate readCertificate(final Bytes bytes){
     final CertificateFactory certFactory = call(()->CertificateFactory.getInstance(X_509));
@@ -103,6 +106,10 @@ public final class SecUtils {
       bytes::openStream,
       s->(X509Certificate)certFactory.generateCertificate(s)
     );
+  }
+
+  public static final Hash256 getFingerPrint(final Certificate certificate){
+    return ByteUtils.newBytes(call(certificate::getEncoded)).hash();
   }
 
   public static final X509Certificate readCertificateFromPem(final String pem){
@@ -118,7 +125,7 @@ public final class SecUtils {
     return callWithCloseable(
       ()->new ByteArrayInputStream(pem.getBytes(StandardCharsets.US_ASCII)),
       s->{
-        final IList.Builder<X509Certificate> b = iCollections().listBuilder();
+        final IList.Builder<X509Certificate> b = listBuilder();
         b.add((X509Certificate)certFactory.generateCertificate(s));
         b.add((X509Certificate)certFactory.generateCertificate(s));
         return b.build();
@@ -141,8 +148,26 @@ public final class SecUtils {
     }
   }
 
+  public static final Bytes convertToPkcs12(final Path folder){
+    final RsaKeyPair keyPair = RsaKeyPair.parse(ByteUtils.read(folder.resolve("key.rsa")));
+    final IList<X509Certificate> chain = readCertificateChain(folder);
+    return call(()->{
+      final KeyStore ks = KeyStore.getInstance(SecUtils.PKCS12);
+      ks.load(null, null);
+      ks.setKeyEntry(
+        CERT_ALIAS,
+        keyPair.getPrivate(),
+        JKS_DEFAULT_PASSWORD.toCharArray(),
+        chain.toArray(new Certificate[chain.size()])
+      );
+      final BytesBuilder bytesBuilder = ByteUtils.newBytesBuilder();
+      ks.store(bytesBuilder, "default".toCharArray());
+      return bytesBuilder.build();
+    });
+  }
+
   public static final IList<X509Certificate> readCertificateChain(final Path folder){
-    final IList.Builder<X509Certificate> chain = iCollections().listBuilder();
+    final IList.Builder<X509Certificate> chain = listBuilder();
     int i = 0;
     Path certFile = certFile(folder, i);
     while(Files.exists(certFile)){
@@ -166,18 +191,55 @@ public final class SecUtils {
     return ks;
   }
 
-  public static final Bytes createJKSKeyStore(
+  public static final KeyStore createJKSKeyStore(
     final RsaKeyPair privKey, final IList<X509Certificate> certChain
+  ){
+    final KeyStore keyStore = call(()->KeyStore.getInstance(JKS));
+    call(()->keyStore.load(null));
+    return addToKeyStore(privKey, certChain, keyStore, Opt.empty());
+  }
+
+
+  public static final KeyStore addToKeyStore(
+    final RsaKeyPair privKey, final IList<X509Certificate> certChain, final KeyStore keystore, final Opt<String> alias
   ){
     final X509Certificate cert = certChain.get(0);
     verifyEqual(privKey.getPublic(), cert.getPublicKey());
-    final KeyStore keystore = call(()->KeyStore.getInstance(JKS));
-    call(()->keystore.load(null, null));
     call(()->keystore.setKeyEntry(
-      CERT_ALIAS, privKey.getPrivate(),
+      alias.orElseGet(()->findAlias(keystore)),
+      privKey.getPrivate(),
       JKS_DEFAULT_PASSWORD.toCharArray(),
       certChain.toArray(new Certificate[certChain.size()])
     ));
+    return keystore;
+  }
+
+  private static final String findAlias(final KeyStore ks){
+    return call(()->{
+      String alias = CERT_ALIAS;
+      int i=0;
+      while(ks.containsAlias(alias)) {
+        alias = CERT_ALIAS+(++i);
+      }
+      return alias;
+    });
+  }
+
+  public static final Bytes createJKSKeyStoreBytes(
+    final RsaKeyPair privKey, final IList<X509Certificate> certChain
+  ){
+    Bytes result;
+    try(BytesBuilder builder = ByteUtils.newBytesBuilder()){
+      call(()->createJKSKeyStore(privKey, certChain).store(builder, JKS_DEFAULT_PASSWORD.toCharArray()));
+      result = builder.build();
+    }
+    return result;
+  }
+
+  public static final Bytes createJKSKeyStore(final X509Certificate trustedCertificate){
+    final KeyStore keystore = call(()->KeyStore.getInstance(JKS));
+    call(()->keystore.load(null, null));
+    call(()->keystore.setCertificateEntry(CERT_ALIAS, trustedCertificate));
     Bytes result;
     try(BytesBuilder builder = ByteUtils.newBytesBuilder()){
       call(()->keystore.store(builder, JKS_DEFAULT_PASSWORD.toCharArray()));

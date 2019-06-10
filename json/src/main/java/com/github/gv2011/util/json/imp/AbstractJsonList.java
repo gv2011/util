@@ -32,6 +32,7 @@ import java.util.Comparator;
 import com.github.gv2011.util.Comparison;
 import com.github.gv2011.util.XStream;
 import com.github.gv2011.util.icol.AbstractIList;
+import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.json.JsonList;
 import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonNodeType;
@@ -123,14 +124,28 @@ abstract class AbstractJsonList extends AbstractIList<JsonNode> implements Jsong
     return LIST_COMPARATOR.compare(this, o.asList());
   }
 
-    @Override
-    public String rawToString() {
-        return super.toString();
-    }
+  @Override
+  public String rawToString() {
+      return super.toString();
+  }
 
-    @Override
-    public String toString() {
-        return AbstractJsongNode.toString(this);
-    }
+  @Override
+  public String toString() {
+      return AbstractJsongNode.toString(this);
+  }
 
+  @Override
+  public IList<JsonNode> reversed() {
+    return new ReversedList();
+  }
+
+  private final class ReversedList extends AbstractJsonList{
+    private ReversedList() {super(f);}
+    @Override
+    public JsongNode get(final int index) {return AbstractJsonList.this.get(AbstractJsonList.this.size()-1-index);}
+    @Override
+    public int size() {return AbstractJsonList.this.size();}
+    @Override
+    public IList<JsonNode> reversed() {return AbstractJsonList.this;}
+  }
 }

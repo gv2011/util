@@ -4,7 +4,7 @@ package com.github.gv2011.util.beans;
  * #%L
  * The MIT License (MIT)
  * %%
- * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2019 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +25,17 @@ package com.github.gv2011.util.beans;
  * THE SOFTWARE.
  * #L%
  */
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
-@Retention(RUNTIME)
-@Target(TYPE)
-public @interface Bean {
+/**
+ * Tagging interface.
+ *
+ * This interface, annotations or both may be used.
+ * Any bean interface annotated as {@link AbstractRoot}, {@link AbstractRoot} or {@link AbstractRoot}
+ * may also extend Bean.
+ *
+ * If an annotations are not present, the inheritance structure is examined.
+ *
+ * Objects must not directly implement Bean ("obj instanceof Bean" must always tell the truth).
+ */
+public interface Bean {
 
 }

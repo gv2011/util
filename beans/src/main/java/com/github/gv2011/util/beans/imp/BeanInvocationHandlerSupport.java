@@ -35,6 +35,7 @@ import java.util.Optional;
 
 import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.icol.ISortedMap;
+import com.github.gv2011.util.icol.Opt;
 
 public abstract class BeanInvocationHandlerSupport<B,P>  {
 
@@ -54,7 +55,7 @@ public abstract class BeanInvocationHandlerSupport<B,P>  {
     if(method.getParameterCount()==0) {
       if(name.equals("hashCode")) result = getHashCode(proxy);
       else if(name.equals("toString")) result = handleToString(proxy, method, args, x);
-      else result = tryGetValue(name).orElseGet(()->handleOther(proxy, method, args, x));
+      else result = tryGetValue(proxy, name).orElseGet(()->handleOther(proxy, method, args, x));
     }
     else if(name.equals("equals") && method.getParameterCount()==1){
       result = handleEquals(proxy, notNull(args[0]));
@@ -76,10 +77,15 @@ public abstract class BeanInvocationHandlerSupport<B,P>  {
     return hashCode.intValue();
   }
 
-  private Optional<Object> tryGetValue(final String property) {
+  private Optional<Object> tryGetValue(final Object proxy, final String property) {
     if(beanType.properties().containsKey(property)){
       return Optional.of(
-        values.tryGet(property).orElseGet(()->beanType.properties().get(property).defaultValue().get())
+        values.tryGet(property).orElseGet(()->{
+          final PropertyImp<B, ?> prop = beanType.properties().get(property);
+          final Opt<?> defaultValue = prop.defaultValue();
+          if(defaultValue.isPresent()) return defaultValue.get();
+          else return prop.function().get().apply(beanType.cast(proxy));
+        })
       );
     }
     else return Optional.empty();
@@ -98,23 +104,24 @@ public abstract class BeanInvocationHandlerSupport<B,P>  {
           assert obih.beanType.equals(beanType);
           if(getHashCode(proxy)!=other.hashCode()){
             result = false;
-            assert result == equals1(otherBean);
+            assert result == equals1(proxy, otherBean);
           }
           else{
             result = obih.values.equals(values);
-            assert result == equals1(otherBean);
+            assert result == equals1(proxy, otherBean);
           }
         }
-        else result = equals1(otherBean);
+        else result = equals1(proxy, otherBean);
       }
-      else result = equals1(otherBean);
+      else result = equals1(proxy, otherBean);
     }
     return result;
   }
 
-  private boolean equals1(final B other) {
+  private boolean equals1(final Object proxy, final B other) {
     return beanType.properties().values().stream()
-      .allMatch(p->tryGetValue(p.name()).get().equals(p.getValue(other)))
+      .filter(p->!p.function().isPresent())
+      .allMatch(p->tryGetValue(proxy, p.name()).get().equals(p.getValue(other)))
     ;
   }
 

@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,6 +26,7 @@ package com.github.gv2011.util.beans.imp;
  * #L%
  */
 import java.lang.reflect.Proxy;
+import java.util.function.UnaryOperator;
 
 import com.github.gv2011.util.icol.ISortedMap;
 
@@ -33,11 +34,21 @@ final class DefaultBeanBuilder<B> extends BeanBuilderSupport<B>{
 
   private final BeanTypeSupport<B> beanType;
 
-  DefaultBeanBuilder(final DefaultBeanType<B> beanType) {
+  DefaultBeanBuilder(
+    final DefaultBeanType<B> beanType,
+    final UnaryOperator<B> resultWrapper,
+    final UnaryOperator<B> validator
+  ) {
+    super(resultWrapper, validator);
     this.beanType = beanType;
   }
 
-  DefaultBeanBuilder(final PolymorphicBeanType<B> beanType) {
+  DefaultBeanBuilder(
+    final PolymorphicBeanType<B> beanType,
+    final UnaryOperator<B> resultWrapper,
+    final UnaryOperator<B> validator
+  ) {
+    super(resultWrapper, validator);
     this.beanType = beanType;
   }
 

@@ -1,0 +1,75 @@
+package com.github.gv2011.util.beans.imp;
+
+/*-
+ * #%L
+ * util-test
+ * %%
+ * Copyright (C) 2016 - 2019 Vinz (https://github.com/gv2011)
+ * %%
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * #L%
+ */
+
+import static com.github.gv2011.testutils.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+import org.junit.Test;
+
+import com.github.gv2011.util.beans.imp.TestModel.BlackPea;
+import com.github.gv2011.util.beans.imp.TestModel.ChickPea;
+import com.github.gv2011.util.beans.imp.TestModel.NormalPot;
+import com.github.gv2011.util.beans.imp.TestModel.Pea;
+import com.github.gv2011.util.beans.imp.TestModel.SnowPea;
+import com.github.gv2011.util.icol.Opt;
+
+
+public class PolymorphismTest {
+
+
+  @Test
+  public void test() {
+    final DefaultTypeRegistry reg = new DefaultTypeRegistry();
+    assertThat(reg.notSupportedReason(Pea.class), is(""));
+    reg.beanType(NormalPot.class);
+
+    final AbstractPolymorphicSupport<Pea> peaType = reg.abstractBeanType(Pea.class);
+    assertThat(peaType.isAbstract(), is(true));
+    assertThat(peaType.isPolymorphic(), is(true));
+
+    final BeanTypeSupport<BlackPea> blackPeaType = reg.beanType(BlackPea.class);
+    assertThat(blackPeaType.isAbstract(), is(false));
+    assertThat(blackPeaType.isPolymorphic(), is(true));
+
+    final BlackPea blackPea = blackPeaType.createBuilder().build();
+    assertThat(blackPea.type(), is(BlackPea.class.getSimpleName()));
+
+    final BeanTypeSupport<ChickPea> chickPeaType = reg.beanType(ChickPea.class);
+    assertThat(chickPeaType.getClass(), is(PolymorphicBeanType.class));
+    final PropertyImp<ChickPea,String> typeProp = chickPeaType.getProperty(ChickPea::type);
+    assertThat(typeProp.fixedValue(), is(Opt.of("chicks")));
+    final ChickPea chickPea = chickPeaType.createBuilder().build();
+    assertThat(chickPea.type(), is("chicks"));
+
+    final BeanTypeSupport<SnowPea> snowPeaType = reg.beanType(SnowPea.class);
+    final SnowPea snowPea = snowPeaType.createBuilder().build();
+    assertThat(snowPea.type(), is("saccharatum"));
+
+  }
+
+}

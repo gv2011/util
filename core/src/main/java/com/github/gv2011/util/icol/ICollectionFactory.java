@@ -1,5 +1,9 @@
 package com.github.gv2011.util.icol;
 
+import static com.github.gv2011.util.CollectionUtils.stream;
+
+import java.util.Arrays;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -34,86 +38,185 @@ import java.util.Spliterator;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.github.gv2011.util.XStream;
 
 
 public interface ICollectionFactory {
 
-  @SuppressWarnings("rawtypes")
-  public static final Opt EMPTY = IEmpty.INSTANCE;
 
-  public static <E> Opt<E> single(final E element){
-    return new Single<>(element);
-  };
+  //Empty:
 
   @SuppressWarnings("unchecked")
-  default <T> Opt<T> emptyList(){
-    return EMPTY;
+  default <E> Opt<E> empty(){
+    return IEmpty.INSTANCE;
   }
 
-  <T> ISet<T> emptySet();
+  @SuppressWarnings("unchecked")
+  default <E> IList<E> emptyList(){
+    return IEmptyList.INSTANCE;
+  }
 
-  <T extends Comparable<? super T>> ISortedSet<T> emptySortedSet();
+  @SuppressWarnings("unchecked")
+  default <E> Opt<E> emptySet(){
+    return IEmpty.INSTANCE;
+  }
+
+  <E extends Comparable<? super E>> ISortedSet<E> emptySortedSet();
 
   <K,V> IMap<K,V> emptyMap();
 
   <K extends Comparable<? super K>,V> ISortedMap<K,V> emptySortedMap();
 
-  default <T> Opt<T> listOf(final T element){
-    return single(element);
+
+  //Single:
+
+  <E> IList<E> listOf(final E element);
+
+  default <E> Opt<E> single(final E element){
+    return setOf(element);
   }
 
-  <T> IList<T> listFrom(final Collection<? extends T> collection);
+  default <E> Opt<E> setOf(final E element){
+    return new Single<>(element);
+  }
 
-  @SuppressWarnings("unchecked")
-  <T> IList<T> listOf(final T element, final T... more);
-
-  <T> ISet<T> setOf(final T element);
-
-  @SuppressWarnings("unchecked")
-  <T> ISet<T> setOf(final T element, final T... more);
-
-  <T extends Comparable<? super T>> ISortedSet<T> sortedSetOf(final T element);
-
-  @SuppressWarnings("unchecked")
-  <T extends Comparable<? super T>> ISortedSet<T> sortedSetOf(final T element, final T... more);
-
-  <T extends Comparable<? super T>> ISortedSet<T> sortedSetFrom(Collection<? extends T> elements);
-
-  <T> IList<T> asList(T[] elements);
-  <T> ISet<T> asSet(T[] elements);
+  <E extends Comparable<? super E>> ISortedSet<E> sortedSetOf(final E element);
 
   <K,V> IMap<K,V> mapOf(final K key, V value);
 
-  default <T> Opt<T> ofOptional(final Optional<? extends T> optional){
-    return optional.map(e->listOf((T)e)).orElse(emptyList());
+  <K extends Comparable<? super K>,V> ISortedMap<K,V> sortedMapOf(final K key, V value);
+
+
+  //Varargs:
+
+  @SuppressWarnings("unchecked")
+  default <E> IList<E> listOf(final E e0, final E e1, final E... more){
+    return Stream.concat(Stream.of(e0,e1), Arrays.stream(more)).collect(listCollector());
   }
+
+  @SuppressWarnings("unchecked")
+  default <E> ISet<E> setOf(final E e0, final E e1, final E... more){
+    return
+      Stream.concat(
+        Stream.of(e0, e1),
+        StreamSupport.stream(Arrays.spliterator(more, 0, more.length), true)
+      )
+      .collect(setCollector())
+    ;
+  }
+
+  @SuppressWarnings("unchecked")
+  default <E extends Comparable<? super E>> ISortedSet<E> sortedSetOf(final E e0, final E e1, final E... more){
+    return
+      Stream.concat(
+        Stream.of(e0, e1),
+        StreamSupport.stream(Arrays.spliterator(more, 0, more.length), true)
+      )
+      .collect(sortedSetCollector())
+    ;
+  }
+
+
+  //Optional:
+
+  default <E> Opt<E> ofOptional(final Optional<? extends E> optional){
+    return optional.map(e->ICollections.single((E)e)).orElse(empty());
+  }
+
+  default <E> IList<E> listFrom(final Optional<? extends E> optional){
+    return optional.map(e->listOf((E)e)).orElse(emptyList());
+  }
+
+
+  //Collections:
+
+  default <E> IList<E> listFrom(final Collection<? extends E> collection){
+    if(collection.isEmpty()) return emptyList();
+    else if(collection.size()==1) return listOf(collection.iterator().next());
+    else return collection.stream().collect(listCollector());
+  }
+
+  default <E> ISet<E> setFrom(final Collection<? extends E> collection){
+    if(collection.isEmpty()) return emptySet();
+    else if(collection.size()==1) return setOf(collection.iterator().next());
+    else return collection.parallelStream().collect(setCollector());
+  }
+
+  default <E extends Comparable<? super E>> ISortedSet<E> sortedSetFrom(final Collection<? extends E> collection){
+    if(collection.isEmpty()) return emptySortedSet();
+    else if(collection.size()==1) return sortedSetOf(collection.iterator().next());
+    else return collection.parallelStream().collect(sortedSetCollector());
+  }
+
+  default <K,V> IMap<K,V> mapFrom(final Map<? extends K,? extends V> map){
+    if(map.isEmpty()) return emptyMap();
+    else if(map.size()==1){
+      final Entry<? extends K, ? extends V> entry = map.entrySet().iterator().next();
+      return mapOf(entry.getKey(), entry.getValue());
+    }
+    else return map.entrySet().parallelStream().collect(mapCollector());
+  }
+
+  default <K extends Comparable<? super K>,V> ISortedMap<K,V> sortedMapFrom(final Map<? extends K,? extends V> map){
+    if(map.isEmpty()) return emptySortedMap();
+    else if(map.size()==1){
+      final Entry<? extends K, ? extends V> entry = map.entrySet().iterator().next();
+      return sortedMapOf(entry.getKey(), entry.getValue());
+    }
+    else return map.entrySet().parallelStream().collect(sortedMapCollector());
+  }
+
+
+  //Arrays:
+
+  default <E> IList<E> asList(final E[] elements){
+    if(elements.length==0) return emptyList();
+    else if(elements.length==1) return listOf(elements[0]);
+    else return stream(elements).collect(listCollector());
+  }
+
+  default <E> ISet<E> asSet(final E[] elements){
+    if(elements.length==0) return emptySet();
+    else if(elements.length==1) return setOf(elements[0]);
+    else return stream(elements).parallel().collect(setCollector());
+  }
+
+  default <E extends Comparable<? super E>> ISortedSet<E> asSortedSet(final E[] elements){
+    if(elements.length==0) return emptySortedSet();
+    else if(elements.length==1) return sortedSetOf(elements[0]);
+    else return stream(elements).parallel().collect(sortedSetCollector());
+  }
+
+
+  //Builders:
 
   <E> IList.Builder<E> listBuilder();
 
   <E extends Comparable<? super E>> IComparableList.Builder<E> comparableListBuilder();
 
-
   <E> ISet.Builder<E> setBuilder();
 
   <E extends Comparable<? super E>> ISortedSet.Builder<E> sortedSetBuilder();
-
 
   <K,V> IMap.Builder<K,V> mapBuilder();
 
   <K extends Comparable<? super K>,V> ISortedMap.Builder<K,V> sortedMapBuilder();
 
-  <T> Collector<T, ?, ISet<T>> setCollector();
 
-  <T extends Comparable<? super T>> Collector<T, ?, ISortedSet<T>> sortedSetCollector();
+  //Collectors:
 
-  <T> Collector<T, ?, IList<T>> listCollector();
+  <E> Collector<E, ?, IList<E>> listCollector();
 
-  <T, K, V>
-  Collector<T, ?, IMap<K,V>> mapCollector(
-    Function<? super T, ? extends K> keyMapper,
-    Function<? super T, ? extends V> valueMapper
+  <E> Collector<E, ?, ISet<E>> setCollector();
+
+  <E extends Comparable<? super E>> Collector<E, ?, ISortedSet<E>> sortedSetCollector();
+
+  <E, K, V>
+  Collector<E, ?, IMap<K,V>> mapCollector(
+    Function<? super E, ? extends K> keyMapper,
+    Function<? super E, ? extends V> valueMapper
   );
 
   default <E extends Entry<? extends K, ? extends V>, K, V>
@@ -121,10 +224,10 @@ public interface ICollectionFactory {
     return mapCollector(Entry::getKey, Entry::getValue);
   }
 
-  <T, K extends Comparable<? super K>, V>
-  Collector<T, ?, ISortedMap<K,V>> sortedMapCollector(
-    Function<? super T, ? extends K> keyMapper,
-    Function<? super T, ? extends V> valueMapper
+  <E, K extends Comparable<? super K>, V>
+  Collector<E, ?, ISortedMap<K,V>> sortedMapCollector(
+    Function<? super E, ? extends K> keyMapper,
+    Function<? super E, ? extends V> valueMapper
   );
 
   default <K extends Comparable<? super K>, V>
@@ -132,17 +235,14 @@ public interface ICollectionFactory {
     return sortedMapCollector(Entry::getKey, Entry::getValue);
   }
 
-  default <K extends Comparable<? super K>, V> ISortedMap<K,V> copyOf(final Map<K, V> map){
-    return map.entrySet().stream().collect(sortedMapCollector());
-  }
 
-  default <E> ISet<E> setOf(final Collection<E> collection){
-    return this.<E>setBuilder().addAll(collection).build();
-  }
+  //Other:
 
   Path emptyPath();
 
   <E> XStream<E> xStream(Stream<E> s);
+
+  <E> XStream<E> pStream(Stream<E> s);
 
   <E> XStream<E> xStream(Spliterator<E> spliterator, boolean parallel);
 }

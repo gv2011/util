@@ -1,5 +1,8 @@
 package com.github.gv2011.util.icol;
 
+
+import static com.github.gv2011.util.icol.ICollections.toIList;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -103,12 +106,6 @@ public interface ICollection<E> extends Collection<E>{
   }
 
   @Override
-  @Deprecated
-  default <T> T[] toArray(final T[] a) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   default XStream<E> stream() {
       return XStream.stream(spliterator(), false);
   }
@@ -117,4 +114,9 @@ public interface ICollection<E> extends Collection<E>{
   default XStream<E> parallelStream() {
       return XStream.stream(spliterator(), true);
   }
+
+  default IList<E> asList(){
+    return stream().collect(toIList());
+  }
+
 }

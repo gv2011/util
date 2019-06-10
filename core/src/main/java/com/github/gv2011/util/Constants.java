@@ -26,21 +26,18 @@ package com.github.gv2011.util;
  * #L%
  */
 
-
-
-
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 
 import java.lang.ref.SoftReference;
 
+import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.ex.ThrowingConsumer;
 import com.github.gv2011.util.ex.ThrowingSupplier;
+import com.github.gv2011.util.icol.Opt;
 
-import net.jcip.annotations.ThreadSafe;
-
-@ThreadSafe
+@com.github.gv2011.util.ann.ThreadSafe
 public final class Constants{
 
   private Constants(){staticClass();}
@@ -94,7 +91,7 @@ public final class Constants{
 
     @Override
     public final E get() {
-      E result = getIntern();
+      @Nullable E result = getIntern();
       if(result==null){
         synchronized(lock){
           result = getIntern();
@@ -108,12 +105,21 @@ public final class Constants{
       return result;
     }
 
-
+    @Override
+    public Opt<E> tryGet() {
+      @Nullable E result = getIntern();
+      if(result==null){
+        synchronized(lock){
+          result = getIntern();
+        }
+      }
+      return Opt.ofNullable(result);
+    }
 
     @Override
     public final void set(final E value) {
       synchronized(lock){
-        final E current = getIntern();
+        final @Nullable E current = getIntern();
         if(current==null){
           setIntern(value);
         }else{
@@ -124,9 +130,9 @@ public final class Constants{
 
 
 
-    protected abstract E retrieveValue();
+    protected abstract @Nullable E retrieveValue();
 
-    protected abstract E getIntern();
+    protected abstract @Nullable E getIntern();
 
     protected abstract void setIntern(E value);
   }
@@ -139,7 +145,7 @@ public final class Constants{
     }
     @Override
     protected T getIntern() {
-      final SoftReference<T> ref = this.ref;
+      final @Nullable SoftReference<T> ref = this.ref;
       return ref==null?null:ref.get();
     }
     @Override
@@ -147,7 +153,7 @@ public final class Constants{
       ref = new SoftReference<>(value);
     }
     @Override
-    protected T retrieveValue() {
+    protected @Nullable T retrieveValue() {
       return supplier.get();
     }
   }

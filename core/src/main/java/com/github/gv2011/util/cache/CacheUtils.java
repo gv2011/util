@@ -33,11 +33,14 @@ import static com.github.gv2011.util.Nothing.nothing;
 
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 
+import java.lang.ref.SoftReference;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import com.github.gv2011.util.FConsumer;
 import com.github.gv2011.util.Pair;
+import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.icol.Opt;
 
 public final class CacheUtils {
@@ -58,4 +61,27 @@ public final class CacheUtils {
     return new SoftIndexImp<>(constantFunction, addedListener);
   }
 
+  public static <C> C readFromReference(
+    final @Nullable SoftReference<C> ref,
+    final Consumer<SoftReference<C>> refSetter,
+    final Supplier<C> constructor
+  ){
+    @Nullable C cache = ref!=null ? ref.get() : null;
+    if(cache == null){
+      cache = constructor.get();
+      refSetter.accept(new SoftReference<>(cache));
+    }
+    return cache;
+  }
+
+  public static <T> T lazy(
+      @Nullable T value,
+      final Consumer<T> store,
+      final Supplier<T> calculator) {
+    if(value==null){
+      value = calculator.get();
+      store.accept(value);
+    }
+    return value;
+  }
 }

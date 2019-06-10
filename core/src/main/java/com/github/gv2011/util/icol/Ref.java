@@ -26,31 +26,16 @@ package com.github.gv2011.util.icol;
  * #L%
  */
 import static com.github.gv2011.util.Verify.verify;
-import static com.github.gv2011.util.ex.Exceptions.notYetImplemented;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public abstract class Ref<E> implements Opt<E>{
-
-  @SuppressWarnings("unchecked")
-  @Override
-  public final Opt<E> subList(final int fromIndex, final int toIndex) {
-    if(fromIndex<0 || fromIndex>1) throw new IndexOutOfBoundsException();
-    if(toIndex<0 || toIndex>1) throw new IndexOutOfBoundsException();
-    if(fromIndex==0 && toIndex==1) return this;
-    else return ICollectionFactory.EMPTY;
-  }
-
-  @Override
-  public final ISortedMap<Integer, E> asMap() {
-    return notYetImplemented();
-  }
 
   @Override
   public final int size() {
@@ -78,35 +63,6 @@ public abstract class Ref<E> implements Opt<E>{
   }
 
   @Override
-  public final E get(final int index) {
-    if(index!=0) throw new IndexOutOfBoundsException();
-    return get();
-  }
-
-  @Override
-  public final int indexOf(final Object o) {
-    return get().equals(o) ? 0 : -1;
-  }
-
-  @Override
-  public final int lastIndexOf(final Object o) {
-    return get().equals(o) ? 0 : -1;
-  }
-
-  @Override
-  public final ListIterator<E> listIterator() {
-    return new It();
-  }
-
-  @SuppressWarnings("unchecked")
-  @Override
-  public final ListIterator<E> listIterator(final int index) {
-    if(index==0) return new It();
-    else if(index==1) return ICollectionFactory.EMPTY.listIterator();
-    else throw new IndexOutOfBoundsException();
-  }
-
-  @Override
   public final boolean isPresent() {
     return true;
   }
@@ -114,7 +70,7 @@ public abstract class Ref<E> implements Opt<E>{
   @SuppressWarnings("unchecked")
   @Override
   public final Opt<E> filter(final Predicate<? super E> predicate) {
-    return predicate.test(get()) ? this : ICollectionFactory.EMPTY;
+    return predicate.test(get()) ? this : ICollections.EMPTY;
   }
 
   @SuppressWarnings("unchecked")
@@ -145,17 +101,22 @@ public abstract class Ref<E> implements Opt<E>{
 
   @Override
   public final int hashCode() {
-    return 31 + get().hashCode();
+    return get().hashCode();
   }
 
   @Override
   public final boolean equals(final Object obj) {
     if(this==obj) return true;
-    else if(!(obj instanceof List)) return false;
+    else if(obj instanceof Opt){
+      final Opt<?> opt = ((Opt<?>) obj);
+      if(opt.isPresent()) return get().equals(opt.get());
+      else return false;
+    }
+    else if(!(obj instanceof Set)) return false;
     else{
-      final List<?> other = (List<?>) obj;
+      final Set<?> other = (Set<?>) obj;
       if(other.size()!=1) return false;
-      else return get().equals(other.get(0));
+      else return get().equals(other.iterator().next());
     }
   }
 

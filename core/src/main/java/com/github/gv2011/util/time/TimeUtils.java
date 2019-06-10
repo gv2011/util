@@ -12,10 +12,10 @@ package com.github.gv2011.util.time;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,12 +27,13 @@ package com.github.gv2011.util.time;
  */
 
 import static com.github.gv2011.util.Verify.verify;
-import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,11 +43,12 @@ public class TimeUtils {
   private static final Pattern HOURS = Pattern.compile("(-?\\d+)(:([0-5]\\d)(:(([0-5]\\d)([,\\.](\\d+))?))?)?");
   private static final double NANOS_PER_SECOND = ChronoUnit.SECONDS.getDuration().toNanos();
 
+  private static final Pattern DD_MM_YYYY = Pattern.compile("(\\d{2})\\.(\\d{2})\\.(\\d{4})");
+
   private TimeUtils(){staticClass();}
 
   public static void await(final Instant instant){
-    final Duration time = Duration.between(Instant.now(), instant);
-    if(!time.isNegative()) call(()->Thread.sleep(time.toMillis()));
+    Clock.INSTANCE.get().await(instant);
   }
 
   public static Duration parseHours(final String withColons) {
@@ -71,4 +73,23 @@ public class TimeUtils {
     result += ((double)time.getNano()) / NANOS_PER_SECOND;
     return result;
   }
+
+  public static String fileSafeFormat(final Instant instant) {
+    return instant.toString().replace(':', '.');
+  }
+
+  public static String fileSafeInstant() {
+    return fileSafeFormat(Instant.now());
+  }
+
+  public static boolean olderThan(final Temporal instant, final Duration duration) {
+    return Duration.between(instant, Instant.now()).compareTo(duration) > 0;
+  }
+
+  public static final LocalDate fromDdMmYyyy(final String ddMmYyyy){
+    final Matcher m = DD_MM_YYYY.matcher(ddMmYyyy);
+    if(!m.matches()) throw new IllegalArgumentException();
+    return LocalDate.parse(m.group(3)+"-"+m.group(2)+"-"+m.group(1));
+  }
+
 }

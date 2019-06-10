@@ -1,5 +1,7 @@
 package com.github.gv2011.util;
 
+import static com.github.gv2011.util.icol.ICollections.listBuilder;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -12,10 +14,10 @@ package com.github.gv2011.util;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,9 +27,6 @@ package com.github.gv2011.util;
  * THE SOFTWARE.
  * #L%
  */
-
-
-
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Comparator;
@@ -75,7 +74,7 @@ public final class Pair<K,V> extends SimpleEntry<K,V>{
 
   public static final class PairListBuilder<K,V> implements Builder<IList<Pair<K,V>>>{
     private PairListBuilder(){}
-    private final IList.Builder<Pair<K,V>> builder = CollectionUtils.iCollections().listBuilder();
+    private final IList.Builder<Pair<K,V>> builder = listBuilder();
     public PairListBuilder<K,V> add(final K key, final V value){
       builder.add(new Pair<>(key,value));
       return this;

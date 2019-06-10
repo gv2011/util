@@ -1,5 +1,7 @@
 package com.github.gv2011.util.time;
 
+import java.time.Duration;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -27,14 +29,22 @@ package com.github.gv2011.util.time;
  */
 
 import java.time.Instant;
-import java.util.function.Supplier;
+
+import com.github.gv2011.util.Constant;
+import com.github.gv2011.util.serviceloader.RecursiveServiceLoader;
 
 public interface Clock {
 
-  public static final Supplier<Clock> INSTANCE = ()->DefaultClock.INSTANCE;
+  public static final Constant<Clock> INSTANCE = RecursiveServiceLoader.lazyService(Clock.class);
 
   Instant instant();
 
   void await(Instant nextRun);
+
+  void sleep(Duration sleepTime);
+
+  void notifyAfter(Object obj, Duration duration);
+
+  void notifyAt(final Object obj, final Instant notifyAt);
 
 }

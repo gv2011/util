@@ -1,5 +1,10 @@
 package com.github.gv2011.util.beans.imp;
 
+import static com.github.gv2011.util.ex.Exceptions.call;
+
+import java.lang.reflect.Constructor;
+import java.util.function.Function;
+
 /*-
  * #%L
  * util-beans
@@ -12,10 +17,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -36,14 +41,35 @@ class TypedStringType<S extends TypedString<S>> extends AbstractElementaryType<S
 
   private final TypeHandler handler;
   private final Opt<S> defaultValue;
+  private final Function<String,S> constructor;
 
   TypedStringType(final JsonFactory jf, final Class<S> clazz) {
     super(jf, clazz);
+    if(clazz.isInterface()){
+      constructor = v->TypedString.create(clazz, v);
+    }
+    else{
+      final Constructor<S> constr = call(()->clazz.getConstructor(String.class));
+      constructor = v->call(()->constr.newInstance(v));
+    }
     this.handler = new TypeHandler();
     this.defaultValue = Opt.of(create(""));
   }
 
-  private class TypeHandler extends AbstractElementaryTypeHandler<S>{
+  @Override
+  ElementaryTypeHandler<S> handler(){return handler;}
+
+  S create(final String value) {
+    return constructor.apply(value);
+//    return TypedString.create(clazz, value);
+  }
+
+  @Override
+  public final boolean hasStringForm() {
+    return true;
+  }
+
+  private final class TypeHandler extends AbstractElementaryTypeHandler<S>{
     @Override
     public S fromJson(final JsonNode json) {
       return create(json.asString());
@@ -55,11 +81,5 @@ class TypedStringType<S extends TypedString<S>> extends AbstractElementaryType<S
     }
   }
 
-  @Override
-  ElementaryTypeHandler<S> handler(){return handler;}
-
-  S create(final String value) {
-    return TypedString.create(clazz, value);
-  }
 
 }

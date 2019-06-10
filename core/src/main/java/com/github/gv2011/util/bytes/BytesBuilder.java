@@ -47,8 +47,8 @@ import org.slf4j.Logger;
 import com.github.gv2011.util.AutoCloseableNt;
 import com.github.gv2011.util.Builder;
 import com.github.gv2011.util.FileUtils;
+import com.github.gv2011.util.ann.NotThreadSafe;
 
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class BytesBuilder extends FilterOutputStream implements Builder<Bytes>, AutoCloseableNt{
@@ -97,6 +97,11 @@ public class BytesBuilder extends FilterOutputStream implements Builder<Bytes>, 
     count+=len;
     final int end = off+len;
     for(int i=off; i<end; i++) hashCode = 31*hashCode + Byte.hashCode(b[i]);
+  }
+
+  @Override
+  public void write(final byte b[]){
+      write(b, 0, b.length);
   }
 
   public BytesBuilder append(final Bytes b){
