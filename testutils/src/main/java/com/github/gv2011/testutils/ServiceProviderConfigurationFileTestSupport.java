@@ -1,4 +1,4 @@
-package com.github.gv2011.testutil;
+package com.github.gv2011.testutils;
 
 /*-
  * #%L

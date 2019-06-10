@@ -12,10 +12,10 @@ package com.github.gv2011.util.sec;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,9 +25,10 @@ package com.github.gv2011.util.sec;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.testutil.Matchers.arrayWithSize;
-import static com.github.gv2011.testutil.Matchers.instanceOf;
-import static com.github.gv2011.testutil.Matchers.is;
+
+import static com.github.gv2011.testutils.Matchers.instanceOf;
+import static com.github.gv2011.testutils.Matchers.is;
+import static com.github.gv2011.testutils.Matchers.arrayWithSize;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.callWithCloseable;
 import static org.junit.Assert.assertThat;
@@ -43,7 +44,7 @@ import javax.naming.ldap.LdapName;
 
 import org.junit.Test;
 
-import com.github.gv2011.testutil.AbstractTest;
+import com.github.gv2011.testutils.AbstractTest;
 import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.bytes.Bytes;
 

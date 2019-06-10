@@ -12,10 +12,10 @@ package com.github.gv2011.testutil;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,13 +26,14 @@ package com.github.gv2011.testutil;
  * #L%
  */
 
-import static com.github.gv2011.testutil.Matchers.meets;
-import static org.junit.Assert.*;
+import static com.github.gv2011.testutils.Matchers.meets;
+import static org.junit.Assert.assertThat;
 
 import java.nio.file.Files;
 
 import org.junit.Test;
 
+import com.github.gv2011.testutils.AbstractTest;
 import com.github.gv2011.util.FileUtils;
 
 public class AbstractTestTest extends AbstractTest{

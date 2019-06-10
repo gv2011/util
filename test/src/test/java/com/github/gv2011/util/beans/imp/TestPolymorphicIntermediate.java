@@ -29,7 +29,7 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-import com.github.gv2011.testutil.Matchers;
+import com.github.gv2011.testutils.Matchers;
 import com.github.gv2011.util.beans.AbstractRoot;
 import com.github.gv2011.util.beans.Bean;
 

@@ -2,9 +2,9 @@ package com.github.gv2011.util.beans.imp;
 
 /*-
  * #%L
- * util-beans
+ * util-test
  * %%
- * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2019 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -12,10 +12,10 @@ package com.github.gv2011.util.beans.imp;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,8 +25,9 @@ package com.github.gv2011.util.beans.imp;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.testutil.Matchers.is;
-import static com.github.gv2011.testutil.Matchers.not;
+
+import static com.github.gv2011.testutils.Matchers.is;
+import static com.github.gv2011.testutils.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;

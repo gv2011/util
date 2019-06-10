@@ -4,7 +4,7 @@ package com.github.gv2011.util.sec;
  * #%L
  * util-test
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2019 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,14 @@ package com.github.gv2011.util.sec;
  * #L%
  */
 
-import static com.github.gv2011.testutil.Matchers.is;
+import static com.github.gv2011.testutils.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigInteger;
 
 import org.junit.Test;
 
-import com.github.gv2011.testutil.AbstractTest;
+import com.github.gv2011.testutils.AbstractTest;
 import com.github.gv2011.util.bytes.Bytes;
 import com.github.gv2011.util.sec.RsaKeyPair;
 

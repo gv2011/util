@@ -4,7 +4,7 @@ package com.github.gv2011.util.uc;
  * #%L
  * util-test
  * %%
- * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2019 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,8 @@ package com.github.gv2011.util.uc;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.testutil.Matchers.is;
+
+import static com.github.gv2011.testutils.Matchers.is;
 import static com.github.gv2011.util.ResourceUtils.getBinaryResource;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.Verify.verifyEqual;

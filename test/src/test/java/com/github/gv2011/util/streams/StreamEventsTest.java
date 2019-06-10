@@ -36,7 +36,7 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.github.gv2011.testutil.AbstractTest;
+import com.github.gv2011.testutils.AbstractTest;
 import com.github.gv2011.util.streams.StreamEvent;
 import com.github.gv2011.util.streams.StreamEvents;
 
