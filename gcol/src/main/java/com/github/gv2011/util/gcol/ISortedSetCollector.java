@@ -1,4 +1,4 @@
-package com.github.gv2011.util;
+package com.github.gv2011.util.gcol;
 
 /*-
  * #%L
@@ -26,31 +26,31 @@ package com.github.gv2011.util;
  * #L%
  */
 
-import static com.github.gv2011.util.ex.Exceptions.call;
-import static com.github.gv2011.util.ex.Exceptions.staticClass;
-import static org.slf4j.LoggerFactory.getLogger;
+import java.util.Set;
+import java.util.function.Supplier;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+import com.github.gv2011.util.icol.AbstractCollectionCollector;
+import com.github.gv2011.util.icol.ISet;
+import com.github.gv2011.util.icol.ISortedSet;
 
-import org.slf4j.Logger;
+final class ISortedSetCollector<T extends Comparable<? super T>>
+extends AbstractCollectionCollector<ISortedSet<T>, T, ISortedSet.Builder<T>>{
 
-public final class ExecutorUtils {
+  private static final ISet<Characteristics> CHARACTERISTICS =
+    new ISetBuilder<Characteristics>().add(Characteristics.CONCURRENT).add(Characteristics.UNORDERED).build()
+  ;
 
-  private ExecutorUtils(){staticClass();}
+  ISortedSetCollector() {super(TRY_ADD);}
 
-  private static final Logger LOG = getLogger(ExecutorUtils.class);
-
-  public static AutoCloseableNt asCloseable(final ExecutorService es){
-    return ()->{
-      es.shutdown();
-      boolean terminated = false;
-      while(!terminated){
-        terminated = call(()->es.awaitTermination(5, TimeUnit.SECONDS));
-        if(!terminated) LOG.info("Waiting for termination of executor service.");
-      }
-      LOG.debug("Executor service terminated.");
-    };
+  @Override
+  public Set<Characteristics> characteristics() {
+    return CHARACTERISTICS;
   }
+
+  @Override
+  public Supplier<ISortedSet.Builder<T>> supplier() {
+    return ISortedSetBuilder::new;
+  }
+
 
 }

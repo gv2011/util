@@ -47,8 +47,8 @@ import org.slf4j.Logger;
 import com.github.gv2011.util.AutoCloseableNt;
 import com.github.gv2011.util.Builder;
 import com.github.gv2011.util.FileUtils;
+import com.github.gv2011.util.ann.NotThreadSafe;
 
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class BytesBuilder extends FilterOutputStream implements Builder<Bytes>, AutoCloseableNt{

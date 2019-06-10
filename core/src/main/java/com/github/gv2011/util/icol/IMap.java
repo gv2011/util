@@ -1,7 +1,6 @@
 package com.github.gv2011.util.icol;
 
 import static com.github.gv2011.util.CollectionUtils.pair;
-import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.icol.ICollections.toIMap;
 
 /*-
@@ -34,12 +33,12 @@ import static com.github.gv2011.util.icol.ICollections.toIMap;
 
 
 import java.util.Map;
-import java.util.NoSuchElementException;
-
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public interface IMap<K,V> extends Map<K,V>{
+import com.github.gv2011.util.NullSafeMap;
+
+public interface IMap<K,V> extends NullSafeMap<K,V>{
 
   public static interface Builder<K,V> extends MapBuilder<IMap<K,V>,K,V,Builder<K,V>>{}
 
@@ -57,32 +56,7 @@ public interface IMap<K,V> extends Map<K,V>{
   ISet<Entry<K, V>> entrySet();
 
 
-  /**
-   * Returns the value to which the specified key is mapped,
-   * or throws {@link NoSuchElementException} if this map contains no mapping for the key.
-   *
-   * This is a major difference to the behaviour of {@Map}, which is needed to avoid the
-   * usage of {@code null}.
-   *
-   * {@link #tryGet} can be used if the presence of a mapping is not known.
-   *
-   * <p>More formally, if this map contains a mapping from a key
-   * {@code k} to a value {@code v} such that key.equals(k))}, then this method returns
-   * {@code v}; otherwise it throws {@link NoSuchElementException}.  (There can be at most one such mapping.)
-   *
-   * <p>This map must not contain {@code null} values.
-   *
-   * @param key the key whose associated value is to be returned. The behaviour is unspecified if key is {@code null}.
-   * @return the value to which the specified key is mapped
-   * @throws NoSuchElementException if the key is not mapped to any value
-   *
-   * @see java.util.Map#get(java.lang.Object)
-   */
   @Override
-  default V get(final Object key) {
-    return tryGet(key).orElseThrow(()->new NoSuchElementException(format("No entry for key {}.", key)));
-  }
-
   Opt<V> tryGet(Object key);
 
   @Override
@@ -181,6 +155,12 @@ public interface IMap<K,V> extends Map<K,V>{
   @Override
   @Deprecated
   default V merge(final K key, final V value, final BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  @Deprecated
+  default Opt<V> tryRemove(final Object key) {
     throw new UnsupportedOperationException();
   }
 

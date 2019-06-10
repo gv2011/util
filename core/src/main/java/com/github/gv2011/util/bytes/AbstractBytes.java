@@ -52,10 +52,10 @@ import java.util.Optional;
 import com.github.gv2011.util.Constant;
 import com.github.gv2011.util.Constants;
 import com.github.gv2011.util.Pair;
+import com.github.gv2011.util.ann.Immutable;
 import com.github.gv2011.util.uc.UChars;
 import com.github.gv2011.util.uc.UStr;
 
-import net.jcip.annotations.Immutable;
 
 @Immutable
 public abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{

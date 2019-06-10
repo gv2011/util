@@ -1,4 +1,4 @@
-package com.github.gv2011.util;
+package com.github.gv2011.util.gcol;
 
 /*-
  * #%L
@@ -25,18 +25,25 @@ package com.github.gv2011.util;
  * THE SOFTWARE.
  * #L%
  */
+import java.util.AbstractList;
+import java.util.List;
 
-import java.util.function.Supplier;
+final class RList<E> extends AbstractList<E> {
 
+  final List<E> delegate;
 
-@com.github.gv2011.util.ann.Immutable
-@FunctionalInterface
-public interface Constant<T> extends Supplier<T>{
+  RList(final List<E> delegate) {
+    this.delegate = delegate;
+  }
 
-  /**
-   * @return always the same value
-   */
   @Override
-  T get();
+  public E get(final int index) {
+    return delegate.get(delegate.size()-1-index);
+  }
+
+  @Override
+  public int size() {
+    return delegate.size();
+  }
 
 }

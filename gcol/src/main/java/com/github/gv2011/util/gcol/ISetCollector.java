@@ -1,4 +1,4 @@
-package com.github.gv2011.util;
+package com.github.gv2011.util.gcol;
 
 /*-
  * #%L
@@ -12,10 +12,10 @@ package com.github.gv2011.util;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,31 +26,28 @@ package com.github.gv2011.util;
  * #L%
  */
 
-import static com.github.gv2011.util.ex.Exceptions.call;
-import static com.github.gv2011.util.ex.Exceptions.staticClass;
-import static org.slf4j.LoggerFactory.getLogger;
+import java.util.Set;
+import java.util.function.Supplier;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+import com.github.gv2011.util.icol.AbstractCollectionCollector;
+import com.github.gv2011.util.icol.ISet;
 
-import org.slf4j.Logger;
+final class ISetCollector<T> extends AbstractCollectionCollector<ISet<T>, T, ISet.Builder<T>>{
 
-public final class ExecutorUtils {
+  private static final ISet<Characteristics> CHARACTERISTICS =
+    new ISetBuilder<Characteristics>().add(Characteristics.CONCURRENT).add(Characteristics.UNORDERED).build()
+  ;
 
-  private ExecutorUtils(){staticClass();}
+  ISetCollector() {super(TRY_ADD);}
 
-  private static final Logger LOG = getLogger(ExecutorUtils.class);
+  @Override
+  public Supplier<ISet.Builder<T>> supplier() {
+    return ISetBuilder::new;
+  }
 
-  public static AutoCloseableNt asCloseable(final ExecutorService es){
-    return ()->{
-      es.shutdown();
-      boolean terminated = false;
-      while(!terminated){
-        terminated = call(()->es.awaitTermination(5, TimeUnit.SECONDS));
-        if(!terminated) LOG.info("Waiting for termination of executor service.");
-      }
-      LOG.debug("Executor service terminated.");
-    };
+  @Override
+  public Set<Characteristics> characteristics() {
+    return CHARACTERISTICS;
   }
 
 }

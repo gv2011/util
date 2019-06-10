@@ -1,4 +1,4 @@
-package com.github.gv2011.util.bytes;
+package com.github.gv2011.util.gcol;
 
 /*-
  * #%L
@@ -12,10 +12,10 @@ package com.github.gv2011.util.bytes;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,54 +26,49 @@ package com.github.gv2011.util.bytes;
  * #L%
  */
 
-import static com.github.gv2011.util.ex.Exceptions.call;
-import static java.lang.Math.min;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.stream.Collector;
 
-import java.io.InputStream;
+import com.github.gv2011.util.icol.IMap;
+import com.github.gv2011.util.icol.MapBuilder;
 
-import com.github.gv2011.util.ann.NotThreadSafe;
+public abstract class AbstractMapCollector<M extends IMap<K,V>, K, V, B extends MapBuilder<M,K,V,B>,T>
+implements Collector<T, B, M> {
 
-@NotThreadSafe
-public class TruncatedStream extends InputStream{
+  private final Function<? super T, ? extends K> keyMapper;
+  private final Function<? super T, ? extends V> valueMapper;
 
-  private final InputStream in;
-  private long remaining;
-
-  public TruncatedStream(final InputStream in, final long offset, final long size) {
-    this.in = in;
-    call(()->in.skip(offset));
-    remaining = size;
+  AbstractMapCollector(
+    final Function<? super T, ? extends K> keyMapper,
+    final Function<? super T, ? extends V> valueMapper
+  ) {
+    this.keyMapper = keyMapper;
+    this.valueMapper = valueMapper;
   }
 
   @Override
-  public int read(){
-    int result;
-    if(remaining==0) result = -1;
-    else{
-      result = call(()->in.read());
-      if(result==-1) throw new IllegalStateException("Premature end of stream.");
-      remaining--;
-    }
-    return result;
+  public BiConsumer<B, T> accumulator() {
+    return (b,t)->{
+      final K key = keyMapper.apply(t);
+      final V value = valueMapper.apply(t);
+      synchronized(b){b.put(key, value);}
+    };
   }
 
   @Override
-  public int read(final byte[] b, final int off, final int len){
-    int result;
-    if(len==0) result = 0;
-    else if(remaining==0) result = -1;
-    else{
-      result = call(()->in.read(b, off, (int)min(remaining,len)));
-      if(result==-1) throw new IllegalStateException("Premature end of stream.");
-      remaining-=result;
-    }
-    return result;
+  public BinaryOperator<B> combiner() {
+    return (b1,b2)->{
+      final M m2;
+      synchronized(b2){ m2 = b2.build();}
+      synchronized(b1){return b1.putAll(m2);}
+    };
   }
 
   @Override
-  public void close(){
-    call(in::close);
+  public Function<B, M> finisher() {
+    return b->{synchronized(b){return b.build();}};
   }
-
 
 }

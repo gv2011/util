@@ -26,10 +26,6 @@ package com.github.gv2011.util;
  * #L%
  */
 
-
-
-
-
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 import static com.github.gv2011.util.ex.Exceptions.tolerate;
 

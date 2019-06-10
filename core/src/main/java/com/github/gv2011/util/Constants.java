@@ -26,9 +26,6 @@ package com.github.gv2011.util;
  * #L%
  */
 
-
-
-
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
@@ -40,9 +37,7 @@ import com.github.gv2011.util.ex.ThrowingConsumer;
 import com.github.gv2011.util.ex.ThrowingSupplier;
 import com.github.gv2011.util.icol.Opt;
 
-import net.jcip.annotations.ThreadSafe;
-
-@ThreadSafe
+@com.github.gv2011.util.ann.ThreadSafe
 public final class Constants{
 
   private Constants(){staticClass();}

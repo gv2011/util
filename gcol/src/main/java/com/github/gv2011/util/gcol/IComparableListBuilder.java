@@ -1,10 +1,10 @@
-package com.github.gv2011.util;
+package com.github.gv2011.util.gcol;
 
 /*-
  * #%L
  * The MIT License (MIT)
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,31 +26,24 @@ package com.github.gv2011.util;
  * #L%
  */
 
-import static com.github.gv2011.util.ex.Exceptions.call;
-import static com.github.gv2011.util.ex.Exceptions.staticClass;
-import static org.slf4j.LoggerFactory.getLogger;
+import com.github.gv2011.util.icol.IComparableList;
+import com.google.common.collect.ImmutableList;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+final class IComparableListBuilder<E extends Comparable<? super E>>
+extends AbstractIListBuilder<IComparableList<E>,E,IComparableList.Builder<E>>
+implements IComparableList.Builder<E>{
 
-import org.slf4j.Logger;
+  @Override
+  IComparableList.Builder<E> self() {
+    return this;
+  }
 
-public final class ExecutorUtils {
-
-  private ExecutorUtils(){staticClass();}
-
-  private static final Logger LOG = getLogger(ExecutorUtils.class);
-
-  public static AutoCloseableNt asCloseable(final ExecutorService es){
-    return ()->{
-      es.shutdown();
-      boolean terminated = false;
-      while(!terminated){
-        terminated = call(()->es.awaitTermination(5, TimeUnit.SECONDS));
-        if(!terminated) LOG.info("Waiting for termination of executor service.");
-      }
-      LOG.debug("Executor service terminated.");
-    };
+  @Override
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public IComparableList<E> build() {
+    synchronized(list){
+      return new IComparableListWrapper(ImmutableList.copyOf(list));
+    }
   }
 
 }

@@ -1,4 +1,4 @@
-package com.github.gv2011.util;
+package com.github.gv2011.util.gcol;
 
 /*-
  * #%L
@@ -26,31 +26,23 @@ package com.github.gv2011.util;
  * #L%
  */
 
-import static com.github.gv2011.util.ex.Exceptions.call;
-import static com.github.gv2011.util.ex.Exceptions.staticClass;
-import static org.slf4j.LoggerFactory.getLogger;
+import com.github.gv2011.util.icol.ISortedSet;
+import com.google.common.collect.ImmutableSortedSet;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+final class ISortedSetBuilder<E extends Comparable<? super E>>
+extends AbstractISetBuilder<ISortedSet<E>,E,ISortedSet.Builder<E>>
+implements ISortedSet.Builder<E>{
 
-import org.slf4j.Logger;
+  @Override
+  protected ISortedSetBuilder<E> self() {
+    return this;
+  }
 
-public final class ExecutorUtils {
-
-  private ExecutorUtils(){staticClass();}
-
-  private static final Logger LOG = getLogger(ExecutorUtils.class);
-
-  public static AutoCloseableNt asCloseable(final ExecutorService es){
-    return ()->{
-      es.shutdown();
-      boolean terminated = false;
-      while(!terminated){
-        terminated = call(()->es.awaitTermination(5, TimeUnit.SECONDS));
-        if(!terminated) LOG.info("Waiting for termination of executor service.");
-      }
-      LOG.debug("Executor service terminated.");
-    };
+  @Override
+  public ISortedSet<E> build() {
+    synchronized(set){
+      return new ISortedSetWrapper<>(ImmutableSortedSet.copyOf(set));
+    }
   }
 
 }

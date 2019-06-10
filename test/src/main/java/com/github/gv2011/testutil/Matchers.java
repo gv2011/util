@@ -68,6 +68,7 @@ import javax.xml.namespace.NamespaceContext;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.hamcrest.text.IsEqualCompressingWhiteSpace;
 
 import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.bytes.Bytes;
@@ -649,7 +650,7 @@ public final class Matchers {
    *     the element that should be present in examined arrays
    */
   public static <T> Matcher<T[]> hasItemInArray(final T element) {
-    return org.hamcrest.collection.IsArrayContaining.<T>hasItemInArray(element);
+    return org.hamcrest.collection.ArrayMatching.<T>hasItemInArray(element);
   }
 
   /**
@@ -664,7 +665,7 @@ public final class Matchers {
    *     the matcher to apply to elements in examined arrays
    */
   public static <T> Matcher<T[]> hasItemInArray(final Matcher<? super T> elementMatcher) {
-    return org.hamcrest.collection.IsArrayContaining.<T>hasItemInArray(elementMatcher);
+    return org.hamcrest.collection.ArrayMatching.<T>hasItemInArray(elementMatcher);
   }
 
   /**
@@ -679,7 +680,7 @@ public final class Matchers {
    *     a list of matchers, each of which must be satisfied by the corresponding item in an examined array
    */
   public static <E> Matcher<E[]> arrayContaining(final java.util.List<Matcher<? super E>> itemMatchers) {
-    return org.hamcrest.collection.IsArrayContainingInOrder.<E>arrayContaining(itemMatchers);
+    return org.hamcrest.collection.ArrayMatching.<E>arrayContaining(itemMatchers);
   }
 
   /**
@@ -695,7 +696,7 @@ public final class Matchers {
    */
   @SafeVarargs
   public static <E> Matcher<E[]> arrayContaining(final E... items) {
-    return org.hamcrest.collection.IsArrayContainingInOrder.<E>arrayContaining(items);
+    return org.hamcrest.collection.ArrayMatching.<E>arrayContaining(items);
   }
 
   /**
@@ -711,7 +712,7 @@ public final class Matchers {
    */
   @SafeVarargs
   public static <E> Matcher<E[]> arrayContaining(final Matcher<? super E>... itemMatchers) {
-    return org.hamcrest.collection.IsArrayContainingInOrder.<E>arrayContaining(itemMatchers);
+    return org.hamcrest.collection.ArrayMatching.<E>arrayContaining(itemMatchers);
   }
 
   /**
@@ -732,7 +733,7 @@ public final class Matchers {
    */
   @SafeVarargs
   public static <E> Matcher<E[]> arrayContainingInAnyOrder(final E... items) {
-    return org.hamcrest.collection.IsArrayContainingInAnyOrder.<E>arrayContainingInAnyOrder(items);
+    return org.hamcrest.collection.ArrayMatching.<E>arrayContainingInAnyOrder(items);
   }
 
   /**
@@ -753,7 +754,7 @@ public final class Matchers {
    */
   @SafeVarargs
   public static <E> Matcher<E[]> arrayContainingInAnyOrder(final Matcher<? super E>... itemMatchers) {
-    return org.hamcrest.collection.IsArrayContainingInAnyOrder.<E>arrayContainingInAnyOrder(itemMatchers);
+    return org.hamcrest.collection.ArrayMatching.<E>arrayContainingInAnyOrder(itemMatchers);
   }
 
   /**
@@ -773,7 +774,7 @@ public final class Matchers {
    *     a list of matchers, each of which must be satisfied by an item provided by an examined array
    */
   public static <E> Matcher<E[]> arrayContainingInAnyOrder(final Collection<Matcher<? super E>> itemMatchers) {
-    return org.hamcrest.collection.IsArrayContainingInAnyOrder.<E>arrayContainingInAnyOrder(itemMatchers);
+    return org.hamcrest.collection.ArrayMatching.<E>arrayContainingInAnyOrder(itemMatchers);
   }
 
   /**
@@ -1172,12 +1173,12 @@ public final class Matchers {
    * @param collection
    *     the collection in which matching items must be found
    */
-  public static <T> Matcher<T> isIn(final Collection<T> collection) {
-    return org.hamcrest.collection.IsIn.<T>isIn(collection);
+  public static <T> Matcher<T> in(final Collection<T> collection) {
+    return org.hamcrest.collection.IsIn.<T>in(collection);
   }
 
-  public static <T> Matcher<T> isIn(final T[] param1) {
-    return org.hamcrest.collection.IsIn.<T>isIn(param1);
+  public static <T> Matcher<T> in(final T[] param1) {
+    return org.hamcrest.collection.IsIn.<T>in(param1);
   }
 
   /**
@@ -1192,7 +1193,7 @@ public final class Matchers {
    */
   @SafeVarargs
   public static <T> Matcher<T> isOneOf(final T... elements) {
-    return org.hamcrest.collection.IsIn.<T>isOneOf(elements);
+    return org.hamcrest.collection.IsIn.<T>oneOf(elements);
   }
 
   /**
@@ -1336,8 +1337,8 @@ public final class Matchers {
    * @param expectedString
    *     the expected value of matched strings
    */
-  public static Matcher<java.lang.String> equalToIgnoringWhiteSpace(final java.lang.String expectedString) {
-    return org.hamcrest.text.IsEqualIgnoringWhiteSpace.equalToIgnoringWhiteSpace(expectedString);
+  public static Matcher<String> equalToCompressingWhiteSpace(final String expectedString) {
+    return new IsEqualCompressingWhiteSpace(expectedString);
   }
 
   /**
@@ -1346,8 +1347,8 @@ public final class Matchers {
    * For example:
    * <pre>assertThat("", isEmptyString())</pre>
    */
-  public static Matcher<java.lang.String> isEmptyString() {
-    return org.hamcrest.text.IsEmptyString.isEmptyString();
+  public static Matcher<java.lang.String> emptyString() {
+    return org.hamcrest.text.IsEmptyString.emptyString();
   }
 
   /**
@@ -1357,8 +1358,8 @@ public final class Matchers {
    * For example:
    * <pre>assertThat(((String)null), isEmptyString())</pre>
    */
-  public static Matcher<java.lang.String> isEmptyOrNullString() {
-    return org.hamcrest.text.IsEmptyString.isEmptyOrNullString();
+  public static Matcher<java.lang.String> emptyOrNullString() {
+    return org.hamcrest.text.IsEmptyString.emptyOrNullString();
   }
 
   /**

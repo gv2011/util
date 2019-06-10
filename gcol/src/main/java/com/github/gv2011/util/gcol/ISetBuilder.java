@@ -1,4 +1,4 @@
-package com.github.gv2011.util;
+package com.github.gv2011.util.gcol;
 
 /*-
  * #%L
@@ -12,10 +12,10 @@ package com.github.gv2011.util;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,31 +26,22 @@ package com.github.gv2011.util;
  * #L%
  */
 
-import static com.github.gv2011.util.ex.Exceptions.call;
-import static com.github.gv2011.util.ex.Exceptions.staticClass;
-import static org.slf4j.LoggerFactory.getLogger;
+import com.github.gv2011.util.icol.ISet;
+import com.github.gv2011.util.icol.ISet.Builder;
+import com.google.common.collect.ImmutableSet;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+final class ISetBuilder<E> extends AbstractISetBuilder<ISet<E>,E,ISet.Builder<E>> implements ISet.Builder<E>{
 
-import org.slf4j.Logger;
+  @Override
+  protected Builder<E> self() {
+    return this;
+  }
 
-public final class ExecutorUtils {
-
-  private ExecutorUtils(){staticClass();}
-
-  private static final Logger LOG = getLogger(ExecutorUtils.class);
-
-  public static AutoCloseableNt asCloseable(final ExecutorService es){
-    return ()->{
-      es.shutdown();
-      boolean terminated = false;
-      while(!terminated){
-        terminated = call(()->es.awaitTermination(5, TimeUnit.SECONDS));
-        if(!terminated) LOG.info("Waiting for termination of executor service.");
-      }
-      LOG.debug("Executor service terminated.");
-    };
+  @Override
+  public ISet<E> build() {
+    synchronized(set){
+      return new ISetWrapper<>(ImmutableSet.copyOf(set));
+    }
   }
 
 }

@@ -1,10 +1,12 @@
-package com.github.gv2011.util;
+package com.github.gv2011.util.gcol;
+
+import com.github.gv2011.util.icol.ICollections;
 
 /*-
  * #%L
  * The MIT License (MIT)
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,31 +28,23 @@ package com.github.gv2011.util;
  * #L%
  */
 
-import static com.github.gv2011.util.ex.Exceptions.call;
-import static com.github.gv2011.util.ex.Exceptions.staticClass;
-import static org.slf4j.LoggerFactory.getLogger;
+import com.github.gv2011.util.icol.IList;
+import com.google.common.collect.ImmutableList;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+final class IListBuilder<E> extends AbstractIListBuilder<IList<E>,E,IList.Builder<E>> implements IList.Builder<E> {
 
-import org.slf4j.Logger;
-
-public final class ExecutorUtils {
-
-  private ExecutorUtils(){staticClass();}
-
-  private static final Logger LOG = getLogger(ExecutorUtils.class);
-
-  public static AutoCloseableNt asCloseable(final ExecutorService es){
-    return ()->{
-      es.shutdown();
-      boolean terminated = false;
-      while(!terminated){
-        terminated = call(()->es.awaitTermination(5, TimeUnit.SECONDS));
-        if(!terminated) LOG.info("Waiting for termination of executor service.");
-      }
-      LOG.debug("Executor service terminated.");
-    };
+  @Override
+  IList.Builder<E> self() {
+    return this;
   }
 
+
+  @Override
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public IList<E> build() {
+    synchronized(list){
+      if(list.isEmpty()) return ICollections.emptyList();
+      return new IListWrapper(ImmutableList.copyOf(list));
+    }
+  }
 }

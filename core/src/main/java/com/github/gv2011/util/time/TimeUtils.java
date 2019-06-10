@@ -31,6 +31,7 @@ import static com.github.gv2011.util.ex.Exceptions.staticClass;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.util.Optional;
@@ -41,6 +42,8 @@ public class TimeUtils {
 
   private static final Pattern HOURS = Pattern.compile("(-?\\d+)(:([0-5]\\d)(:(([0-5]\\d)([,\\.](\\d+))?))?)?");
   private static final double NANOS_PER_SECOND = ChronoUnit.SECONDS.getDuration().toNanos();
+
+  private static final Pattern DD_MM_YYYY = Pattern.compile("(\\d{2})\\.(\\d{2})\\.(\\d{4})");
 
   private TimeUtils(){staticClass();}
 
@@ -82,4 +85,11 @@ public class TimeUtils {
   public static boolean olderThan(final Temporal instant, final Duration duration) {
     return Duration.between(instant, Instant.now()).compareTo(duration) > 0;
   }
+
+  public static final LocalDate fromDdMmYyyy(final String ddMmYyyy){
+    final Matcher m = DD_MM_YYYY.matcher(ddMmYyyy);
+    if(!m.matches()) throw new IllegalArgumentException();
+    return LocalDate.parse(m.group(3)+"-"+m.group(2)+"-"+m.group(1));
+  }
+
 }

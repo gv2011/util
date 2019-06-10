@@ -59,6 +59,7 @@
     <module>logback</module>
     <module>swing</module>
     <module>test</module>
+    <module>testutils</module>
   </modules>
   
   <properties>
@@ -74,6 +75,13 @@
           <inceptionYear>2016</inceptionYear>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>pl.project13.maven</groupId>
+        <artifactId>git-commit-id-plugin</artifactId>
+        <configuration>
+          <dotGitDirectory>${project.basedir}/../.git</dotGitDirectory>
+        </configuration>
+      </plugin> 
     </plugins>
   </build>
 </project>

@@ -39,12 +39,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -53,6 +55,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -71,6 +74,18 @@ public class CollectionUtils {
       }
     };
   }
+
+  public static final <K extends Comparable<? super K>,V,E> Collector<E,?,NavigableMap<K,V>> toSortedMap(
+    final Function<E,K> keyMapper, final Function<E,V> valueMapper
+  ) {
+    return Collectors.toMap(
+      keyMapper,
+      valueMapper,
+      (v1,v2) ->{ throw new RuntimeException(String.format("Duplicate key for values %s and %s", v1, v2));},
+      TreeMap::new
+    );
+  }
+
 
   public static abstract class SortedSetCollector<T,R> implements Collector<T, NavigableSet<T>, R>{
     @Override
@@ -427,4 +442,5 @@ public class CollectionUtils {
   public static <K> Opt<K> tryGetFirstKey(final SortedMap<K,?> sortedMap) {
     return sortedMap.isEmpty() ? Opt.empty() : Opt.of(sortedMap.firstKey());
   }
+
 }

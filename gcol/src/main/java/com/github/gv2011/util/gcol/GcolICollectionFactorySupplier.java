@@ -1,10 +1,10 @@
-package com.github.gv2011.util;
+package com.github.gv2011.util.gcol;
 
 /*-
  * #%L
  * The MIT License (MIT)
  * %%
- * Copyright (C) 2016 - 2019 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,18 +25,14 @@ package com.github.gv2011.util;
  * THE SOFTWARE.
  * #L%
  */
+import com.github.gv2011.util.icol.ICollectionFactory;
+import com.github.gv2011.util.icol.ICollectionFactorySupplier;
 
-import java.util.function.Supplier;
+public final class GcolICollectionFactorySupplier implements ICollectionFactorySupplier{
 
-
-@com.github.gv2011.util.ann.Immutable
-@FunctionalInterface
-public interface Constant<T> extends Supplier<T>{
-
-  /**
-   * @return always the same value
-   */
   @Override
-  T get();
+  public ICollectionFactory get() {
+    return GuavaIcolFactory.INSTANCE;
+  }
 
 }

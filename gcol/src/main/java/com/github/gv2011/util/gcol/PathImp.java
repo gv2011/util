@@ -1,10 +1,11 @@
-package com.github.gv2011.util.bytes;
+package com.github.gv2011.util.gcol;
 
+import java.util.Collection;
 /*-
  * #%L
  * The MIT License (MIT)
  * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2018 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,54 +26,48 @@ package com.github.gv2011.util.bytes;
  * THE SOFTWARE.
  * #L%
  */
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
-import static com.github.gv2011.util.ex.Exceptions.call;
-import static java.lang.Math.min;
+import com.github.gv2011.util.Comparison;
+import com.github.gv2011.util.icol.ICollections;
+import com.github.gv2011.util.icol.Path;
 
-import java.io.InputStream;
+final class PathImp extends IListWrapper<String> implements Path{
 
-import com.github.gv2011.util.ann.NotThreadSafe;
+  private static final Comparator<Path> COMPARATOR = Comparison.listComparator();
 
-@NotThreadSafe
-public class TruncatedStream extends InputStream{
+  static final Path EMPTY = new PathImp(ICollections.emptyList());
 
-  private final InputStream in;
-  private long remaining;
-
-  public TruncatedStream(final InputStream in, final long offset, final long size) {
-    this.in = in;
-    call(()->in.skip(offset));
-    remaining = size;
+  private PathImp(final List<String> delegate) {
+    super(delegate);
   }
 
   @Override
-  public int read(){
-    int result;
-    if(remaining==0) result = -1;
-    else{
-      result = call(()->in.read());
-      if(result==-1) throw new IllegalStateException("Premature end of stream.");
-      remaining--;
-    }
-    return result;
+  public int compareTo(final Path o) {
+    return COMPARATOR.compare(this, o);
   }
 
   @Override
-  public int read(final byte[] b, final int off, final int len){
-    int result;
-    if(len==0) result = 0;
-    else if(remaining==0) result = -1;
-    else{
-      result = call(()->in.read(b, off, (int)min(remaining,len)));
-      if(result==-1) throw new IllegalStateException("Premature end of stream.");
-      remaining-=result;
-    }
-    return result;
+  public Optional<Path> parent() {
+    return isEmpty()
+      ? Optional.empty()
+      : Optional.of(size()==1
+        ? EMPTY
+        : new PathImp(delegate.subList(0, delegate.size()-1))
+      )
+    ;
   }
 
   @Override
-  public void close(){
-    call(in::close);
+  public Path addElement(final String element) {
+    return new PathImp(super.addElement(element));
+  }
+
+  @Override
+  public Path join(final Collection<? extends String> elements) {
+    return new PathImp(super.join(elements));
   }
 
 

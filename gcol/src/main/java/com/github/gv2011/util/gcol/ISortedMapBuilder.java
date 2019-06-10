@@ -1,4 +1,4 @@
-package com.github.gv2011.util;
+package com.github.gv2011.util.gcol;
 
 /*-
  * #%L
@@ -26,31 +26,24 @@ package com.github.gv2011.util;
  * #L%
  */
 
-import static com.github.gv2011.util.ex.Exceptions.call;
-import static com.github.gv2011.util.ex.Exceptions.staticClass;
-import static org.slf4j.LoggerFactory.getLogger;
+import com.github.gv2011.util.icol.ISortedMap;
+import com.github.gv2011.util.icol.ISortedMap.Builder;
+import com.google.common.collect.ImmutableSortedMap;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+final class ISortedMapBuilder<K extends Comparable<? super K>,V>
+extends AbstractIMapBuilder<ISortedMap<K,V>, K, V, ISortedMap.Builder<K,V>>
+implements ISortedMap.Builder<K,V>{
 
-import org.slf4j.Logger;
+  @Override
+  protected Builder<K, V> self() {
+    return this;
+  }
 
-public final class ExecutorUtils {
-
-  private ExecutorUtils(){staticClass();}
-
-  private static final Logger LOG = getLogger(ExecutorUtils.class);
-
-  public static AutoCloseableNt asCloseable(final ExecutorService es){
-    return ()->{
-      es.shutdown();
-      boolean terminated = false;
-      while(!terminated){
-        terminated = call(()->es.awaitTermination(5, TimeUnit.SECONDS));
-        if(!terminated) LOG.info("Waiting for termination of executor service.");
-      }
-      LOG.debug("Executor service terminated.");
-    };
+  @Override
+  public ISortedMap<K, V> build() {
+    synchronized(map){
+      return new ISortedMapWrapper<>(ImmutableSortedMap.copyOf(map));
+    }
   }
 
 }
