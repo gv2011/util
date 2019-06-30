@@ -36,8 +36,12 @@ import org.junit.Test;
 
 import com.github.gv2011.util.bytes.DataTypeProvider;
 import com.github.gv2011.util.bytes.DefaultDataTypeProvider;
+import com.github.gv2011.util.download.DownloadTask;
+import com.github.gv2011.util.download.imp.DefaultDownloadTaskFactory;
 import com.github.gv2011.util.filewatch.DefaultFileWatchService;
 import com.github.gv2011.util.filewatch.FileWatchService;
+import com.github.gv2011.util.lock.DefaultLockFactory;
+import com.github.gv2011.util.lock.Lock;
 import com.github.gv2011.util.time.Clock;
 import com.github.gv2011.util.time.DefaultClock;
 
@@ -53,6 +57,12 @@ public class RecursiveServiceLoaderTest {
 
     assertThat(CLOCK, is(Clock.class.getName()));
     assertThat(DEFAULT_CLOCK, is(DefaultClock.class.getName()));
+
+    assertThat(LOCK_FACTORY, is(Lock.Factory.class.getName()));
+    assertThat(DEFAULT_LOCK_FACTORY, is(DefaultLockFactory.class.getName()));
+
+    assertThat(DOWNLOADER_FACTORY, is(DownloadTask.Factory.class.getName()));
+    assertThat(DEFAULT_DOWNLOADER_FACTORY, is(DefaultDownloadTaskFactory.class.getName()));
   }
 
 }

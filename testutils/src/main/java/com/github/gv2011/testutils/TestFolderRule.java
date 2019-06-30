@@ -28,6 +28,7 @@ package com.github.gv2011.testutils;
 
 import static com.github.gv2011.util.FileUtils.WORK_DIR;
 import static com.github.gv2011.util.ResourceUtils.tryGetResourceUrl;
+import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.icol.ICollections.listBuilder;
 import static org.junit.Assert.assertTrue;
@@ -36,6 +37,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -46,10 +48,12 @@ import com.github.gv2011.util.CachedConstant;
 import com.github.gv2011.util.Constants;
 import com.github.gv2011.util.FileUtils;
 import com.github.gv2011.util.Zipper;
+import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.ex.ThrowingRunnable;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.IList.Builder;
 import com.github.gv2011.util.icol.Opt;
+import com.github.gv2011.util.time.Clock;
 
 public class TestFolderRule implements TestRule{
 
@@ -94,42 +98,55 @@ public class TestFolderRule implements TestRule{
 
   private void finished(final Description description, final boolean successful) {
     if(successful && testFolderCreated.get()){
-      FileUtils.delete(testFolder.get());
+      try {
+        FileUtils.delete(testFolder.get());
+      } catch (final Exception e) {
+        LOG.warn("Could not delete test folder.", e);
+      }
     }
   }
 
   private final Path createTestFolder(){
     testFolderCreated.set(true);
-    Path result;
     final Class<?> testClass = testDescription.get().getTestClass();
-    final String name = testClass.getName();
+    int tryNo = 1;
+    Opt<Path> result = Opt.empty();
+    while(result.isEmpty()){
+      final Path testFolder = getPath(testClass, tryNo);
+      try {
+        if(!FileUtils.exists(testFolder)){
+          call(()->Files.createDirectories(testFolder));
+          LOG.debug("Test {}: Created test folder {}.", testClass.getName(), result);
+        }else{
+          LOG.debug("Test {}: Cleaning test folder {}.", testClass.getName(), result);
+          FileUtils.deleteContents(testFolder);
+        }
+        prepareTestFolder(testFolder);
+        result = Opt.of(testFolder);
+      } catch (final Exception e) {
+        if(tryNo>10) throw e;
+        else{
+          LOG.warn("Trying again.", e);
+          Clock.get().sleep(Duration.ofMillis(10));
+        }
+      }
+      tryNo++;
+    }
+    return result.get();
+  }
+  private Path getPath(final Class<?> testClass, final int tryNo) {
+    Path result;
+    final String name = testClass.getName() + (tryNo<=1?"":tryNo);
     if(WORK_DIR.getFileName().toString().equals("surefire-work")){
       result = WORK_DIR.resolve(name);
     }else{
       result = WORK_DIR.resolve("target/tests").resolve(name);
     }
-    if(!result.toFile().exists()){
-      int i=0;
-      while(i<1000){
-        try{
-          call(()->result.toFile().mkdirs());
-          i=1000;
-        }catch(final RuntimeException e){
-          i++;
-          if(i==1000) throw e;
-          else call(()->Thread.sleep(10));
-        }
-      }
-      LOG.debug("Test {}: Created test folder {}.", testClass.getName(), result);
-    }else{
-      LOG.debug("Test {}: Cleaning test folder {}.", testClass.getName(), result);
-      FileUtils.deleteContents(result);
-    }
-    prepareTestFolder(result);
     return result;
   }
 
   private void prepareTestFolder(final Path testFolder) {
+    verify(FileUtils.isEmpty(testFolder));
     final Class<?> testClass = testDescription.get().getTestClass();
     final Opt<URL> zip = tryGetResourceUrl(testClass, testClass.getSimpleName()+".zip");
     zip.ifPresent(url->{

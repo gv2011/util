@@ -62,6 +62,7 @@ import com.github.gv2011.util.serviceloader.RecursiveServiceLoader;
 
 public abstract class MainUtils implements MainUtilsMBean, AutoCloseableNt{
 
+  @FunctionalInterface
   public static interface ServiceBuilder<S extends AutoCloseableNt, C>{
     S startService(C configuration);
   }

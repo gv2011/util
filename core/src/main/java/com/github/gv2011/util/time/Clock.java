@@ -37,6 +37,10 @@ public interface Clock {
 
   public static final Constant<Clock> INSTANCE = RecursiveServiceLoader.lazyService(Clock.class);
 
+  public static Clock get(){
+    return INSTANCE.get();
+  }
+
   Instant instant();
 
   void await(Instant nextRun);

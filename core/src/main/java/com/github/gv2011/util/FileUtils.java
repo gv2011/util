@@ -51,19 +51,26 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.bytes.Bytes;
 import com.github.gv2011.util.bytes.FileExtension;
 import com.github.gv2011.util.ex.ThrowingFunction;
 import com.github.gv2011.util.icol.Opt;
+import com.github.gv2011.util.time.Clock;
 import com.github.gv2011.util.time.TimeUtils;
 
 public final class FileUtils {
+
+  private static final Logger LOG = LoggerFactory.getLogger(FileUtils.class);
 
   private FileUtils(){staticClass();}
 
@@ -209,8 +216,32 @@ public final class FileUtils {
   }
 
   public static void delete(final Path file) {
-    if(Files.isDirectory(file)) deleteFolder(file);
-    else deleteFile(file);
+    if(Files.isRegularFile(file)) deleteFile(file);
+    else if(Files.isDirectory(file)) deleteFolder(file);
+    else{
+      if(!Files.notExists(file)){
+        try{
+          deleteFile(file);
+        }
+        catch(final Exception ex){
+          deleteFolder(file);
+        }
+      }
+    }
+  }
+
+  public static boolean exists(final Path file){
+    final Path f = file.toAbsolutePath().normalize();
+    if(Files.exists(file)) return true;
+    else if(Files.notExists(file)) return false;
+    else{
+      final Path parent = call(()->
+        Opt.ofNullable(f.getParent())
+        .orElseThrow(()->new RuntimeException(format("Existence of {} unknown.", f)))
+        .toRealPath()
+      );
+      return call(()->Files.list(parent)).anyMatch(ch->call(()->Files.isSameFile(ch, file)));
+    }
   }
 
   /**
@@ -221,19 +252,56 @@ public final class FileUtils {
    */
   public static boolean deleteFile(final Path file) {
     verify(!Files.isDirectory(file));
-    final boolean result = call(()->Files.deleteIfExists(file));
-    verify(!Files.exists(file));
+    int retries = 10;
+    boolean result = false;
+    while(retries>0){
+      try {
+        result = call(()->Files.deleteIfExists(file));
+        retries = 0;
+      } catch (final Exception e) {
+        retries--;
+        if(retries==0) throw e;
+        else{
+          call(()->Thread.sleep(100));
+//          Clock.get().sleep(Duration.ofMillis(100));
+          if(Files.exists(file)) LOG.warn(format("Failed to delete {}. Retrying.", file), e);
+          else retries=0;
+        }
+      }
+    }
+    verify(Files.notExists(file));
     return result;
   }
 
   public static void deleteContents(final Path folder) {
-    call(()->Files.list(folder)).forEach(FileUtils::delete);
+    while(!isEmpty(folder)){
+      for(final String f: folder.toFile().list()){
+        delete(folder.resolve(f));
+      }
+    }
   }
 
   private static void deleteFolder(final Path folder) {
-    deleteContents(folder);
-    call(()->Files.delete(folder));
-    verify(!Files.exists(folder));
+    verify(folder, f->Files.isDirectory(f), f->format("{} is not a folder.", f));
+    int retries = 3;
+    final Duration retryDelay = Duration.ofMillis(100);
+    boolean exists = true;
+    while(exists){
+      try {
+        deleteContents(folder);
+        Files.deleteIfExists(folder);
+      } catch (final Exception e) {
+        LOG.warn(format("Could not delete contents of {}.{}", folder, retries>0 ? " Retrying." : ""), e);
+      }
+      exists = exists(folder);
+      if(exists){
+        if(retries==0) throw new RuntimeException(format("Could not delete {}.", folder));
+        else LOG.warn("{} still exists. Trying again to delete after {}.", folder, retryDelay);
+        retries--;
+        Clock.get().sleep(retryDelay);
+      }
+    }
+    verify(!exists(folder));
   }
 
   public static boolean contains(final Path folder, final Path file){
@@ -287,6 +355,18 @@ public final class FileUtils {
     try {return Opt.of(Files.getLastModifiedTime(file).toInstant());}
     catch (final FileNotFoundException | NoSuchFileException e) {return Opt.empty();}
     catch (final IOException e) {throw wrap(e);}
+  }
+
+  public static boolean isEmpty(final Path folder) {
+    verify(folder, f->Files.isDirectory(f), f->format("{} is not a folder.", f));
+    final boolean empty1 = call(()->!Files.list(folder).findAny().isPresent());
+    final boolean empty2 = folder.toFile().list().length==0;
+    verifyEqual(empty1, empty2);
+    return empty1;
+  }
+
+  public static boolean isInside(final Path path, final Path directory) {
+    return path.toAbsolutePath().normalize().getParent().startsWith(directory.toAbsolutePath().normalize());
   }
 
 }

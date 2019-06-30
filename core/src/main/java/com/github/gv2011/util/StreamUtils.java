@@ -35,8 +35,10 @@ import static com.github.gv2011.util.ex.Exceptions.staticClass;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.function.IntConsumer;
 
 import com.github.gv2011.util.ex.ThrowingSupplier;
 
@@ -93,6 +95,41 @@ public final class StreamUtils {
     return new StreamIterator(in);
   }
 
+  public static final InputStream countingStream(final InputStream in, final IntConsumer counter){
+    return countingStream(in, counter, i->i);
+  }
 
+  @FunctionalInterface
+  public static interface Throttler{
+    /**
+     * @param limit never less than 1
+     * @return int between 1 and limit
+     */
+    int maxReadCount(int limit);
+  }
+
+  public static final InputStream countingStream(
+    final InputStream in, final IntConsumer counter, final Throttler throttler
+  ){
+    return new InputStream(){
+      @Override
+      public int read() throws IOException {
+        throttler.maxReadCount(1);
+        final int next = in.read();
+        if(next!=-1) counter.accept(1);
+        return next;
+      }
+      @Override
+      public int read(final byte[] b, final int off, final int len) throws IOException {
+        final int count = in.read(b, off, throttler.maxReadCount(len));
+        if(count!=-1) counter.accept(count);
+        return count;
+      }
+      @Override
+      public void close() throws IOException {
+        in.close();
+      }
+    };
+  }
 
 }

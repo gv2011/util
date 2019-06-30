@@ -28,16 +28,10 @@ package com.github.gv2011.util;
 
 import static com.github.gv2011.util.CollectionUtils.toSortedSet;
 import static com.github.gv2011.util.Verify.verify;
-import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
-import static com.github.gv2011.util.ex.Exceptions.run;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 import static com.github.gv2011.util.icol.ICollections.listBuilder;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
@@ -169,21 +163,6 @@ public final class StringUtils {
       .filter(s->!s.isEmpty())
       .collect(toSortedSet())
     ;
-  }
-
-  @Deprecated//Moved to FileUtils
-  public static String readText(final String path, final String... morePathElements) {
-    return call(()->new String(Files.readAllBytes(Paths.get(path, morePathElements)), UTF_8));
-  }
-
-  @Deprecated//Moved to com.github.gv2011.util.FileUtils.writeText(String, String, String...)
-  public static void writeFile(final String text, final String path, final String... morePathElements) {
-    writeFile(text, FileUtils.path(path, morePathElements));
-  }
-
-  @Deprecated//Moved to FileUtils
-  public static void writeFile(final String text, final Path path) {
-    run(()->Files.write(path, text.getBytes(UTF_8)));
   }
 
   public static IList<String> split(final String text, final char c) {

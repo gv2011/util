@@ -1,5 +1,7 @@
 package com.github.gv2011.util.bytes;
 
+import static com.github.gv2011.util.CollectionUtils.pair;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -41,13 +43,16 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.IntStream;
 
+import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.ex.ThrowingSupplier;
 import com.github.gv2011.util.icol.Opt;
 
@@ -118,6 +123,12 @@ public class ByteUtils {
     return call(()->
       new Hash256Imp(MessageDigest.getInstance(Hash256Imp.ALGORITHM).digest(text.getBytes(UTF_8)))
     );
+  }
+
+  public static Pair<InputStream,Supplier<Hash256>> hashStream(final InputStream in){
+    final MessageDigest md = call(()->MessageDigest.getInstance(Hash256.ALGORITHM));
+    final InputStream din = new DigestInputStream(in, md);
+    return pair(din, ()->new Hash256Imp(md));
   }
 
   public static Bytes newRandomBytes(final long size){
