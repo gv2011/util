@@ -18,8 +18,9 @@
 		</dependency>
 		
 		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
+			<groupId>com.github.gv2011</groupId>
+			<artifactId>guava-core</artifactId>
+      <version>28.1-SNAPSHOT</version>
 		</dependency>
 		
 	</dependencies>
