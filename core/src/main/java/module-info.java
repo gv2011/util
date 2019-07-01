@@ -26,7 +26,7 @@
 module com.github.gv2011.util{
   requires org.slf4j;
   requires transitive java.management;
-  requires transitive jakarta.activation;
+//  requires transitive jakarta.activation;
   requires java.xml;
   requires transitive java.naming;
 
@@ -48,4 +48,5 @@ module com.github.gv2011.util{
   exports com.github.gv2011.util.main;
   exports com.github.gv2011.util.lock;
   exports com.github.gv2011.util.download;
+  exports com.github.gv2011.activation;
 }
