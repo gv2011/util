@@ -30,6 +30,10 @@ module com.github.gv2011.util{
   requires java.xml;
   requires transitive java.naming;
 
+  uses com.github.gv2011.util.icol.ICollectionFactorySupplier;
+  uses com.github.gv2011.util.beans.TypeRegistry;
+  uses com.github.gv2011.util.json.JsonFactory;
+
   exports com.github.gv2011.util;
   exports com.github.gv2011.util.ex;
   exports com.github.gv2011.util.icol;
