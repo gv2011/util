@@ -24,7 +24,7 @@
  * #L%
  */
 module com.github.gv2011.util.tika{
-  requires com.github.gv2011.util;
+  requires transitive com.github.gv2011.util;
   requires org.apache.tika.core;
   uses com.github.gv2011.util.icol.ICollectionFactorySupplier;
   exports com.github.gv2011.util.tika;
