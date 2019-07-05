@@ -1,5 +1,6 @@
 package com.github.gv2011.util.serviceloader;
 
+import static com.github.gv2011.testutil.Assert.assertThat;
 /*-
  * #%L
  * The MIT License (MIT)
@@ -25,12 +26,17 @@ package com.github.gv2011.util.serviceloader;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.util.serviceloader.RecursiveServiceLoader.*;
+import static com.github.gv2011.util.serviceloader.RecursiveServiceLoader.CLOCK;
+import static com.github.gv2011.util.serviceloader.RecursiveServiceLoader.DATA_TYPE_PROVIDER;
+import static com.github.gv2011.util.serviceloader.RecursiveServiceLoader.DEFAULT_CLOCK;
 import static com.github.gv2011.util.serviceloader.RecursiveServiceLoader.DEFAULT_DATA_TYPE_PROVIDER;
+import static com.github.gv2011.util.serviceloader.RecursiveServiceLoader.DEFAULT_DOWNLOADER_FACTORY;
 import static com.github.gv2011.util.serviceloader.RecursiveServiceLoader.DEFAULT_FILE_WATCH_SERVICE;
+import static com.github.gv2011.util.serviceloader.RecursiveServiceLoader.DEFAULT_LOCK_FACTORY;
+import static com.github.gv2011.util.serviceloader.RecursiveServiceLoader.DOWNLOADER_FACTORY;
 import static com.github.gv2011.util.serviceloader.RecursiveServiceLoader.FILE_WATCH_SERVICE;
+import static com.github.gv2011.util.serviceloader.RecursiveServiceLoader.LOCK_FACTORY;
 import static org.hamcrest.Matchers.is;
-import static com.github.gv2011.testutil.Assert.*;
 
 import org.junit.Test;
 

@@ -26,6 +26,11 @@ package com.github.gv2011.testutil;
  * #L%
  */
 
+/* Copyright (C) 2019 Vinz (https://github.com/gv2011), MIT License
+ * This is a derivative work. Underlying work at:
+ * https://github.com/junit-team/junit4/blob/fc3813fba9e2250ddd96877d01f2f694127edb80/↵
+ * src/main/java/org/junit/Assert.java
+ */
 import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
 import org.junit.ComparisonFailure;
