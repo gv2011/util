@@ -1,28 +1,6 @@
-
-<!--
-  The MIT License (MIT)
-
-  Copyright (c) 2016 - 2019, Vinz (https://github.com/gv2011)
-
-  Permission is hereby granted, free of charge, to any person obtaining a copy
-  of this software and associated documentation files (the "Software"), to deal
-  in the Software without restriction, including without limitation the rights
-  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  copies of the Software, and to permit persons to whom the Software is
-  furnished to do so, subject to the following conditions:
-
-  The above copyright notice and this permission notice shall be included in
-  all copies or substantial portions of the Software.
-
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-  THE SOFTWARE.
--->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -43,6 +21,21 @@
     <url>https://github.com/gv2011/util</url>
     <tag>HEAD</tag>
   </scm>
+  
+  <inceptionYear>2016</inceptionYear>
+
+  <licenses>
+    <license>
+      <name>The MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
+      <comments>
+        The license applies to this Maven artifact, its modules and other content within the GIT repository
+        specified in the scm section of this file.
+        The copyright years are given by the inceptionYear tag within this file and by the history of the 
+        GIT repository.
+      </comments>
+    </license>
+  </licenses>
 
   <modules>
     <module>bc</module>
@@ -59,9 +52,9 @@
     <module>logback</module>
     <module>swing</module>
     <module>test</module>
-    <module>testutils</module>
+    <module>testutil</module>
   </modules>
-  
+
   <properties>
     <util.version>${project.version}</util.version>
   </properties>
@@ -69,19 +62,12 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>license-maven-plugin</artifactId>
-        <configuration>
-          <inceptionYear>2016</inceptionYear>
-        </configuration>
-      </plugin>
-      <plugin>
         <groupId>pl.project13.maven</groupId>
         <artifactId>git-commit-id-plugin</artifactId>
         <configuration>
           <dotGitDirectory>${project.basedir}/../.git</dotGitDirectory>
         </configuration>
-      </plugin> 
+      </plugin>
     </plugins>
   </build>
 </project>

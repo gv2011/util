@@ -37,9 +37,8 @@ import java.util.Enumeration;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import javax.activation.MimeType;
-import javax.activation.MimeTypeParameterList;
-
+import com.github.gv2011.activation.MimeType;
+import com.github.gv2011.activation.MimeTypeParameterList;
 import com.github.gv2011.util.BeanUtils;
 import com.github.gv2011.util.Constant;
 import com.github.gv2011.util.Constants;

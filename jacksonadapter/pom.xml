@@ -34,13 +34,9 @@
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest</artifactId>
+            <groupId>com.github.gv2011</groupId>
+            <artifactId>testutil</artifactId>
+            <version>${util.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -56,17 +52,5 @@
         </dependency>
 
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <configuration>
-                    <inceptionYear>${project.inceptionYear}</inceptionYear>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>

@@ -30,8 +30,7 @@ import static com.github.gv2011.util.ex.Exceptions.call;
 import java.nio.charset.Charset;
 import java.util.Map.Entry;
 
-import javax.activation.MimeType;
-
+import com.github.gv2011.activation.MimeType;
 import com.github.gv2011.util.BeanUtils;
 import com.github.gv2011.util.beans.Computed;
 import com.github.gv2011.util.beans.Final;

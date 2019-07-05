@@ -1,43 +1,33 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>com.github.gv2011</groupId>
-        <artifactId>util-parent</artifactId>
-        <version>0.4.1-SNAPSHOT</version>
-    </parent>
+  <parent>
+    <groupId>com.github.gv2011</groupId>
+    <artifactId>util-parent</artifactId>
+    <version>0.4.1-SNAPSHOT</version>
+  </parent>
 
-    <artifactId>jsong</artifactId>
-    <inceptionYear>2017</inceptionYear>
+  <artifactId>jsong</artifactId>
+  <inceptionYear>2017</inceptionYear>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.github.gv2011</groupId>
-            <artifactId>util</artifactId>
-            <version>${util.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.gv2011</groupId>
-            <artifactId>util-json</artifactId>
-            <version>${util.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <configuration>
-                    <inceptionYear>${project.inceptionYear}</inceptionYear>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+  <dependencies>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>util</artifactId>
+      <version>${util.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>util-json</artifactId>
+      <version>${util.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>gson</artifactId>
+    </dependency>
+  </dependencies>
 
 </project>

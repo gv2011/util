@@ -1,0 +1,56 @@
+/*-
+ * #%L
+ * The MIT License (MIT)
+ * %%
+ * Copyright (C) 2016 - 2019 Vinz (https://github.com/gv2011)
+ * %%
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * #L%
+ */
+module com.github.gv2011.util{
+  requires org.slf4j;
+  requires transitive java.management;
+//  requires transitive jakarta.activation;
+  requires java.xml;
+  requires transitive java.naming;
+
+  uses com.github.gv2011.util.icol.ICollectionFactorySupplier;
+  uses com.github.gv2011.util.beans.TypeRegistry;
+  uses com.github.gv2011.util.json.JsonFactory;
+
+  exports com.github.gv2011.util;
+  exports com.github.gv2011.util.ex;
+  exports com.github.gv2011.util.icol;
+  exports com.github.gv2011.util.sec;
+  exports com.github.gv2011.util.time;
+  exports com.github.gv2011.util.json;
+  exports com.github.gv2011.util.beans;
+  exports com.github.gv2011.util.ann;
+  exports com.github.gv2011.util.bytes;
+  exports com.github.gv2011.util.cache;
+  exports com.github.gv2011.util.tstr;
+  exports com.github.gv2011.util.uc;
+  exports com.github.gv2011.util.log;
+  exports com.github.gv2011.util.serviceloader;
+  exports com.github.gv2011.util.filewatch;
+  exports com.github.gv2011.util.main;
+  exports com.github.gv2011.util.lock;
+  exports com.github.gv2011.util.download;
+  exports com.github.gv2011.activation;
+}

@@ -5,3 +5,7 @@
 # util
 
 General purpose utilities.
+
+## License and copyright
+
+See file pom.xml.
