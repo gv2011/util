@@ -26,9 +26,9 @@ package com.github.gv2011.util.beans.cglib;
  * #L%
  */
 
-import static com.github.gv2011.testutils.Matchers.is;
-import static com.github.gv2011.testutils.Matchers.isA;
-import static com.github.gv2011.testutils.Matchers.mapWithSize;
+import static com.github.gv2011.testutil.Matchers.is;
+import static com.github.gv2011.testutil.Matchers.isA;
+import static com.github.gv2011.testutil.Matchers.mapWithSize;
 import static com.github.gv2011.util.icol.ICollections.sortedSetOf;
 import static com.github.gv2011.util.json.JsonUtils.jsonFactory;
 import static org.junit.Assert.assertThat;

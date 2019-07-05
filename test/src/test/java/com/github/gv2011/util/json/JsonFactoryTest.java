@@ -26,9 +26,9 @@ package com.github.gv2011.util.json;
  * #L%
  */
 
-import static com.github.gv2011.testutils.Matchers.is;
-import static com.github.gv2011.testutils.Matchers.isA;
-import static com.github.gv2011.testutils.Matchers.meets;
+import static com.github.gv2011.testutil.Matchers.is;
+import static com.github.gv2011.testutil.Matchers.isA;
+import static com.github.gv2011.testutil.Matchers.meets;
 import static com.github.gv2011.util.CollectionUtils.pair;
 import static com.github.gv2011.util.icol.ICollections.listOf;
 import static org.junit.Assert.assertThat;

@@ -1,4 +1,4 @@
-package com.github.gv2011.testutils;
+package com.github.gv2011.testutil;
 
 /*-
  * #%L
@@ -48,7 +48,6 @@ import com.github.gv2011.util.CachedConstant;
 import com.github.gv2011.util.Constants;
 import com.github.gv2011.util.FileUtils;
 import com.github.gv2011.util.Zipper;
-import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.ex.ThrowingRunnable;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.IList.Builder;

@@ -26,8 +26,8 @@ package com.github.gv2011.util.beans.imp;
  * #L%
  */
 
-import static com.github.gv2011.testutils.Matchers.is;
-import static com.github.gv2011.testutils.Matchers.not;
+import static com.github.gv2011.testutil.Matchers.is;
+import static com.github.gv2011.testutil.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;

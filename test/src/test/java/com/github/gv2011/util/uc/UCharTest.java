@@ -26,7 +26,7 @@ package com.github.gv2011.util.uc;
  * #L%
  */
 
-import static com.github.gv2011.testutils.Matchers.is;
+import static com.github.gv2011.testutil.Matchers.is;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static org.junit.Assert.assertThat;

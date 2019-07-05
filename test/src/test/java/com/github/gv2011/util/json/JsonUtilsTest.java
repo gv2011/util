@@ -26,7 +26,7 @@ package com.github.gv2011.util.json;
  * #L%
  */
 
-import static com.github.gv2011.testutils.Matchers.is;
+import static com.github.gv2011.testutil.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;

@@ -26,14 +26,14 @@ package com.github.gv2011.util.sec;
  * #L%
  */
 
-import static com.github.gv2011.testutils.Matchers.is;
+import static com.github.gv2011.testutil.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigInteger;
 
 import org.junit.Test;
 
-import com.github.gv2011.testutils.AbstractTest;
+import com.github.gv2011.testutil.AbstractTest;
 import com.github.gv2011.util.bytes.Bytes;
 import com.github.gv2011.util.sec.RsaKeyPair;
 

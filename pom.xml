@@ -59,7 +59,7 @@
     <module>logback</module>
     <module>swing</module>
     <module>test</module>
-    <module>testutils</module>
+    <module>testutil</module>
   </modules>
   
   <properties>

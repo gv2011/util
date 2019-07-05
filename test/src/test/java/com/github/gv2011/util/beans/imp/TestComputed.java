@@ -31,7 +31,7 @@ import java.net.URI;
 
 import org.junit.Test;
 
-import com.github.gv2011.testutils.Matchers;
+import com.github.gv2011.testutil.Matchers;
 
 public class TestComputed {
   

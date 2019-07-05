@@ -26,8 +26,8 @@ package com.github.gv2011.util.sec;
  * #L%
  */
 
-import static com.github.gv2011.testutils.Matchers.hasSize;
-import static com.github.gv2011.testutils.Matchers.is;
+import static com.github.gv2011.testutil.Matchers.hasSize;
+import static com.github.gv2011.testutil.Matchers.is;
 import static com.github.gv2011.util.icol.ICollections.listOf;
 import static org.junit.Assert.assertThat;
 
@@ -35,7 +35,7 @@ import java.security.cert.X509Certificate;
 
 import org.junit.Test;
 
-import com.github.gv2011.testutils.AbstractTest;
+import com.github.gv2011.testutil.AbstractTest;
 import com.github.gv2011.util.icol.IList;
 
 public class SecUtilsTest extends AbstractTest{

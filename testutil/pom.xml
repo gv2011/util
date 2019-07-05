@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -7,7 +9,7 @@
     <version>0.4.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>testutils</artifactId>
+  <artifactId>testutil</artifactId>
 
   <description>General purpose test utilities.</description>
 
@@ -26,27 +28,28 @@
     </developer>
   </developers>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.github.gv2011</groupId>
-			<artifactId>util</artifactId>
+  <dependencies>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>util</artifactId>
       <version>${util.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.hamcrest</groupId>
-			<artifactId>hamcrest</artifactId>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<scope>compile</scope>
-		</dependency>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest</artifactId>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>compile</scope>
+    </dependency>
     <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>gcol</artifactId>
@@ -77,5 +80,5 @@
       <version>${util.version}</version>
       <scope>test</scope>
     </dependency>
-	</dependencies>
+  </dependencies>
 </project>

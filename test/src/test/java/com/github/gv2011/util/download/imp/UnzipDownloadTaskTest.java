@@ -26,7 +26,7 @@ package com.github.gv2011.util.download.imp;
  * #L%
  */
 
-import static com.github.gv2011.testutils.Matchers.is;
+import static com.github.gv2011.testutil.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -34,7 +34,7 @@ import java.nio.file.Path;
 
 import org.junit.Test;
 
-import com.github.gv2011.testutils.AbstractTest;
+import com.github.gv2011.testutil.AbstractTest;
 import com.github.gv2011.util.FileUtils;
 import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.download.DownloadTask.Status;
