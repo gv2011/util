@@ -24,7 +24,7 @@
  * #L%
  */
 module com.github.gv2011.util{
-  requires org.slf4j;
+  requires transitive org.slf4j;
   requires transitive java.management;
 //  requires transitive jakarta.activation;
   requires java.xml;
