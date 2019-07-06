@@ -76,11 +76,6 @@ public final class FileUtils {
 
   public static final Path WORK_DIR = call(()->FileSystems.getDefault().getPath(".").toRealPath());
 
-  @Deprecated(forRemoval=true) //Use Paths.get(first, more)
-  public static Path path(final String first, final String... more){
-    return Paths.get(first, more);
-  }
-
   public static boolean sameFile(final Path f1, final Path f2){
     return call(()->Files.isSameFile(f1, f2));
   }
@@ -90,15 +85,15 @@ public final class FileUtils {
   }
 
   public static Reader getReader(final String first, final String... more){
-    return call(()->Files.newBufferedReader(path(first, more), UTF_8));
+    return call(()->Files.newBufferedReader(Paths.get(first, more), UTF_8));
   }
 
   public static Writer getWriter(final String first, final String... more){
-    return call(()->Files.newBufferedWriter(path(first, more), UTF_8));
+    return call(()->Files.newBufferedWriter(Paths.get(first, more), UTF_8));
   }
 
   public static Reader getReaderRemoveBom(final String first, final String... more){
-    return getReaderRemoveBom(path(first, more));
+    return getReaderRemoveBom(Paths.get(first, more));
   }
 
   public static Reader getReaderRemoveBom(final Path file){
@@ -111,7 +106,7 @@ public final class FileUtils {
   }
 
   public static InputStream getStream(final String first, final String... more){
-    return getStream(path(first, more));
+    return getStream(Paths.get(first, more));
   }
 
   public static InputStream getStream(final Path path){
@@ -131,7 +126,7 @@ public final class FileUtils {
   }
 
   public static String readText(final String first, final String... more){
-    return readText(path(first, more));
+    return readText(Paths.get(first, more));
   }
 
   public static String readText(final Path path){
@@ -159,7 +154,7 @@ public final class FileUtils {
   }
 
   public static void writeText(final String text, final String path, final String... morePathElements) {
-    writeText(text, path(path, morePathElements));
+    writeText(text, Paths.get(path, morePathElements));
   }
 
   public static void writeText(final String text, final Path path){
@@ -192,7 +187,7 @@ public final class FileUtils {
   }
 
   public static long getSize(final String first, final String... more){
-    return getSize(path(first, more));
+    return getSize(Paths.get(first, more));
   }
 
   public static long getSize(final Path path){
