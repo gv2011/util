@@ -284,7 +284,7 @@ public final class FileUtils {
     while(exists){
       try {
         deleteContents(folder);
-        Files.deleteIfExists(folder);
+        folder.toFile().delete();
       } catch (final Exception e) {
         LOG.warn(format("Could not delete contents of {}.{}", folder, retries>0 ? " Retrying." : ""), e);
       }

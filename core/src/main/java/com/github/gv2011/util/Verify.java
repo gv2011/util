@@ -61,6 +61,14 @@ public final class Verify {
     return arg;
   }
 
+  public static <T> Function<T,T> verifier(final Predicate<? super T> predicate) {
+    return arg->verify(arg, predicate);
+  }
+
+  public static <T> Function<T,T> verifier(final Predicate<? super T> predicate, final Function<? super T,String> msg) {
+    return arg->verify(arg, predicate, msg);
+  }
+
   public static void verify(final boolean expr, final Supplier<String> msg) {
     if(!expr) throw new IllegalStateException(msg.get());
   }
