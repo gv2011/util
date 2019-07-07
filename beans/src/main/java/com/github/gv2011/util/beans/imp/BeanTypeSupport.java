@@ -33,6 +33,7 @@ import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.ex.Exceptions.wrap;
+import static com.github.gv2011.util.icol.ICollections.toIMap;
 import static com.github.gv2011.util.icol.ICollections.toISortedMap;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -44,22 +45,27 @@ import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.function.ToIntFunction;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 
+import com.github.gv2011.util.Constant;
+import com.github.gv2011.util.Constants;
 import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.ReflectionUtils;
 import com.github.gv2011.util.XStream;
 import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.beans.AnnotationHandler;
 import com.github.gv2011.util.beans.BeanBuilder;
+import com.github.gv2011.util.beans.BeanHashCode;
 import com.github.gv2011.util.beans.BeanType;
 import com.github.gv2011.util.beans.Parser;
 import com.github.gv2011.util.beans.Partial;
 import com.github.gv2011.util.beans.Property;
 import com.github.gv2011.util.beans.Validator;
+import com.github.gv2011.util.icol.IMap;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonFactory;
@@ -80,6 +86,7 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   private final BeanFactory beanFactory;
   private final boolean writeAsJsonString;
   private final Function<String,T> parser;
+  private final Constant<ToIntFunction<T>> hashCodeFunction = Constants.cachedConstant(this::createHashCodeFunction);
   protected final UnaryOperator<T> resultWrapper;
   protected final UnaryOperator<T> validator;
 
@@ -172,11 +179,19 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
 
   @Override
   public final int hashCode(final T bean) {
-    return clazz.hashCode() * 31 + properties.values().stream()
+    return hashCodeFunction.get().applyAsInt(bean);
+  }
+
+  private ToIntFunction<T> createHashCodeFunction(){
+    final IMap<String, Function<T,?>> attributes =
+      properties.values().stream()
       .filter(p->p.function().isEmpty())
-      .mapToInt(p->p.name().hashCode() ^ p.getValue(bean).hashCode())
-      .sum()
+      .collect(toIMap(
+        Property::name,
+        p->bean->p.getValue(bean)
+      ))
     ;
+    return BeanHashCode.createHashCodeFunctionNamed(clazz, attributes);
   }
 
   final ISortedMap<String, Object> getValues(final T bean) {
