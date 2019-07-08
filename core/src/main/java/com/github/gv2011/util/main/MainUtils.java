@@ -44,6 +44,7 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
@@ -64,7 +65,7 @@ public abstract class MainUtils implements MainUtilsMBean, AutoCloseableNt{
 
   @FunctionalInterface
   public static interface ServiceBuilder<S extends AutoCloseableNt, C>{
-    S startService(C configuration);
+    S startService(C configuration, Runnable shutdownTrigger);
   }
 
   public static <C> MainUtils create(
@@ -72,6 +73,36 @@ public abstract class MainUtils implements MainUtilsMBean, AutoCloseableNt{
   ) {
     return new MainRunner<>(args, serviceBuilder, configurationClass);
   }
+
+  public static <C> int runCommand(
+    final String[] mainArgs,
+    final Consumer<C> command,
+    final Class<C> configurationClass
+  ) {
+    try(final MainUtils main = MainUtils.create(
+        mainArgs,
+        (conf, shutdown)->{
+          try{command.accept(conf);}
+          finally{shutdown.run();}
+          return ()->{};
+        },
+        configurationClass
+    )){
+      return main.runMain();
+    }
+  }
+
+//  public static void main(final String[] args) throws IOException{
+//    try(final MainUtils main = MainUtils.create(args, MainUtilsTest2::startService, Nothing.class)){
+//      main.runMain();
+//    }
+//  }
+//
+//  private static AutoCloseableNt startService(final Nothing configuration, final Runnable shutdownTrigger){
+//    System.out.println("Hello World!");
+//    shutdownTrigger.run();
+//    return ()->{};
+//  }
 
 
   public static <C> int run(
@@ -87,7 +118,7 @@ public abstract class MainUtils implements MainUtilsMBean, AutoCloseableNt{
       new String[]{},
       new ServiceBuilder<>(){
         @Override
-        public AutoCloseableNt startService(final Nothing noConfiguration){
+        public AutoCloseableNt startService(final Nothing noConfiguration, final Runnable shutdownTrigger){
           return serviceBuilder.get();
         }
       },
@@ -157,8 +188,9 @@ public abstract class MainUtils implements MainUtilsMBean, AutoCloseableNt{
         });
 
         try(AutoCloseableNt jmxHandle = JmxUtils.registerMBean(this)){
+          final Runnable shutDownTrigger = ()->new Thread(this::close, "shutdown-trigger").start();
           try(final AutoCloseableNt service =
-            serviceBuilder.startService(readConfiguration(mainArgs, configurationClass))
+            serviceBuilder.startService(readConfiguration(mainArgs, configurationClass), shutDownTrigger)
           ){
             call(()->shutdownLatch.await());
             resultCode = uncaughtExceptionCount.get()==0L ? 0 : 2;

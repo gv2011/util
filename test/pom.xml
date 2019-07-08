@@ -87,6 +87,12 @@
     </dependency>
     <dependency>
       <groupId>com.github.gv2011</groupId>
+      <artifactId>util-logback</artifactId>
+      <version>${util.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
       <artifactId>util-bc</artifactId>
       <version>${util.version}</version>
       <scope>test</scope>
