@@ -40,6 +40,7 @@ import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -223,6 +224,14 @@ public final class FileUtils {
         }
       }
     }
+  }
+
+  public static void delete(final File file) {
+    if(file.isDirectory()){
+      for(final File child: file.listFiles()) delete(child);
+    }
+    file.delete();
+    verify(!file.exists());
   }
 
   public static boolean exists(final Path file){
