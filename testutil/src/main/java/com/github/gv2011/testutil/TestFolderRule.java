@@ -64,6 +64,7 @@ public class TestFolderRule implements TestRule{
   private final CachedConstant<Path> testFolder = Constants.cachedConstant(this::createTestFolder);
   private final CachedConstant<Description> testDescription = Constants.cachedConstant();
   private final CachedConstant<Boolean> testFolderCreated = Constants.cachedConstant(()->false);
+  private volatile boolean dontDeleteTestFolder;
 
   private final ThrowingRunnable after;
 
@@ -96,7 +97,7 @@ public class TestFolderRule implements TestRule{
   }
 
   private void finished(final Description description, final boolean successful) {
-    if(successful && testFolderCreated.get()){
+    if(successful && !dontDeleteTestFolder && testFolderCreated.get()){
       try {
         FileUtils.delete(testFolder.get());
       } catch (final Exception e) {
@@ -155,7 +156,11 @@ public class TestFolderRule implements TestRule{
       assertTrue(paths.stream().allMatch(Files::exists));
       assertTrue(paths.stream().allMatch(p->testFolder.equals(p.getParent())));
     });
-   }
+  }
+
+  public void dontDeleteTestFolder() {
+    dontDeleteTestFolder = true;
+  }
 
 
 }

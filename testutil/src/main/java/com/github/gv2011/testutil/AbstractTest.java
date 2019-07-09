@@ -63,6 +63,10 @@ public abstract class AbstractTest {
     return testFolderRule.testFolder();
   }
 
+  protected final void dontDeleteTestFolder(){
+    testFolderRule.dontDeleteTestFolder();
+  }
+
   protected void after(){}
 
   protected final String getResourceAsString(final String extension){
