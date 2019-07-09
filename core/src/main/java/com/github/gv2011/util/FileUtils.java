@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -65,6 +66,7 @@ import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.bytes.Bytes;
 import com.github.gv2011.util.bytes.FileExtension;
 import com.github.gv2011.util.ex.ThrowingFunction;
+import com.github.gv2011.util.ex.ThrowingSupplier;
 import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.time.Clock;
 import com.github.gv2011.util.time.TimeUtils;
@@ -350,8 +352,16 @@ public final class FileUtils {
   }
 
   public static long copy(final Path src, final Path target) {
+    return copy(()->Files.newInputStream(src), target);
+  }
+
+  public static long copy(final URL url, final Path target) {
+    return copy(url::openStream, target);
+  }
+
+  public static long copy(final ThrowingSupplier<InputStream> in, final Path target) {
     return callWithCloseable(()->Files.newOutputStream(target, CREATE, TRUNCATE_EXISTING), out->{
-      return StreamUtils.copy(()->Files.newInputStream(src), out);
+      return StreamUtils.copy(in, out);
     });
   }
 
