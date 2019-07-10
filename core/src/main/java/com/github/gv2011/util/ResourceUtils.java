@@ -35,6 +35,7 @@ import static com.github.gv2011.util.ex.Exceptions.staticClass;
 import static com.github.gv2011.util.icol.ICollections.toISet;
 
 import java.net.URL;
+import java.util.NoSuchElementException;
 import java.util.function.Function;
 
 import com.github.gv2011.util.bytes.ByteUtils;
@@ -62,11 +63,14 @@ public class ResourceUtils {
   }
 
   public static final URL getResourceUrl(final Class<?> refClass, final String relativeName){
-    return getResourceUrl(resolveRelativeName(refClass, relativeName));
+    return
+      tryGetResourceUrl(refClass, relativeName)
+      .orElseThrow(()->new NoSuchElementException(format("No resource {} for {}.", relativeName, refClass)))
+    ;
   }
 
   public static final Opt<URL> tryGetResourceUrl(final Class<?> refClass, final String relativeName){
-    return tryGetResourceUrl(resolveRelativeName(refClass, relativeName));
+    return Opt.ofNullable(refClass.getResource(relativeName));
   }
 
 

@@ -41,6 +41,7 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import com.github.gv2011.util.ann.Nullable;
+import com.github.gv2011.util.icol.ICollection;
 
 public final class Verify {
 
@@ -58,6 +59,14 @@ public final class Verify {
       throw new IllegalStateException(msg.apply(arg));
     }
     return arg;
+  }
+
+  public static <T> Function<T,T> verifier(final Predicate<? super T> predicate) {
+    return arg->verify(arg, predicate);
+  }
+
+  public static <T> Function<T,T> verifier(final Predicate<? super T> predicate, final Function<? super T,String> msg) {
+    return arg->verify(arg, predicate, msg);
   }
 
   public static void verify(final boolean expr, final Supplier<String> msg) {
@@ -83,6 +92,17 @@ public final class Verify {
   public static <T> T verifyEqual(final T actual, final T expected, final BiFunction<T,T,String> msg) {
     if(!actual.equals(expected)){
       throw new IllegalStateException(msg.apply(expected, actual));
+    }
+    return actual;
+  }
+
+  public static <T> T verifyIn(
+    final T actual,
+    final ICollection<T> expectedValues,
+    final BiFunction<ICollection<T>,T,String> msg
+  ) {
+    if(!expectedValues.contains(actual)){
+      throw new IllegalStateException(msg.apply(expectedValues, actual));
     }
     return actual;
   }

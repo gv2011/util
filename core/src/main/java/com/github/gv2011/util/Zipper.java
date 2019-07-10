@@ -28,6 +28,7 @@ package com.github.gv2011.util;
 
 import static com.github.gv2011.util.FileUtils.contains;
 import static com.github.gv2011.util.Verify.verify;
+import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.callWithCloseable;
 import static com.github.gv2011.util.icol.ICollections.toISortedSet;
 
@@ -38,6 +39,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.TimeZone;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -45,6 +47,7 @@ import java.util.zip.ZipOutputStream;
 import com.github.gv2011.util.ex.ThrowingConsumer;
 import com.github.gv2011.util.ex.ThrowingSupplier;
 import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.icol.Opt;
 
 public final class Zipper {
 
@@ -101,29 +104,40 @@ public final class Zipper {
   }
 
   public void unZip(
-    final ThrowingSupplier<InputStream> stream, final Path targetFolder, final Consumer<Path> pathCollector
+      final ThrowingSupplier<InputStream> stream, final Path targetFolder, final Consumer<Path> pathCollector
+  ) {
+    unZipWithFilter(stream, targetFolder, p->{pathCollector.accept(p); return Opt.of(p);});
+  }
+
+
+  public void unZipWithFilter(
+    final ThrowingSupplier<InputStream> stream, final Path targetFolder, final Function<Path,Opt<Path>> pathFilter
   ) {
     callWithCloseable(stream, s->{
       callWithCloseable(()->new ZipInputStream(s), (ThrowingConsumer<ZipInputStream>)zis->{
         final byte[] buffer = new byte[1024];
-        ZipEntry ze = zis.getNextEntry();
-        while(ze!=null){
+        ZipEntry ze1 = zis.getNextEntry();
+        while(ze1!=null){
+          final ZipEntry ze = ze1;
           final Path path = resolve(targetFolder, ze.getName());
-          if(ze.isDirectory()){
-            Files.createDirectories(path);
-          }
-          else{
-            Files.createDirectories(path.getParent());
-            callWithCloseable(()->Files.newOutputStream(path), (ThrowingConsumer<OutputStream>)os->{
-              int count = zis.read(buffer);
-              while(count!=-1){
-                os.write(buffer, 0, count);
-                count = zis.read(buffer);
-              }
-            });
-          }
-          pathCollector.accept(path);
-          ze = zis.getNextEntry();
+          verify(path, p->FileUtils.isInside(p, targetFolder));
+          final Opt<Path> filtered = pathFilter.apply(path);
+          filtered.ifPresent(f->{
+            if(ze.isDirectory()){
+              call(()->Files.createDirectories(f));
+            }
+            else{
+              call(()->Files.createDirectories(f.getParent()));
+              callWithCloseable(()->Files.newOutputStream(f), (ThrowingConsumer<OutputStream>)os->{
+                int count = zis.read(buffer);
+                while(count!=-1){
+                  os.write(buffer, 0, count);
+                  count = zis.read(buffer);
+                }
+              });
+            }
+          });
+          ze1 = zis.getNextEntry();
         }
       });
     });

@@ -27,7 +27,7 @@ package com.github.gv2011.util.beans.imp;
  */
 import org.junit.Test;
 
-import com.github.gv2011.testutils.ServiceProviderConfigurationFileTestSupport;
+import com.github.gv2011.testutil.ServiceProviderConfigurationFileTestSupport;
 import com.github.gv2011.util.beans.TypeRegistry;
 
 public class ServiceProviderConfigurationFileTest {

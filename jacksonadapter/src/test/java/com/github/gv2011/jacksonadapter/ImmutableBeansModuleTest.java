@@ -1,5 +1,6 @@
 package com.github.gv2011.jacksonadapter;
 
+import static com.github.gv2011.testutil.Assert.assertThat;
 /*-
  * #%L
  * jacksonadapter
@@ -26,7 +27,6 @@ package com.github.gv2011.jacksonadapter;
  * #L%
  */
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 

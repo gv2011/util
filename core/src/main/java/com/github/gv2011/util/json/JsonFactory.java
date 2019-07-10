@@ -33,7 +33,9 @@ import java.util.stream.Collector;
 
 import com.github.gv2011.util.bytes.Bytes;
 import com.github.gv2011.util.icol.IList;
+import com.github.gv2011.util.serviceloader.Service;
 
+@Service(defaultImplementation="com.github.gv2011.util.json.imp/com.github.gv2011.util.json.imp.JsonFactoryImp")
 public interface JsonFactory {
 
   JsonNode deserialize(String json);

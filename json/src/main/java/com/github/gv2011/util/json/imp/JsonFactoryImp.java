@@ -43,6 +43,7 @@ import com.github.gv2011.util.json.JsonBoolean;
 import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonList;
 import com.github.gv2011.util.json.JsonNode;
+import com.github.gv2011.util.json.JsonNull;
 import com.github.gv2011.util.json.JsonNumber;
 import com.github.gv2011.util.json.JsonObject;
 import com.github.gv2011.util.json.JsonString;
@@ -103,7 +104,7 @@ public final class JsonFactoryImp implements JsonFactory{
   ICollectionFactory iCollections() {return ICOLF;}
 
   @Override
-  public JsonNullImp jsonNull() {
+  public JsonNull jsonNull() {
     return jsonNull;
   }
 

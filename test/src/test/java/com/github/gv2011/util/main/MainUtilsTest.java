@@ -79,7 +79,7 @@ public class MainUtilsTest {
 
   private static class TestServiceBuilder implements ServiceBuilder<TestService, Nothing> {
     @Override
-    public TestService startService(final Nothing configuration) {
+    public TestService startService(final Nothing configuration, final Runnable shutdownTrigger) {
       return new TestService();
     }
   }

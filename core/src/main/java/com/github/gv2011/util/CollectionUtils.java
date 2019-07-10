@@ -62,7 +62,7 @@ import java.util.stream.Stream;
 import com.github.gv2011.util.icol.ICollection;
 import com.github.gv2011.util.icol.Opt;
 
-public class CollectionUtils {
+public final class CollectionUtils {
 
   private CollectionUtils(){staticClass();}
 

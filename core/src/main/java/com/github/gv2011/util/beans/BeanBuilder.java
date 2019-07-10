@@ -4,6 +4,7 @@ import java.util.function.Function;
 
 import com.github.gv2011.util.icol.ICollection;
 import com.github.gv2011.util.icol.Opt;
+import com.github.gv2011.util.tstr.TypedString;
 
 /*-
  * #%L
@@ -40,6 +41,8 @@ public interface BeanBuilder<T> {
     <V> Setter<T,V> set(Function<T,V> method);
 
     <V> Setter<T,V> setOpt(Function<T,Opt<V>> method);
+
+    <V extends TypedString<V>> Setter<T,String> setTStr(final Function<T,V> method);
 
     BeanBuilder<T> setAll(T bean);
 

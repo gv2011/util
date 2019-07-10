@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.github.gv2011</groupId>
     <artifactId>util-parent</artifactId>
-    <version>0.4.0</version>
+    <version>0.5.0</version>
   </parent>
 
   <artifactId>util-test</artifactId>
@@ -30,7 +30,7 @@
     <connection>scm:git:git@github.com:gv2011/util.git</connection>
     <developerConnection>scm:git:git@github.com:gv2011/testutil.git</developerConnection>
     <url>https://github.com/gv2011/testutil</url>
-    <tag>util-parent-0.4.0</tag>
+    <tag>util-parent-0.5.0</tag>
   </scm>
 
   <dependencies>
@@ -42,7 +42,7 @@
     </dependency>
     <dependency>
       <groupId>com.github.gv2011</groupId>
-      <artifactId>testutils</artifactId>
+      <artifactId>testutil</artifactId>
       <version>${util.version}</version>
       <scope>test</scope>
     </dependency>
@@ -82,6 +82,12 @@
     <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>util-beans-cglib</artifactId>
+      <version>${util.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>util-logback</artifactId>
       <version>${util.version}</version>
       <scope>test</scope>
     </dependency>

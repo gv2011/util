@@ -1,30 +1,5 @@
 package com.github.gv2011.jsong;
 
-/*-
- * #%L
- * jsong
- * %%
- * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
- * %%
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * #L%
- */
 import static com.github.gv2011.util.CollectionUtils.pair;
 import static com.github.gv2011.util.ex.Exceptions.call;
 
@@ -33,6 +8,7 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.util.Iterator;
 
+import com.github.gv2011.gson.stream.JsonReader;
 import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.XStream;
 import com.github.gv2011.util.json.JsonList;
@@ -41,13 +17,12 @@ import com.github.gv2011.util.json.JsonObject;
 import com.github.gv2011.util.json.JsonWriter;
 import com.github.gv2011.util.json.imp.Adapter;
 import com.github.gv2011.util.json.imp.JsonFactoryImp;
-import com.google.gson.stream.JsonReader;
 
 public class JsongAdapter implements Adapter{
 
     @Override
     public JsonWriter newJsonWriter(final Writer out) {
-        final com.google.gson.stream.JsonWriter delegate = new com.google.gson.stream.JsonWriter(out);
+        final com.github.gv2011.gson.stream.JsonWriter delegate = new com.github.gv2011.gson.stream.JsonWriter(out);
         delegate.setIndent("  ");
         delegate.setSerializeNulls(false);
         return new JsongWriter(delegate);

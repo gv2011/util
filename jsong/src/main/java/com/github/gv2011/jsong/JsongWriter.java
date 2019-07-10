@@ -33,9 +33,9 @@ import com.github.gv2011.util.json.JsonWriter;
 
 final class JsongWriter implements JsonWriter {
 
-    private final com.google.gson.stream.JsonWriter delegate;
+    private final com.github.gv2011.gson.stream.JsonWriter delegate;
 
-    JsongWriter(final com.google.gson.stream.JsonWriter delegate) {
+    JsongWriter(final com.github.gv2011.gson.stream.JsonWriter delegate) {
       this.delegate = delegate;
     }
 

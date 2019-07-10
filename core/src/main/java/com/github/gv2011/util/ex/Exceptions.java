@@ -95,6 +95,17 @@ public final class Exceptions {
     else return new WrappedException(e, msg);
   }
 
+  public static Runnable logExceptions(final Runnable r){
+    return ()->{
+      try {
+        r.run();
+      }
+      catch (final Throwable t) {
+        getLogger().error(format("Exception in {}.", Thread.currentThread()), t);
+      }
+    };
+  }
+
   public static String format(final String pattern, final @Nullable Object... arguments) {
     return MessageFormatter.arrayFormat(pattern, arguments).getMessage();
   }
@@ -109,11 +120,6 @@ public final class Exceptions {
 
   public static Nothing call(final ThrowingRunnable throwing){
     return throwing.asFunction().apply(null);
-  }
-
-  @Deprecated //use call instead
-  public static void run(final ThrowingRunnable throwing){
-    throwing.asFunction().apply(null);
   }
 
   public static void tryAll(final ThrowingRunnable... operations){
@@ -201,31 +207,10 @@ public final class Exceptions {
     return Nothing.INSTANCE;
   }
 
-  @Deprecated //use callWithCloseable instead
-  public static <C extends OptCloseable> void doWithOptCloseable(
-    final ThrowingSupplier<C> supplier, final ThrowingConsumer<C> consumer
-  ){
-    callWithCloseable(supplier, consumer, OptCloseable::close);
-  }
-
   public static <C extends OptCloseable> Nothing callWithOptCloseable(
     final ThrowingSupplier<C> supplier, final ThrowingConsumer<C> consumer
   ){
     return callWithCloseable(supplier, consumer, OptCloseable::close);
-  }
-
-  @Deprecated //use callWithCloseable instead
-  public static <C extends AutoCloseable> void doWithCloseable(
-    final ThrowingSupplier<C> supplier, final ThrowingConsumer<C> consumer
-  ){
-    callWithCloseable(supplier, consumer, AutoCloseable::close);
-  }
-
-  @Deprecated //use callWithCloseable instead
-  public static <C> void doWithCloseable(
-    final ThrowingSupplier<C> supplier, final ThrowingConsumer<C> consumer, final ThrowingConsumer<? super C> closer
-  ){
-    callWithCloseable(supplier, consumer, closer);
   }
 
   public static <C> Nothing callWithCloseable(

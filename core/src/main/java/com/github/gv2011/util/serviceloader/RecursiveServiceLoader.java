@@ -74,12 +74,21 @@ public final class RecursiveServiceLoader implements AutoCloseableNt{
   static final String CLOCK = "com.github.gv2011.util.time.Clock";
   static final String DEFAULT_CLOCK = "com.github.gv2011.util.time.DefaultClock";
 
+  static final String LOCK_FACTORY = "com.github.gv2011.util.lock.Lock$Factory";
+  static final String DEFAULT_LOCK_FACTORY = "com.github.gv2011.util.lock.DefaultLockFactory";
+
+  static final String DOWNLOADER_FACTORY = "com.github.gv2011.util.download.DownloadTask$Factory";
+  static final String DEFAULT_DOWNLOADER_FACTORY = "com.github.gv2011.util.download.imp.DefaultDownloadTaskFactory";
+
+
   private static final Map<String,String> DEFAULT_SERVICES =
     Collections.unmodifiableMap(
       Arrays.stream(new String[][]{
         new String[]{FILE_WATCH_SERVICE, DEFAULT_FILE_WATCH_SERVICE},
         new String[]{DATA_TYPE_PROVIDER, DEFAULT_DATA_TYPE_PROVIDER},
-        new String[]{CLOCK, DEFAULT_CLOCK}
+        new String[]{CLOCK, DEFAULT_CLOCK},
+        new String[]{LOCK_FACTORY, DEFAULT_LOCK_FACTORY},
+        new String[]{DOWNLOADER_FACTORY, DEFAULT_DOWNLOADER_FACTORY}
       })
       .collect(Collectors.toMap(e->e[0], e->e[1]))
     )
