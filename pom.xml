@@ -6,10 +6,11 @@
   <parent>
     <groupId>com.github.gv2011</groupId>
     <artifactId>parent-gv</artifactId>
-    <version>0.4.1-SNAPSHOT</version>
+    <version>0.5.0</version>
   </parent>
 
   <artifactId>util-parent</artifactId>
+  <version>0.5.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <description>General purpose utilities - parent.</description>
