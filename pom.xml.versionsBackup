@@ -1,0 +1,74 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.github.gv2011</groupId>
+    <artifactId>parent-gv</artifactId>
+    <version>0.5.0</version>
+  </parent>
+
+  <artifactId>util-parent</artifactId>
+  <version>0.4.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <description>General purpose utilities - parent.</description>
+  <url>https://github.com/gv2011/util</url>
+
+  <scm>
+    <connection>scm:git:git@github.com:gv2011/util.git</connection>
+    <developerConnection>scm:git:git@github.com:gv2011/util.git</developerConnection>
+    <url>https://github.com/gv2011/util</url>
+    <tag>HEAD</tag>
+  </scm>
+  
+  <inceptionYear>2016</inceptionYear>
+
+  <licenses>
+    <license>
+      <name>The MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
+      <comments>
+        The license applies to this Maven artifact, its modules and other content within the GIT repository
+        specified in the scm section of this file.
+        The copyright years are given by the inceptionYear tag within this file and by the history of the 
+        GIT repository.
+      </comments>
+    </license>
+  </licenses>
+
+  <modules>
+    <module>bc</module>
+    <module>context</module>
+    <module>core</module>
+    <module>beans</module>
+    <module>beanscglib</module>
+    <module>filetypes-tika</module>
+    <module>gcol</module>
+    <module>http</module>
+    <module>jacksonadapter</module>
+    <module>json</module>
+    <module>jsong</module>
+    <module>logback</module>
+    <module>swing</module>
+    <module>test</module>
+    <module>testutil</module>
+  </modules>
+
+  <properties>
+    <util.version>${project.version}</util.version>
+  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>pl.project13.maven</groupId>
+        <artifactId>git-commit-id-plugin</artifactId>
+        <configuration>
+          <dotGitDirectory>${project.basedir}/../.git</dotGitDirectory>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
