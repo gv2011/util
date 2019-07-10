@@ -8,6 +8,7 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.util.Iterator;
 
+import com.github.gv2011.gson.stream.JsonReader;
 import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.XStream;
 import com.github.gv2011.util.json.JsonList;
@@ -16,13 +17,12 @@ import com.github.gv2011.util.json.JsonObject;
 import com.github.gv2011.util.json.JsonWriter;
 import com.github.gv2011.util.json.imp.Adapter;
 import com.github.gv2011.util.json.imp.JsonFactoryImp;
-import com.google.gson.stream.JsonReader;
 
 public class JsongAdapter implements Adapter{
 
     @Override
     public JsonWriter newJsonWriter(final Writer out) {
-        final com.google.gson.stream.JsonWriter delegate = new com.google.gson.stream.JsonWriter(out);
+        final com.github.gv2011.gson.stream.JsonWriter delegate = new com.github.gv2011.gson.stream.JsonWriter(out);
         delegate.setIndent("  ");
         delegate.setSerializeNulls(false);
         return new JsongWriter(delegate);
