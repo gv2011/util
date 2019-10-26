@@ -12,10 +12,10 @@ package com.github.gv2011.util.bc;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,6 +29,7 @@ import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
+import static com.github.gv2011.util.icol.ICollections.listOf;
 
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
@@ -39,6 +40,7 @@ import java.util.Date;
 import java.util.Optional;
 
 import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStrictStyle;
@@ -121,7 +123,7 @@ public final class BcCertificateBuilder implements CertificateBuilder{
 
   @Override
   public X509Certificate build(final RsaKeyPair keyPair){
-    final LdapName subject = notNull(this.subject);
+    final LdapName subject = Optional.ofNullable(this.subject).orElseGet(()->asName(keyPair.getPublic()));
     final RSAPublicKey subjectPublicKey = Optional.ofNullable(this.subjectPublicKey).orElse(keyPair.getPublic());
     final Instant notBefore = Optional.ofNullable(this.notBefore).orElse(REMOTE_PAST);
     final Instant notAfter = Optional.ofNullable(this.notAfter).orElse(REMOTE_FUTURE);
@@ -137,6 +139,10 @@ public final class BcCertificateBuilder implements CertificateBuilder{
     final ContentSigner contentSigner = createContentSigner(keyPair.getPrivate());
     final X509CertificateHolder certHolder = v1CertGen.build(contentSigner);
     return SecUtils.readCertificate(ByteUtils.newBytes(call(certHolder::getEncoded)));
+  }
+
+  private LdapName asName(final RSAPublicKey publicKey) {
+    return new LdapName(listOf(call(()->new Rdn("CN", ByteUtils.newBytes(publicKey.getEncoded()).toHex()))));
   }
 
   private SubjectPublicKeyInfo convert(final RSAPublicKey publicKey) {

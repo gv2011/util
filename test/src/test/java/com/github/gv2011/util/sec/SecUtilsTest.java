@@ -32,6 +32,35 @@ public class SecUtilsTest extends AbstractTest{
     );
   }
 
+//TODO:fix
+//  @Test
+//  public void testCreateServerSocketFactory() throws IOException {
+//    final SSLServerSocketFactory ssf = SecUtils.createServerSocketFactory(testFolder());
+//    try(final ServerSocket ss = ssf.createServerSocket()){
+//      ss.bind(null);
+//      final int port = ss.getLocalPort();
+//      log.info("Port: {}", port);
+//      try(final CloseableFuture<Nothing> task =
+//        ExecutorUtils.callAsync(()->{
+//          Socket s = (SSLSocket) ss.accept();
+//          int i = s.getInputStream().read();
+//          verifyEqual(i, 3);
+//          return nothing();
+//        })
+//      ){
+//        try(final Socket s = (SSLSocket)
+//          SecUtils.createSocketFactory(testFolder())
+//          .createSocket(InetAddress.getLoopbackAddress(), port)
+//        ){
+//          final OutputStream out = s.getOutputStream();
+//          out.write(3);
+//          out.flush();
+//        }
+//      }
+//    }
+//  }
+
+
   private static final String CERT_1 =
       "-----BEGIN CERTIFICATE-----\n" +
       "MIIFBjCCA+6gAwIBAgISA9cfiZkhbXsMG0qeXZpYMac9MA0GCSqGSIb3DQEBCwUA\n" +

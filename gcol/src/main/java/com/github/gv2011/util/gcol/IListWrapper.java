@@ -43,13 +43,16 @@ import com.github.gv2011.util.icol.ISortedMap;
 
 class IListWrapper<E> implements IList<E>{
 
+  static final <E> IList<E> wrap(final List<E> delegate){
+    return delegate.isEmpty() ? ICollections.emptyList() : new IListWrapper<>(delegate);
+  }
+
   final List<E> delegate;
 
   @Nullable Integer hashCode = null;
 
-  IListWrapper(final List<E> delegate) {
+  protected IListWrapper(final List<E> delegate) {
     this.delegate = delegate;
-    assert !delegate.isEmpty();
   }
 
   @Override
@@ -147,7 +150,7 @@ class IListWrapper<E> implements IList<E>{
 
   @Override
   public IList<E> subList(final int fromIndex, final int toIndex) {
-    return new IListWrapper<>(delegate.subList(fromIndex, toIndex));
+    return wrap(delegate.subList(fromIndex, toIndex));
   }
 
   @Override

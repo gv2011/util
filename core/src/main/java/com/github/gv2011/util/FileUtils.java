@@ -214,26 +214,29 @@ public final class FileUtils {
   }
 
   public static void delete(final Path file) {
-    if(Files.isRegularFile(file)) deleteFile(file);
-    else if(Files.isDirectory(file)) deleteFolder(file);
-    else{
-      if(!Files.notExists(file)){
-        try{
-          deleteFile(file);
-        }
-        catch(final Exception ex){
-          deleteFolder(file);
-        }
-      }
-    }
+    delete(file.toFile());
+//    if(Files.isRegularFile(file)) deleteFile(file);
+//    else if(Files.isDirectory(file)) deleteFolder(file);
+//    else{
+//      if(!Files.notExists(file)){
+//        try{
+//          deleteFile(file);
+//        }
+//        catch(final Exception ex){
+//          deleteFolder(file);
+//        }
+//      }
+//    }
   }
 
   public static void delete(final File file) {
     if(file.isDirectory()){
       for(final File child: file.listFiles()) delete(child);
     }
-    file.delete();
-    verify(!file.exists());
+    if(file.exists()){
+      verify(file.delete());
+      verify(!file.exists());
+    }
   }
 
   public static boolean exists(final Path file){
@@ -287,6 +290,7 @@ public final class FileUtils {
     }
   }
 
+  @SuppressWarnings("unused")
   private static void deleteFolder(final Path folder) {
     verify(folder, f->Files.isDirectory(f), f->format("{} is not a folder.", f));
     int retries = 3;

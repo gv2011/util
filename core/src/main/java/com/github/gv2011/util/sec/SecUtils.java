@@ -27,22 +27,27 @@ package com.github.gv2011.util.sec;
  */
 
 import static com.github.gv2011.util.NumUtils.withLeadingZeros;
+import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.callWithCloseable;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 import static com.github.gv2011.util.icol.ICollections.listBuilder;
+import static com.github.gv2011.util.icol.ICollections.listOf;
 import static com.github.gv2011.util.icol.ICollections.toIList;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyFactory;
 import java.security.KeyStore;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -55,7 +60,9 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.slf4j.Logger;
@@ -199,6 +206,12 @@ public final class SecUtils {
     return addToKeyStore(privKey, certChain, keyStore, Opt.empty());
   }
 
+  public static final KeyStore createJKSKeyStore(final Path certificateDirectory){
+    return createJKSKeyStore(
+      RsaKeyPair.parse(ByteUtils.read(certificateDirectory.resolve(KEY_FILE_NAME))),
+      listOf(readCertificate(ByteUtils.read(certFile(certificateDirectory, 0))))
+    );
+  }
 
   public static final KeyStore addToKeyStore(
     final RsaKeyPair privKey, final IList<X509Certificate> certChain, final KeyStore keystore, final Opt<String> alias
@@ -262,28 +275,103 @@ public final class SecUtils {
   }
 
   public static final SSLServerSocketFactory createServerSocketFactory(final Bytes keyStore){
+    return createServerSocketFactory(readKeyStore(keyStore::openStream), false);
+  }
+
+  public static final SSLServerSocketFactory createServerSocketFactory(
+    final KeyStore keyStore, final boolean trustAll
+  ){
     return call(()->{
-      final KeyStore ks = readKeyStore(keyStore::openStream);
-      final KeyManagerFactory kmf = KeyManagerFactory.getInstance(SUN_X509);
-      kmf.init(ks, SecUtils.JKS_DEFAULT_PASSWORD.toCharArray());
-      final KeyManager[] keyManagers = kmf.getKeyManagers();
       final SSLContext sslContext = call(()->SSLContext.getInstance(TLSV12));
-      sslContext.init(keyManagers, null, null);
+      sslContext.init(
+        getKeyManagers(keyStore),
+        trustAll ? new TrustManager[]{new TrustAllTrustManager()} : null,
+        null
+      );
       return sslContext.getServerSocketFactory();
     });
   }
 
-  public static final SSLSocketFactory createSocketFactory(final X509Certificate cert){
+  private static final KeyManager[] getKeyManagers(final KeyStore keyStore){
+    return call(()->{
+      final KeyManagerFactory kmf = KeyManagerFactory.getInstance(SUN_X509);
+      kmf.init(keyStore, SecUtils.JKS_DEFAULT_PASSWORD.toCharArray());
+      return kmf.getKeyManagers();
+    });
+  }
+
+  public static final SSLServerSocketFactory createServerSocketFactory(final Path certificateDirectory){
+    return createServerSocketFactory(certificateDirectory, false);
+  }
+
+  public static final SSLServerSocketFactory createServerSocketFactory(
+    final Path certificateDirectory, final boolean trustAll
+  ){
+    createCertificateIfMissing(certificateDirectory);
+    return createServerSocketFactory(
+      createJKSKeyStore(certificateDirectory),
+      trustAll
+    );
+  }
+
+  private static final void createCertificateIfMissing(final Path certificateDirectory){
+    call(()->{
+      Files.createDirectories(certificateDirectory);
+      final Path keyFile = certificateDirectory.resolve(KEY_FILE_NAME);
+      final Path certFile = certFile(certificateDirectory, 0);
+      if(!Files.exists(keyFile)){
+        verify(!Files.exists(certFile));
+        RsaKeyPair.create().encode().write(keyFile);
+      }
+      if(!Files.exists(certFile)){
+        ByteUtils.newBytes(
+          CertificateBuilder.create().build(RsaKeyPair.parse(ByteUtils.read(keyFile))).getEncoded()
+        ).write(certFile);
+      }
+    });
+  }
+
+  public static final SSLSocket connect(
+    final Path certificateDirectory, final PublicKey peer, final InetSocketAddress address
+  ){
+    createCertificateIfMissing(certificateDirectory);
+    return call(()->{
+      final SSLContext sslContext = call(()->SSLContext.getInstance(TLSV12));
+      sslContext.init(
+        getKeyManagers(createJKSKeyStore(certificateDirectory)),
+        new TrustManager[]{new TrustAllTrustManager()},
+        null
+      );
+      boolean success = false;
+      final Socket s = sslContext.getSocketFactory().createSocket(address.getAddress(), address.getPort());
+      try{
+        final SSLSocket socket = (SSLSocket) s;
+        verifyEqual(socket.getSession().getPeerCertificates()[0].getPublicKey(), peer);
+        success = true;
+        return socket;
+      }
+      finally{
+        if(!success) s.close();
+      }
+    });
+  }
+
+  public static final SSLSocketFactory createSocketFactory(final X509Certificate trustedCertificate){
     return call(()->{
       final KeyStore ks = KeyStore.getInstance(JKS);
       ks.load(null, null);
-      ks.setCertificateEntry("cert", cert);
+      ks.setCertificateEntry("cert", trustedCertificate);
       final TrustManagerFactory tmf = TrustManagerFactory.getInstance(PKIX);
       tmf.init(ks);
       final SSLContext sslContext = call(()->SSLContext.getInstance(TLSV12));
       sslContext.init(null, tmf.getTrustManagers() , null);
       return sslContext.getSocketFactory();
     });
+  }
+
+  public static RSAPublicKey getPublicKey(final Path certificateDirectory) {
+    createCertificateIfMissing(certificateDirectory);
+    return RsaKeyPair.parse(ByteUtils.read(certificateDirectory.resolve(KEY_FILE_NAME))).getPublic();
   }
 
 }

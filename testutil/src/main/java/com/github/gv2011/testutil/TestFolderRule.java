@@ -30,6 +30,7 @@ import static com.github.gv2011.util.FileUtils.WORK_DIR;
 import static com.github.gv2011.util.ResourceUtils.tryGetResourceUrl;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
+import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.icol.ICollections.listBuilder;
 import static org.junit.Assert.assertTrue;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -98,10 +99,11 @@ public class TestFolderRule implements TestRule{
 
   private void finished(final Description description, final boolean successful) {
     if(successful && !dontDeleteTestFolder && testFolderCreated.get()){
+      final Path folder = testFolder.get();
       try {
-        FileUtils.delete(testFolder.get());
+        FileUtils.delete(folder);
       } catch (final Exception e) {
-        LOG.warn("Could not delete test folder.", e);
+        LOG.warn(format("Could not delete test folder {}.", folder));
       }
     }
   }

@@ -48,7 +48,7 @@ public final class Verify {
   private Verify(){staticClass();}
 
   public static void verify(final boolean expr) {
-    if(!expr) throw new IllegalStateException();
+    if(!expr) throw new IllegalStateException("Verify failed.");
   }
   public static <T> T verify(final T arg, final Predicate<? super T> predicate) {
     return verify(arg, predicate, a->format("Unexpected: {}", a));
