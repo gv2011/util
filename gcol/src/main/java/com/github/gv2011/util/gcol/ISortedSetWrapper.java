@@ -164,7 +164,17 @@ implements ISortedSet<E>{
   }
 
   @Override
-  public ISortedSet<E> intersection(Collection<?> other) {
+  public XStream<E> descendingStream() {
+    return GuavaIcolFactory.INSTANCE.xStream(delegate.descendingSet().stream());
+  }
+
+  @Override
+  public XStream<E> descendingStream(final E startExclusive) {
+    return GuavaIcolFactory.INSTANCE.xStream(delegate.descendingSet().tailSet(startExclusive, false).stream());
+  }
+
+  @Override
+  public ISortedSet<E> intersection(final Collection<?> other) {
     return intersection(this, other);
   }
 

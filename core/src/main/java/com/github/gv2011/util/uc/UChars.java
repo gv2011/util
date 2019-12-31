@@ -81,4 +81,5 @@ public final class UChars {
   public static IntStream decode(final CloseableIntIterator utf8){
     return UTF8_DECODER.decode(utf8);
   }
+
 }

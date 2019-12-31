@@ -51,11 +51,32 @@ public interface ISet<E> extends Set<E>, ICollectionG<E, ISet<E>>{
   }
 
   @Override
+  default <T> T[] toArray(final T[] a) {
+    return asList().toArray(a);
+  }
+
+  @Override
   default ISet<E> subtract(final Collection<?> other) {
     if(other.isEmpty()) return this;
     else{
       return parallelStream().filter(e->!other.contains(e)).collect(toISet());
     }
+  }
+
+  @Override
+  default XStream<E> stream() {
+      return XStream.stream(spliterator(), false);
+  }
+
+
+  @Override
+  default XStream<E> parallelStream() {
+      return XStream.stream(spliterator(), true);
+  }
+
+  @Override
+  default ISet<E> join(final Collection<? extends E> other) {
+    return parallelStream().concat(other.parallelStream()).collect(toISet());
   }
 
   @Deprecated
@@ -94,20 +115,5 @@ public interface ISet<E> extends Set<E>, ICollectionG<E, ISet<E>>{
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  default XStream<E> stream() {
-      return XStream.stream(spliterator(), false);
-  }
-
-
-  @Override
-  default XStream<E> parallelStream() {
-      return XStream.stream(spliterator(), true);
-  }
-
-  @Override
-  default ISet<E> join(final Collection<? extends E> other) {
-    return parallelStream().concat(other.parallelStream()).collect(toISet());
-  }
 
 }

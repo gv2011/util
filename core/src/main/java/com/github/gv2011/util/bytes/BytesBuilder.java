@@ -39,7 +39,6 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.DigestOutputStream;
-import java.security.MessageDigest;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
@@ -83,7 +82,7 @@ public class BytesBuilder extends FilterOutputStream implements Builder<Bytes>, 
   private void setOut(final OutputStream stream) {
     digest = new DigestOutputStream(
       stream,
-      call(()->MessageDigest.getInstance(Hash256.ALGORITHM))
+      call(()->Hash256.ALGORITHM.createMessageDigest())
     );
     out = digest;
   }

@@ -12,10 +12,10 @@ package com.github.gv2011.util.icol;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -45,13 +45,33 @@ public interface ListAccess<E> {
     return subList(1, size());
   }
 
-  default int indexOf(final Object o){
-    return IntStream.range(0,size()).filter(i->get(i).equals(o)).findFirst().orElse(-1);
+  /**
+   * @return index of first occurence of <ode>obj</code> or -1 if it is not in the collection.
+   */
+  default int indexOf(final Object obj){
+    return IntStream.range(0,size()).filter(i->get(i).equals(obj)).findFirst().orElse(-1);
   }
 
-  default int lastIndexOf(final Object o) {
+  /**
+   * @return index of first occurence of <ode>element</code> or -1 if it is not in the collection.
+   */
+  default int indexOfElement(final E element){
+    return indexOf(element);
+  }
+
+  /**
+   * @return index of last occurence of <ode>obj</code> or -1 if it is not in the list.
+   */
+  default int lastIndexOf(final Object obj) {
     final int size = size();
-    return intRange(size-1,0).filter(i->get(i).equals(o)).findFirst().orElse(-1);
+    return intRange(size-1,0).filter(i->get(i).equals(obj)).findFirst().orElse(-1);
+  }
+
+  /**
+   * @return index of last occurence of <ode>element</code> or -1 if it is not in the list.
+   */
+  default int lastIndexOfElement(final E element) {
+    return lastIndexOf(element);
   }
 
   XStream<E> stream();

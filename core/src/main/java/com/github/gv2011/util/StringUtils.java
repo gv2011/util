@@ -73,11 +73,11 @@ public final class StringUtils {
   }
 
   public static String toLowerCase(final String s) {
-    return s.toLowerCase(Locale.ENGLISH);
+    return s.toLowerCase(Locale.ROOT);
   }
 
   public static String toUpperCase(final String s) {
-    return s.toUpperCase(Locale.ENGLISH);
+    return s.toUpperCase(Locale.ROOT);
   }
 
   public static Optional<String> tryRemovePrefix(final String s, final String prefix) {

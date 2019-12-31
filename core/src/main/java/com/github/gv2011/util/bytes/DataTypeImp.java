@@ -34,7 +34,6 @@ import static com.github.gv2011.util.icol.ICollections.toISortedMap;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import com.github.gv2011.activation.MimeType;
@@ -54,9 +53,12 @@ import com.github.gv2011.util.serviceloader.RecursiveServiceLoader;
 
 public final class DataTypeImp implements DataType {
 
-  private static final Constant<DataTypeProvider> DATA_TYPE_PROVIDER =
+  static final Constant<DataTypeProvider> DATA_TYPE_PROVIDER =
     RecursiveServiceLoader.lazyService(DataTypeProvider.class)
   ;
+
+//  private static final ISet<UChar> ALLOWED_CHARACTERS = UChars.uChar(' ').range(' ');//"()<>@,;:/[]?=\\\"";
+
 
   private final DataType core;
 
@@ -103,16 +105,6 @@ public final class DataTypeImp implements DataType {
   @Computed
   public Opt<Charset> charset() {
     return core.parameters().tryGet(DataType.CHARSET_PARAMETER_NAME).map(Charset::forName);
-  }
-
-  @Override
-  @Computed
-  public MimeType mimeType() {
-    final MimeType mimeType = call(()->new MimeType(primaryType(), subType()));
-    for(final Entry<String, String> e: parameters().entrySet()) {
-      mimeType.setParameter(e.getKey(), e.getValue());
-    }
-    return mimeType;
   }
 
   @Override
@@ -177,6 +169,72 @@ public final class DataTypeImp implements DataType {
     ;
     return builder.buildUnvalidated();
   }
+
+//  private void parse2(final String rawdata) throws MimeTypeParseException {
+//    final int slashIndex = rawdata.indexOf('/');
+//    final int semIndex = rawdata.indexOf(';');
+//    String primaryType;
+//    String subType;
+//    MimeTypeParameterList parameters;
+//    if ((slashIndex < 0) && (semIndex < 0)) {
+//        //    neither character is present, so treat it
+//        //    as an error
+//        throw new MimeTypeParseException("Unable to find a sub type.");
+//    } else if ((slashIndex < 0) && (semIndex >= 0)) {
+//        //    we have a ';' (and therefore a parameter list),
+//        //    but no '/' indicating a sub type is present
+//        throw new MimeTypeParseException("Unable to find a sub type.");
+//    } else if ((slashIndex >= 0) && (semIndex < 0)) {
+//        //    we have a primary and sub type but no parameter list
+//        primaryType = rawdata.substring(0, slashIndex).trim().
+//        toLowerCase(Locale.ENGLISH);
+//        subType = rawdata.substring(slashIndex + 1).trim().
+//        toLowerCase(Locale.ENGLISH);
+//        parameters = new MimeTypeParameterList();
+//    } else if (slashIndex < semIndex) {
+//        //    we have all three items in the proper sequence
+//        primaryType = rawdata.substring(0, slashIndex).trim().
+//        toLowerCase(Locale.ENGLISH);
+//        subType = rawdata.substring(slashIndex + 1, semIndex).trim().
+//        toLowerCase(Locale.ENGLISH);
+//        parameters = new MimeTypeParameterList(rawdata.substring(semIndex));
+//    } else {
+//        // we have a ';' lexically before a '/' which means we
+//  // have a primary type and a parameter list but no sub type
+//        throw new MimeTypeParseException("Unable to find a sub type.");
+//    }
+//
+//    //    now validate the primary and sub types
+//
+//    //    check to see if primary is valid
+//    if (!isValidToken(primaryType))
+//        throw new MimeTypeParseException("Primary type is invalid.");
+//
+//    //    check to see if sub is valid
+//    if (!isValidToken(subType))
+//        throw new MimeTypeParseException("Sub type is invalid.");
+//}
+
+//  private boolean isValidType(final String s) {
+//    UStr.class
+//      final int len = s.length();
+//      if (len > 0) {
+//          for (int i = 0; i < len; ++i) {
+//              final char c = s.charAt(i);
+//              if (!isTokenChar(c)) {
+//                  return false;
+//              }
+//          }
+//          return true;
+//      } else {
+//          return false;
+//      }
+//  }
+
+//  private static boolean isTokenChar(final char c) {
+//    return ((c > 040) && (c < 0177)) && (TSPECIALS.indexOf(c) < 0);
+//}
+
 
   public static final class DataTypeParser implements Parser<DataType>{
     @Override

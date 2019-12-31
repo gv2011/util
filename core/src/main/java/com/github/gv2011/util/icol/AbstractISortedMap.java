@@ -29,6 +29,8 @@ package com.github.gv2011.util.icol;
 import static com.github.gv2011.util.CollectionUtils.pair;
 import static com.github.gv2011.util.icol.ICollections.toISortedMap;
 
+import java.util.Comparator;
+
 
 public abstract class AbstractISortedMap<K extends Comparable<? super K>, V>
 extends AbstractIMap<K,V>
@@ -99,21 +101,6 @@ implements ISortedMap<K,V>{
   }
 
   @Override
-  public ISortedMap<K, V> descendingMap() {
-    final ISortedSet<K> reversed = keySet().descendingSet();
-    return new AbstractISortedMap<K,V>(){
-      @Override
-      public ISortedSet<K> keySet() {
-        return reversed;
-      }
-      @Override
-      public Opt<V> tryGet(final Object key) {
-        return AbstractISortedMap.this.tryGet(key);
-      }
-    };
-  }
-
-  @Override
   public ISortedMap<K, V> subMap(
     final K fromKey, final boolean fromInclusive, final K toKey, final boolean toInclusive
   ) {
@@ -121,6 +108,35 @@ implements ISortedMap<K,V>{
       k->k,
       this::get
     ));
+  }
+
+  @Deprecated
+  @Override
+  public final Comparator<? super K> comparator() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Deprecated
+  @Override
+  public final Entry<K, V> pollFirstEntry() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Deprecated
+  @Override
+  public final Entry<K, V> pollLastEntry() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Deprecated
+  @Override
+  public final ISortedMap<K, V> descendingMap() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public final ISortedSet<K> descendingKeySet(){
+    throw new UnsupportedOperationException();
   }
 
 }

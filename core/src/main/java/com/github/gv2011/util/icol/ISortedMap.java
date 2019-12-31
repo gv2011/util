@@ -39,13 +39,6 @@ public interface ISortedMap<K extends Comparable<? super K>,V> extends IMap<K,V>
   static <K extends Comparable<? super K>,V> ISortedMap<K,V>
   cast(final ISortedMap<? extends K, ? extends V> map){return (ISortedMap<K, V>) map;}
 
-
-  @Deprecated
-  @Override
-  default Comparator<? super K> comparator() {
-    return Comparator.naturalOrder();
-  }
-
   @Override
   ISortedSet<K> keySet();
 
@@ -134,29 +127,9 @@ public interface ISortedMap<K extends Comparable<? super K>,V> extends IMap<K,V>
 
   Opt<Entry<K, V>> tryGetLastEntry();
 
-  @Deprecated
-  @Override
-  default Entry<K, V> pollFirstEntry() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Deprecated
-  @Override
-  default Entry<K, V> pollLastEntry() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  ISortedMap<K, V> descendingMap();
-
   @Override
   default ISortedSet<K> navigableKeySet(){
     return keySet();
-  }
-
-  @Override
-  default ISortedSet<K> descendingKeySet(){
-    return descendingMap().keySet();
   }
 
   @Override
@@ -187,6 +160,35 @@ public interface ISortedMap<K extends Comparable<? super K>,V> extends IMap<K,V>
   default ISortedMap<K, V> tailMap(final K fromKey, final boolean inclusive){
     if(isEmpty()) return this;
     else return subMap(fromKey, inclusive, lastKey(), true);
+  }
+
+  @Deprecated
+  @Override
+  default Comparator<? super K> comparator() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Deprecated
+  @Override
+  default Entry<K, V> pollFirstEntry() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Deprecated
+  @Override
+  default Entry<K, V> pollLastEntry() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Deprecated
+  @Override
+  default ISortedMap<K, V> descendingMap() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  default ISortedSet<K> descendingKeySet(){
+    throw new UnsupportedOperationException();
   }
 
 }

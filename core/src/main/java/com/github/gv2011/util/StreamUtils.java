@@ -77,6 +77,23 @@ public final class StreamUtils {
     });
   }
 
+  public static long countAndClose(final ThrowingSupplier<InputStream> in){
+    return callWithCloseable(in, s->{
+      return count(s);
+    });
+  }
+
+  public static long count(final InputStream s){
+    final byte[] buffer = new byte[1024];
+    long count = 0;
+    int read = call(()->s.read(buffer));
+    while(read!=-1){
+      count += read;
+      read = call(()->s.read(buffer));
+    }
+    return count;
+  }
+
   public static long copy(final ThrowingSupplier<InputStream> in, final OutputStream out) {
     final byte[] buffer = new byte[1024];
     return callWithCloseable(in, s->{

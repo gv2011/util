@@ -52,6 +52,20 @@ public interface XStream<E> extends Stream<E>, AutoCloseableNt{
 
   XStream<E> concat(final Stream<? extends E> other);
 
+  /**
+   * Use {@link #tryFindFirst} instead.
+   */
+  @Override
+  @Deprecated
+  Optional<E> findFirst();
+
+  /**
+   * Use {@link #tryFindAny} instead.
+   */
+  @Override
+  @Deprecated
+  Optional<E> findAny();
+
   default Opt<E> tryFindFirst(final Predicate<? super E> predicate) {
     return filter(predicate).tryFindFirst();
   }
@@ -125,8 +139,12 @@ public interface XStream<E> extends Stream<E>, AutoCloseableNt{
 
   @SafeVarargs
   public static<T> XStream<T> of(final T... values) {
-      return xStream(Arrays.stream(values));
-  }
+    return xStream(Arrays.stream(values));
+}
+
+  public static<T> XStream<T> ofArray(final T[] values) {
+    return xStream(Arrays.stream(values));
+}
 
   public static <E> XStream<E> pStream(final Stream<E> s){
     return ICollections.pStream(s);

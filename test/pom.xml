@@ -97,5 +97,11 @@
       <version>${util.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>http</artifactId>
+      <version>${util.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>

@@ -12,10 +12,10 @@ package com.github.gv2011.util.bytes;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -42,13 +42,11 @@ public final class DataTypes {
   public static final String APPLICATION = "application";
   public static final String OCTET_STREAM = "octet-stream";
   public static final DataType APPLICATION_OCTET_STREAM = parse(APPLICATION+"/"+OCTET_STREAM);
-  public static final DataType SHA_256 = parse(APPLICATION+"/x-sha-256");
 
   public static final String TEXT = "text";
   public static final String PLAIN = "plain";
   public static final DataType TEXT_PLAIN = parse(TEXT+"/"+PLAIN);
   public static final DataType TEXT_PLAIN_UTF_8 = parse(TEXT_PLAIN+";"+CHARSET_PARAMETER_NAME+"="+UTF_8.name());
-
 
   public ISet<DataType> getAllKnownDataTypes() {
     return

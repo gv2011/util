@@ -12,10 +12,10 @@ package com.github.gv2011.util.uc;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,7 +33,7 @@ public interface UChar extends Comparable<UChar>{
 
   static final int MAX_ISO = 0x100-1;
   static final int MAX_BMP = 0x10000-1;
-  
+
   static final UChar REPLACEMENT_CHARACTER = UCharImp.REPLACEMENT_CHARACTER;
 
   String name();

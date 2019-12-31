@@ -51,6 +51,10 @@ public class TimeUtils {
     Clock.INSTANCE.get().await(instant);
   }
 
+  public static void sleep(final Duration duration){
+    Clock.INSTANCE.get().sleep(duration);
+  }
+
   public static Duration parseHours(final String withColons) {
     final Matcher matcher = HOURS.matcher(withColons);
     verify(withColons, t->matcher.matches());

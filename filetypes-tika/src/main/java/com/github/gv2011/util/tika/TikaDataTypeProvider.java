@@ -1,5 +1,7 @@
 package com.github.gv2011.util.tika;
 
+import static com.github.gv2011.util.StringUtils.removePrefix;
+import static com.github.gv2011.util.StringUtils.toLowerCase;
 /*-
  * #%L
  * filetypes-tika
@@ -12,10 +14,10 @@ package com.github.gv2011.util.tika;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -39,9 +41,9 @@ import org.apache.tika.mime.MimeTypes;
 
 import com.github.gv2011.util.Constant;
 import com.github.gv2011.util.Constants;
-import static com.github.gv2011.util.StringUtils.*;
 import com.github.gv2011.util.bytes.DataType;
 import com.github.gv2011.util.bytes.DataTypeProvider;
+import com.github.gv2011.util.bytes.DefaultDataTypeProvider;
 import com.github.gv2011.util.bytes.FileExtension;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.ISortedSet;
@@ -62,10 +64,14 @@ public final class TikaDataTypeProvider implements DataTypeProvider{
 
   private static ISet<DataType> obtainKnownDataTypes(final MimeTypes mimeTypes) {
     final MediaTypeRegistry registry = mimeTypes.getMediaTypeRegistry();
-    return registry.getTypes().parallelStream()
-      .flatMap(t->Stream.concat(Stream.of(t),registry.getAliases(t).parallelStream()))
-      .distinct()
-      .map(m->TikaDataTypeProvider.convertToDataType(m))
+    return
+      new DefaultDataTypeProvider().knownDataTypes().stream()
+      .concat(
+        registry.getTypes().parallelStream()
+        .flatMap(t->Stream.concat(Stream.of(t),registry.getAliases(t).parallelStream()))
+        .distinct()
+        .map(m->TikaDataTypeProvider.convertToDataType(m))
+      )
       .collect(toISet())
     ;
   }

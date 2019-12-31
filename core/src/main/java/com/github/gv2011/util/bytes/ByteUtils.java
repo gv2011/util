@@ -52,6 +52,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.IntStream;
 
+import com.github.gv2011.util.FileUtils;
 import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.ex.ThrowingSupplier;
 import com.github.gv2011.util.icol.Opt;
@@ -121,12 +122,12 @@ public class ByteUtils {
 
   public static Hash256 hash(final String text){
     return call(()->
-      new Hash256Imp(MessageDigest.getInstance(Hash256Imp.ALGORITHM).digest(text.getBytes(UTF_8)))
+      new Hash256Imp(Hash256Imp.ALGORITHM.createMessageDigest().digest(text.getBytes(UTF_8)))
     );
   }
 
   public static Pair<InputStream,Supplier<Hash256>> hashStream(final InputStream in){
-    final MessageDigest md = call(()->MessageDigest.getInstance(Hash256.ALGORITHM));
+    final MessageDigest md = call(()->Hash256Imp.ALGORITHM.createMessageDigest());
     final InputStream din = new DigestInputStream(in, md);
     return pair(din, ()->new Hash256Imp(md));
   }
@@ -207,14 +208,14 @@ public class ByteUtils {
     return Files.exists(file) ? Opt.of(read(file)) : Opt.empty();
   }
 
-  //TODO remove
-  //  @Deprecated//Use read instead.
-  //  public static Bytes newFileBytes(final Path file) {
-  //    return read(file);
-  //  }
-
   public static Bytes read(final Path file) {
     return new FileBytes(file);
+  }
+
+  public static TypedBytes readTyped(final Path file) {
+    final DataType dataType = DataTypeProvider.instance().dataTypeForExtension(FileUtils.getExtension(file));
+    final FileBytes bytes = new FileBytes(file);
+    return new DefaultTypedBytes(bytes, dataType);
   }
 
   public static BytesBuilder newBytesBuilder() {

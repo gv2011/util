@@ -61,7 +61,9 @@ public interface ICollection<E> extends Collection<E>{
     else return Opt.of(iterator().next());
   }
 
-
+  default boolean containsElement(final E element){
+    return contains(element);
+  }
 
   @Override
   @Deprecated

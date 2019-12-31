@@ -220,7 +220,7 @@ public abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
 
   protected Hash256 hashImp() {
     checkNotClosed();
-    final MessageDigest md = call(()->MessageDigest.getInstance(Hash256.ALGORITHM));
+    final MessageDigest md = call(()->Hash256.ALGORITHM.createMessageDigest());
     for(final byte b:this) md.update(b);
     return new Hash256Imp(md);
   }

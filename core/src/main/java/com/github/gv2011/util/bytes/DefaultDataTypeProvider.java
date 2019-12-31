@@ -26,14 +26,16 @@ package com.github.gv2011.util.bytes;
  * #L%
  */
 import static com.github.gv2011.util.bytes.DataTypes.APPLICATION_OCTET_STREAM;
-import static com.github.gv2011.util.bytes.DataTypes.SHA_256;
 import static com.github.gv2011.util.bytes.DataTypes.TEXT_PLAIN;
 import static com.github.gv2011.util.icol.ICollections.emptySortedSet;
-import static com.github.gv2011.util.icol.ICollections.setOf;
 import static com.github.gv2011.util.icol.ICollections.sortedSetOf;
 import static com.github.gv2011.util.icol.ICollections.toIList;
 import static com.github.gv2011.util.icol.ICollections.toISet;
 
+import java.util.Arrays;
+
+import com.github.gv2011.util.HashAlgorithm;
+import com.github.gv2011.util.XStream;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.ISortedSet;
@@ -45,7 +47,11 @@ public final class DefaultDataTypeProvider implements DataTypeProvider{
 
   @Override
   public ISet<DataType> knownDataTypes() {
-    return setOf(TEXT_PLAIN, APPLICATION_OCTET_STREAM, SHA_256);
+    return
+      XStream.of(TEXT_PLAIN, APPLICATION_OCTET_STREAM)
+      .concat(Arrays.stream(HashAlgorithm.values()).map(HashAlgorithm::getDataType))
+      .collect(toISet())
+    ;
   }
 
   @Override

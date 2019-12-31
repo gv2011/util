@@ -48,13 +48,6 @@ public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, Na
   cast(final ISortedSet<? extends E> set){return (ISortedSet<E>) set;}
 
   @Override
-  @Deprecated
-  @SuppressWarnings({ "unchecked", "rawtypes" })
-  default Comparator<E> comparator() {
-    return (Comparator)Comparator.naturalOrder();
-  }
-
-  @Override
   default ISortedSet<E> subSet(final E fromElement, final E toElement){
     return this.subSet(fromElement, true, toElement, false);
   }
@@ -86,14 +79,6 @@ public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, Na
 
 
   @Override
-  ISortedSet<E> descendingSet();
-
-  @Override
-  default Iterator<E> descendingIterator(){
-    return descendingSet().iterator();
-  }
-
-  @Override
   default ISortedSet<E> subtract(final Collection<?> other) {
     if(other.isEmpty()) return this;
     else{
@@ -103,6 +88,10 @@ public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, Na
 
   @Override
   XStream<E> stream();
+
+  XStream<E> descendingStream();
+
+  XStream<E> descendingStream(E startExclusive);
 
   Opt<E> tryGetLast();
 
@@ -158,18 +147,6 @@ public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, Na
    */
   Opt<E> tryGetHigher(E e);
 
-  @Deprecated
-  @Override
-  default E pollFirst() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Deprecated
-  @Override
-  default E pollLast() {
-    throw new UnsupportedOperationException();
-  }
-
   @Override
   default E get(final int index){
     //TODO more efficient implementation
@@ -190,10 +167,34 @@ public interface ISortedSet<E extends Comparable<? super E>> extends ISet<E>, Na
     }
     return result;
   }
-  
-  
+
+
   @Override
   ISortedSet<E> intersection(Collection<?> other);
+
+  @Deprecated
+  @Override
+  default E pollFirst() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Deprecated
+  @Override
+  default E pollLast() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  @Deprecated
+  default Comparator<E> comparator() {
+    return null;
+  }
+
+  @Override
+  @Deprecated
+  default NavigableSet<E> descendingSet(){
+    throw new UnsupportedOperationException();
+  }
 
 
 }
