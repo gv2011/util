@@ -3,7 +3,6 @@ package com.github.gv2011.util.uc;
 import java.text.Collator;
 import java.util.Arrays;
 import java.util.Locale;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.junit.Test;

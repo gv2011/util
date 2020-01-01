@@ -167,6 +167,7 @@ public final class Explorer<E> implements AutoCloseableNt{
     final AtomicReference<JFrame> ref = new AtomicReference<>();
     call(()->
       SwingUtilities.invokeAndWait(()->{
+        @SuppressWarnings("resource")
         final ExplorerPanel explorerPanel = new ExplorerPanel();
         final JFrame frame = new JFrame(Explorer.class.getSimpleName()) {
           @Override

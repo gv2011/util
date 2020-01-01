@@ -96,7 +96,7 @@ public final class ImmutableBeansModule extends Module{
         }
 
         private <T> JsonSerializer<T> createSerializer(final TypeSupport<T> type) {
-            return new JsonSerializer<T>() {
+            return new JsonSerializer<>() {
                 @Override
                 public void serialize(
                     final T value, final JsonGenerator gen, final SerializerProvider serializers
@@ -128,7 +128,7 @@ public final class ImmutableBeansModule extends Module{
 
         private <T> JsonDeserializer<T> createDeserializer(final Class<T> clazz) {
             final TypeSupport<T> type = typeRegistry.type(clazz);
-            return new JsonDeserializer<T>() {
+            return new JsonDeserializer<>() {
                 @Override
                 public T deserialize(
                     final JsonParser p, final DeserializationContext ctxt

@@ -227,7 +227,22 @@ public final class Exceptions {
     return Nothing.INSTANCE;
   }
 
-  /**
+  public static <CI extends AutoCloseable, CO extends AutoCloseable> CO wrapCloseable(
+    final CI inner, final ThrowingFunction<CI, CO> wrapping
+  ) {
+    boolean success = false;
+    try {
+      final CO result = wrapping.apply(inner);
+      success = false;
+      return result;
+    } catch (final Exception e) {
+      throw wrap(e);
+    } finally {
+      if(!success) call(inner::close);
+    }
+  }
+
+	  /**
    * Lazy creation because of bootstrapping.
    */
   private static Logger getLogger() {

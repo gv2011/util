@@ -39,7 +39,7 @@ import com.github.gv2011.util.icol.Opt;
 final class OptionalMatchers {
 
   static <T> Matcher<Optional<T>> isPresent() {
-    return new TypeSafeMatcher<Optional<T>>(){
+    return new TypeSafeMatcher<>(){
       @Override
       public void describeTo(final Description description) {
         description.appendText("A non-empty optional.");
@@ -52,7 +52,7 @@ final class OptionalMatchers {
   }
 
   static <T> Matcher<Optional<T>> isEmpty() {
-    return new TypeSafeMatcher<Optional<T>>(){
+    return new TypeSafeMatcher<>(){
       @Override
       public void describeTo(final Description description) {
         description.appendText("An empty optional.");
@@ -65,7 +65,7 @@ final class OptionalMatchers {
   }
 
   static <T> Matcher<Opt<T>> isOpt(final T value) {
-    return new TypeSafeMatcher<Opt<T>>(){
+    return new TypeSafeMatcher<>(){
       @Override
       public void describeTo(final Description description) {
         description.appendText(format("An optional of {}.", value));

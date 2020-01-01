@@ -81,7 +81,6 @@ public class TikaDataTypeProviderTest {
     .entrySet().stream()
     .sorted(Comparator.comparing(Entry::getKey))
     .forEach(System.out::println);
-    ;
   }
 
   @Test

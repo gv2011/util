@@ -34,7 +34,7 @@ import com.github.gv2011.util.tstr.TypedString;
  */
 public abstract class TestModel implements Bean{
 
-  public static interface Id extends TypedString<Id>{};
+  public static interface Id extends TypedString<Id>{}
 
   public abstract Integer number1();
 

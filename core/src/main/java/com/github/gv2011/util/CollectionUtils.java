@@ -387,23 +387,6 @@ public final class CollectionUtils {
     return XStream.of(root).concat(children.apply(root).flatMap(c->recursiveStream(c,children)));
   }
 
-    /**
-     * Returns a sequential ordered {@code IntStream} from {@code fromExclusive}
-     * (exclusive) to {@code toInclusive} (inclusive) by an incremental or decremental step of
-     * {@code 1}.
-     *
-     * <p>An equivalent sequence of increasing values can be produced
-     * sequentially using a {@code for} loop as follows:
-     * <pre>{@code
-     *     final int increment = endExclusive >= startInclusive ? 1 : -1;
-     *     for (int i = startInclusive; i != endExclusive ; i+=increment) { ... }
-     * }</pre>
-     *
-     * @param startExclusive the (exclusive) initial value
-     * @param endInclusive the inclusive lower bound
-     * @return a sequential {@code IntStream} for the range of {@code int}
-     *         elements from higher to lower values
-     */
   public static IntStream intRange(final int startInclusive, final int endExclusive){
     final int size = endExclusive - startInclusive;
     if(size>=1) return IntStream.range(startInclusive, endExclusive);

@@ -30,7 +30,6 @@ import static com.github.gv2011.util.ex.Exceptions.call;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -38,15 +37,15 @@ import java.time.Duration;
 
 import com.github.gv2011.util.AutoCloseableNt;
 import com.github.gv2011.util.Nothing;
-import com.github.gv2011.util.main.MainUtils;
 import com.github.gv2011.util.main.MainUtils.ServiceBuilder;
 import com.github.gv2011.util.time.Clock;
 import com.github.gv2011.util.time.SimpleLatch;
 
 public class MainUtilsTest {
 
-  public static void main(final String[] args) throws IOException{
+  public static void main(final String[] args){
     // Files.deleteIfExists(Paths.get("logback.xml"));
+    @SuppressWarnings("resource")
     final MainUtils mainUtils = MainUtils.create(args, new TestServiceBuilder(), Nothing.class);
     new Thread(()->{
       final Clock clock = Clock.INSTANCE.get();

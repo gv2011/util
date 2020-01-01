@@ -34,7 +34,7 @@ import java.util.stream.Stream;
 import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonPrimitive;
 
-abstract class JsonPrimitiveImp<P> extends AbstractJsongNode implements JsongNode, JsonPrimitive<P> {
+abstract class JsonPrimitiveImp<P> extends AbstractJsongNode implements JsonPrimitive<P> {
 
   private final JsonFactoryImp f;
   final P value;

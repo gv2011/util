@@ -306,7 +306,7 @@ public final class Matchers {
    * <pre>assertThat(cheese, is(instanceOf(Cheddar.class)))</pre>
    */
   public static Matcher<Object> isA(final Class<?> type) {
-    return new TypeSafeMatcher<Object>(){
+    return new TypeSafeMatcher<>(){
 
       @Override
       public void describeTo(final Description description) {
@@ -324,7 +324,7 @@ public final class Matchers {
   }
 
   public static Matcher<Object> toStringIs(final String str) {
-    return new TypeSafeMatcher<Object>(){
+    return new TypeSafeMatcher<>(){
 
       @Override
       public void describeTo(final Description description) {
@@ -1033,7 +1033,7 @@ public final class Matchers {
    * For example:
    * <pre>assertThat(Arrays.asList("foo"), containsInAnyOrder(equalTo("foo")))</pre>
    *
-   * @deprecated use contains(Matcher<? super E> itemMatcher) instead
+   * @deprecated use contains(Matcher&lt;? super E&gt; itemMatcher) instead
    * @param itemMatcher
    *     the matcher that must be satisfied by the single item provided by an
    *     examined {@link Iterable}
@@ -1559,7 +1559,7 @@ public final class Matchers {
   }
 
   public static Matcher<Object> hasClass(final Class<?> clazz) {
-    return new TypeSafeMatcher<Object>(){
+    return new TypeSafeMatcher<>(){
       @Override
       public void describeTo(final Description description) {
         description.appendText(format("An object of {}.", clazz));
@@ -1576,7 +1576,7 @@ public final class Matchers {
   }
 
   public static Matcher<Bytes> isBytesWithSize(final long size) {
-    return new TypeSafeMatcher<Bytes>(){
+    return new TypeSafeMatcher<>(){
       @Override
       public void describeTo(final Description description) {
         description.appendText(format("Bytes with size {}.", size));
@@ -1591,7 +1591,7 @@ public final class Matchers {
 
   public static Matcher<Bytes> isBytes(final String hex) {
     final Bytes expected = ByteUtils.parseHex(hex);
-    return new TypeSafeMatcher<Bytes>(){
+    return new TypeSafeMatcher<>(){
       @Override
       public void describeTo(final Description description) {
         description.appendText(format("Bytes with content {}.", expected));
@@ -1608,7 +1608,7 @@ public final class Matchers {
   }
 
   public static <T> Matcher<T> meets(final Predicate<? super T> predicate, final Function<? super T, String> message) {
-    return new TypeSafeMatcher<T>(){
+    return new TypeSafeMatcher<>(){
       @Override
       protected boolean matchesSafely(final T item) {
         return predicate.test(item);
@@ -1624,7 +1624,7 @@ public final class Matchers {
   }
 
   public static <C extends Collection<T>,T> Matcher<C> isUnique(final Function<? super T,?> f) {
-    return new TypeSafeMatcher<C>(){
+    return new TypeSafeMatcher<>(){
       @Override
       public void describeTo(final Description description) {
         description.appendText("A collection that mappes to unique values.");

@@ -1,7 +1,9 @@
 package com.github.gv2011.util;
 
+import static com.github.gv2011.testutil.Assert.assertFalse;
+import static com.github.gv2011.testutil.Assert.assertThat;
+import static com.github.gv2011.testutil.Assert.assertTrue;
 import static org.hamcrest.Matchers.is;
-import static com.github.gv2011.testutil.Assert.*;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;
@@ -12,7 +14,7 @@ public class ServiceLoaderUtilsTest {
 
   public static interface Service{}
 
-  public static class ServiceImpl implements Service{};
+  public static class ServiceImpl implements Service{}
 
   @Test
   public void testLoadService() {

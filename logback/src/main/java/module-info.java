@@ -7,6 +7,8 @@ module com.github.gv2011.util.log.logback{
   requires transitive ch.qos.logback.classic;
   requires transitive ch.qos.logback.core;
 
+  requires java.logging;
+
   exports com.github.gv2011.util.log.logback to com.github.gv2011.util;
 
   provides ch.qos.logback.classic.spi.Configurator with com.github.gv2011.util.log.logback.LogbackConfigurator;

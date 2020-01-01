@@ -37,7 +37,7 @@ import com.github.gv2011.util.json.JsonNull;
 import com.github.gv2011.util.json.JsonWriter;
 
 
-final class JsonNullImp extends AbstractJsongNode implements JsongNode, JsonNull{
+final class JsonNullImp extends AbstractJsongNode implements JsonNull{
 
   private final JsonFactoryImp f;
 

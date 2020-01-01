@@ -443,7 +443,7 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
 
 
   private static <B> Partial<B> createEmptyPartial() {
-      return new Partial<B>() {
+      return new Partial<>() {
           @Override
           public boolean isAvailable(final Property<?> p) {return false;}
           @Override

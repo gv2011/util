@@ -114,7 +114,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
   static <T> AbstractElementaryTypeHandler<T> stringBasedType(
     final Function<? super String,T> constructor, final Opt<T> defaultValue
   ) {
-    return new AbstractElementaryTypeHandler<T>() {
+    return new AbstractElementaryTypeHandler<>() {
       @Override
       public T fromJson(final JsonNode json) {
         return constructor.apply(json.asString());

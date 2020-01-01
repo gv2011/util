@@ -103,7 +103,7 @@ public class TestFolderRule implements TestRule{
       try {
         FileUtils.delete(folder);
       } catch (final Exception e) {
-        LOG.warn(format("Could not delete test folder {}.", folder));
+        LOG.warn(format("Could not delete test folder {}.", folder), e);
       }
     }
   }

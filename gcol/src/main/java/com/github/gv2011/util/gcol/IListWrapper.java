@@ -114,7 +114,6 @@ class IListWrapper<E> implements IList<E>{
     if(cached==null){
       result = delegate.hashCode();
       hashCode = result;
-      return result;
     }
     else{
       result = cached;
@@ -170,8 +169,11 @@ class IListWrapper<E> implements IList<E>{
 
   @Override
   public IList<E> reversed() {
-    if(delegate.getClass().equals(RList.class)) return new IListWrapper<>(((RList<E>)delegate).delegate);
-    else return new IListWrapper<>(new RList<>(delegate));
+    return new IListWrapper<>(
+		delegate.getClass().equals(RList.class)
+		? ((RList<E>)delegate).delegate
+		: new RList<>(delegate)
+	);
   }
 
 }

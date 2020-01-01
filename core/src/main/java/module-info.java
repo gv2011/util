@@ -12,6 +12,7 @@ module com.github.gv2011.util{
   uses com.github.gv2011.util.json.JsonFactory;
 
   exports com.github.gv2011.util;
+  exports com.github.gv2011.util.context;
   exports com.github.gv2011.util.ex;
   exports com.github.gv2011.util.icol;
   exports com.github.gv2011.util.sec;

@@ -64,7 +64,7 @@ public class HtmlBuilderImpTest {
       final JsonObject msg = listOf(pair("expected", prefix+remaining), pair("actual", html)).stream()
         .collect(jf.toJsonObject(Pair::getKey, p->jf.primitive(p.getValue())));
       fail(msg.serialize());
-    };
+    }
     System.out.println(html);
   }
 

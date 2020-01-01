@@ -32,7 +32,6 @@ import static com.github.gv2011.util.ex.Exceptions.call;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-
 import java.util.function.Function;
 
 import com.github.gv2011.util.icol.Opt;
@@ -60,7 +59,7 @@ final class AutoElementarySupport {
             .filter(m->m.getParameterTypes().length==1)
             .filter(m->m.getParameterTypes()[0].equals(String.class))
             .filter(m->clazz.isAssignableFrom(m.getReturnType()))
-            .collect(toOpt());
+            .collect(toOpt())
           ;
           result = factoryMethod.map(m->s->clazz.cast(call(()->m.invoke(null, s))));
         }

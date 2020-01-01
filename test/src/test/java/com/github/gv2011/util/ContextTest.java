@@ -114,7 +114,7 @@ public class ContextTest {
     final ForkJoinWorkerThread t = new ForkJoinWorkerThread(pool) {};
     t.setDaemon(false);
     return t;
-  };
+  }
 
   private final void doTest() {
       IntStream.range(0,100).parallel()

@@ -72,6 +72,23 @@ public final class Comparison {
     return diff>=0?c1:c2;
   }
 
+  public static <C extends Comparable<? super C>> boolean lessThan(final C c1, final C c2){
+    return c1.compareTo(c2)<0;
+  }
+
+  public static <C extends Comparable<? super C>> boolean lessOrEqual(final C c1, final C c2){
+    return c1.compareTo(c2)<=0;
+  }
+
+  public static <C extends Comparable<? super C>> boolean greaterThan(final C c1, final C c2){
+    return c1.compareTo(c2)>0;
+  }
+
+  public static <C extends Comparable<? super C>> boolean greaterOrEqual(final C c1, final C c2){
+    return c1.compareTo(c2)>=0;
+  }
+
+
   @SuppressWarnings("unchecked")
   public static <C extends Comparable<? super C>> Comparator<Opt<C>> optComparator(){
     return OPT_COMPARATOR;

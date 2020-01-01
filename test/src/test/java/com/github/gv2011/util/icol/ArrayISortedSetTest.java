@@ -11,18 +11,17 @@ import org.junit.Test;
 public class ArrayISortedSetTest {
 
   @Test
-  public void testSubSetEBooleanEBoolean() {
+  public void testSubSet() {
     final NavigableSet<Character> treeSet = new TreeSet<>();
     for(char c='b'; c<='h'; c++) treeSet.add(c);
     treeSet.remove('c');
     final ArrayISortedSet<Character> arrayISortedSet = new ArrayISortedSet<>(treeSet);
     for(char from='a'; from<='i'; from++){
-      for(char to='a'; to<='i'; to++){
+      for(char to=from; to<='i'; to++){
         final NavigableSet<Character> expected = treeSet.subSet(from, false, to, false);
         final NavigableSet<Character> actual = arrayISortedSet.subSet(from, false, to, false);
         assertThat(from+" "+to, actual, is(expected));
       }
     }
   }
-
 }

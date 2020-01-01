@@ -101,7 +101,7 @@ public abstract class AbstractTest {
     final String local = getLocalResourceName(base, extension);
     final URL url = ResourceUtils.getResourceUrl(base, local);
     final Bytes expected = copyFromStream(url::openStream);
-    return new TypeSafeMatcher<Bytes>(){
+    return new TypeSafeMatcher<>(){
       @Override
       public void describeTo(final Description description) {
         description.appendText(format("A byte array with same content as resource {} ({}).", local, base));

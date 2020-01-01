@@ -235,7 +235,7 @@ public class DefaultTypeRegistry implements TypeRegistry{
   }
 
   private <T> ForeignType<T> createForeignType(final Class<T> clazz) {
-    return new ForeignType<T>(jf, clazz);
+    return new ForeignType<>(jf, clazz);
   }
 
   private boolean isTypedStringType(final Class<?> clazz) {
