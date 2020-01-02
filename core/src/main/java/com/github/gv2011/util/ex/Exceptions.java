@@ -200,6 +200,25 @@ public final class Exceptions {
     catch(final Exception ex){throw wrap(ex);}
   }
 
+  public static <C extends AutoCloseable, I extends AutoCloseable, R> R callWithCloseable(
+    final ThrowingSupplier<C> supplier,
+    final ThrowingFunction<C,I> wrapper,
+    final ThrowingFunction<I,R> function
+  ){
+    @Nullable I wrapped = null;
+    try{
+      final C closeable = supplier.get();
+      try{
+        wrapped = wrapper.apply(closeable);
+        return function.apply(wrapped);
+      }finally{
+        if(wrapped == null) closeable.close();
+        else wrapped.close();
+      }
+    }
+    catch(final Exception ex){throw wrap(ex);}
+  }
+
   public static <C extends AutoCloseable> Nothing callWithCloseable(
     final ThrowingSupplier<C> supplier, final ThrowingConsumer<C> consumer
   ){

@@ -45,6 +45,7 @@
     <module>filetypes-tika</module>
     <module>gcol</module>
     <module>http</module>
+    <module>image</module>
     <module>jacksonadapter</module>
     <module>json</module>
     <module>jsong</module>
