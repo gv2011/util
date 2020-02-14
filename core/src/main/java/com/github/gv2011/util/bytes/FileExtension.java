@@ -12,10 +12,10 @@ package com.github.gv2011.util.bytes;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,19 +29,25 @@ import static com.github.gv2011.util.Verify.verify;
 
 import java.util.regex.Pattern;
 
-import com.github.gv2011.util.StringUtils;
 import com.github.gv2011.util.tstr.AbstractTypedString;
+import com.github.gv2011.util.uc.UChars;
+import com.github.gv2011.util.uc.UStr;
 
 public final class FileExtension extends AbstractTypedString<FileExtension>{
 
   private static final Pattern PATTERN = Pattern.compile("\\w[\\-\\w\\.\\+]*");
 
-  private final String extension;
+  private final UStr extension;
+
 
   public FileExtension(final String extension) {
+    this(UChars.uStr(extension));
+  }
+
+  public FileExtension(final UStr extension) {
     if(!extension.isEmpty()){
-      verify(extension, StringUtils::isLowerCase);
-      verify(extension, e->PATTERN.matcher(e).matches());
+      verify(extension.isLowerCase());
+      verify(extension, e->PATTERN.matcher(e.toString()).matches());
     }
     this.extension = extension;
   }
@@ -58,7 +64,17 @@ public final class FileExtension extends AbstractTypedString<FileExtension>{
 
   @Override
   public String toString() {
-    return extension;
+    return extension.toString();
+  }
+
+  @Override
+  public int getCodePoint(final int index) {
+    return extension.getCodePoint(index);
+  }
+
+  @Override
+  public int size() {
+    return extension.size();
   }
 
 }

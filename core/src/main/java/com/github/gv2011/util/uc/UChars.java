@@ -1,5 +1,6 @@
 package com.github.gv2011.util.uc;
 
+import static com.github.gv2011.util.Verify.verify;
 /*-
  * #%L
  * The MIT License (MIT)
@@ -32,11 +33,17 @@ import java.util.function.IntUnaryOperator;
 import java.util.stream.IntStream;
 
 import com.github.gv2011.util.CloseableIntIterator;
+import com.github.gv2011.util.bytes.BmpStrImp;
+import com.github.gv2011.util.bytes.Bytes;
 
 public final class UChars {
 
   private static final UStrFactory FACTORY = new UStrFactoryImp();
   private static final Utf8Decoder UTF8_DECODER = new Utf8Decoder();
+
+  public static final int CAPITAL_SHARP_S_CP = 0x1e9e;
+  public static final UChar CAPITAL_SHARP_S = verify(FACTORY.uChar("ẞ"), c->c.codePoint()==CAPITAL_SHARP_S_CP);
+  public static final UChar TAB = FACTORY.uChar('\t');
 
   public static UStrFactory uStrFactory(){
     return FACTORY;
@@ -80,6 +87,19 @@ public final class UChars {
 
   public static IntStream decode(final CloseableIntIterator utf8){
     return UTF8_DECODER.decode(utf8);
+  }
+
+  public static UStr toHex(final Bytes bytes){
+    final int s = size();
+    final char[] result = new char[s==0?0:s*3-1];
+    int i=0;
+    for(final byte b: this){
+      result[i*3] = HEX_CHARS.charAt((b>>4) & 0xF);
+      result[i*3+1] = HEX_CHARS.charAt(b & 0xF);
+      if(i<s-1)result[i*3+2] = ' ';
+      i++;
+    }
+    return new BmpStrImp(result);
   }
 
 }

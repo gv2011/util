@@ -28,15 +28,16 @@ package com.github.gv2011.util.uc;
 import java.lang.Character.UnicodeScript;
 
 import com.github.gv2011.util.CharacterType;
+import com.github.gv2011.util.beans.Value;
 
-public interface UChar extends Comparable<UChar>{
+public interface UChar extends Value, Comparable<UChar>{
 
   static final int MAX_ISO = 0x100-1;
   static final int MAX_BMP = 0x10000-1;
 
   static final UChar REPLACEMENT_CHARACTER = UCharImp.REPLACEMENT_CHARACTER;
 
-  String name();
+  UStr name();
 
   int codePoint();
 
@@ -54,6 +55,6 @@ public interface UChar extends Comparable<UChar>{
 
   boolean inBaseSet();
 
-  String printable();
+  UStr printable();
 
 }

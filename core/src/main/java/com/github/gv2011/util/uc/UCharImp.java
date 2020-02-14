@@ -28,6 +28,7 @@ package com.github.gv2011.util.uc;
 
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.format;
+import static com.github.gv2011.util.uc.UChars.uStr;
 
 import java.lang.Character.UnicodeScript;
 
@@ -130,8 +131,8 @@ abstract class UCharImp implements UChar{
   }
 
   @Override
-  public final String name(){
-    return Opt.ofNullable(Character.getName(codePoint())).orElse("");
+  public final UStr name(){
+    return Opt.ofNullable(Character.getName(codePoint())).map(UChars::uStr).orElse(UStrImp.EMPTY);
   }
 
   @Override
@@ -179,9 +180,9 @@ abstract class UCharImp implements UChar{
   }
 
   @Override
-  public final String printable(){
-    if(inBaseSet()) return toString();
-    else return "\\"+Integer.toHexString(codePoint())+"\\";
+  public final UStr printable(){
+    if(inBaseSet()) return toStr();
+    else return uStr("\\"+Integer.toHexString(codePoint())+"\\");
   }
 
   @Override

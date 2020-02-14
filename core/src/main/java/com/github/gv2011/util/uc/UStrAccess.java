@@ -12,10 +12,10 @@ package com.github.gv2011.util.uc;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,29 +25,48 @@ package com.github.gv2011.util.uc;
  * THE SOFTWARE.
  * #L%
  */
-import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 
-final class Iso8859_1String extends UStrImp{
+import com.github.gv2011.util.Immutable;
+import com.github.gv2011.util.StringUtils;
+import com.github.gv2011.util.bytes.ByteUtils;
+import com.github.gv2011.util.bytes.TypedBytes;
+import com.github.gv2011.util.icol.IList;
 
-    private final byte[] chars;
+public interface UStrAccess extends Immutable, IList<UChar>{
 
-    Iso8859_1String(final byte[] chars) {
-      this.chars = chars;
-    }
+  @Override
+  UChar get(final int index);
 
-    @Override
-    public int size() {
-      return chars.length;
-    }
+  int getCodePoint(final int index);
 
-    @Override
-    public int getCodePoint(final int index) {
-      return Byte.toUnsignedInt(chars[index]);
-    }
+  @Override
+  UStr addElement(UChar other);
 
-    @Override
-    public String toString() {
-      return new String(chars, StandardCharsets.ISO_8859_1);
-    }
+  @Override
+  UStr subList(final int fromIndex, final int toIndex);
+
+  @Override
+  UStr subtract(Collection<?> other);
+
+  @Override
+  UStr join(final Collection<? extends UChar> other);
+
+  @Override
+  UStr asList();
+
+  @Override
+  UStr tail();
+
+  default TypedBytes utf8(){
+    return ByteUtils.asUtf8(toString());
+  }
+
+  default boolean isLowerCase(){
+    return StringUtils.isLowerCase(toString());
+  }
+
+  public IList<UStr> split(UChar tab);
+
 
 }

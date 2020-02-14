@@ -29,6 +29,7 @@ package com.github.gv2011.util.icol;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.icol.ICollections.toIList;
 import static com.github.gv2011.util.icol.ICollections.toISortedMap;
+import static com.github.gv2011.util.uc.UChars.uStr;
 import static java.util.stream.Collectors.joining;
 
 import java.util.Collection;
@@ -39,6 +40,7 @@ import java.util.stream.IntStream;
 
 import com.github.gv2011.util.Constant;
 import com.github.gv2011.util.Constants;
+import com.github.gv2011.util.uc.UStr;
 
 public abstract class AbstractIList<E> implements IList<E>{
 
@@ -171,7 +173,13 @@ public abstract class AbstractIList<E> implements IList<E>{
 
   @Override
   public String toString() {
-    return stream().map(Object::toString).collect(joining(", ","[","]"));
+    return toStr().toString();
+  }
+
+  @Override
+  public UStr toStr() {
+    //TODO
+    return uStr(stream().map(Object::toString).collect(joining(", ","[","]")));
   }
 
   @Override

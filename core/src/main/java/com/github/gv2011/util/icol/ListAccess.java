@@ -41,6 +41,10 @@ public interface ListAccess<E> {
 
   ISortedMap<Integer,E> asMap();
 
+  /**
+   * The part of the list after the first element.
+   * Empty list for size<2.
+   */
   default IList<E> tail(){
     return subList(1, size());
   }

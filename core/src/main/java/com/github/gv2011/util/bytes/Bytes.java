@@ -30,17 +30,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Optional;
 
 import com.github.gv2011.util.OptCloseable;
 import com.github.gv2011.util.Pair;
-import com.github.gv2011.util.ann.Immutable;
+import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.uc.UStr;
 
 
-@Immutable
-public interface Bytes extends List<Byte>, Comparable<Bytes>, OptCloseable{
+public interface Bytes extends IList<Byte>, Comparable<Bytes>, OptCloseable{
 
   public static final class TooBigException extends IllegalStateException {}
 
@@ -106,6 +104,7 @@ public interface Bytes extends List<Byte>, Comparable<Bytes>, OptCloseable{
 
   TypedBytes typed(DataType mimeType);
 
-
+  @Override
+  Bytes reversed();
 
 }

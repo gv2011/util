@@ -39,15 +39,17 @@ import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
 import com.github.gv2011.util.tstr.AbstractTypedString;
+import com.github.gv2011.util.uc.UChars;
+import com.github.gv2011.util.uc.UStr;
 
 @SuppressWarnings("unused")
 public class Country extends AbstractTypedString<Country>{
 
-  private final static ISortedMap<String,Country> COUNTRIES;
+  private final static ISortedMap<UStr,Country> COUNTRIES;
 
   static{
-    COUNTRIES = Arrays.stream(Locale.getISOCountries()).collect(toISortedMap(k->k,k->{
-      final String name = new Locale(Language.ENGLISH.getLanguage(), k).getDisplayCountry(Language.ENGLISH);
+    COUNTRIES = Arrays.stream(Locale.getISOCountries()).collect(toISortedMap(k->UChars.uStr(k),k->{
+      final UStr name = UChars.uStr(new Locale(Language.ENGLISH.getLanguage(), k).getDisplayCountry(Language.ENGLISH));
       final ISet<String> eu = asSet(new String[]{
         "BE","BG","DK","DE","EE","FI","FR","GR","IE","IT","HR","LV","LT","LU",
         "MT","NL","AT","PL","PT","RO","SE","SK","SI","ES","CZ","HU","CY"}
@@ -59,11 +61,11 @@ public class Country extends AbstractTypedString<Country>{
       final LocalDate weuStart = LocalDate.parse("1948-08-25");
 
       final ISet<String> efta = asSet(new String[]{"IS", "LI", "NO", "CH"});
-      return new Country(k, name, eu.contains(k), efta.contains(k));
+      return new Country(UChars.uStr(k), name, eu.contains(k), efta.contains(k));
     }));
   }
 
-  public static final Country forIso3166(final String iso3166){
+  public static final Country forIso3166(final UStr iso3166){
     return COUNTRIES.get(iso3166);
   };
 
@@ -71,12 +73,12 @@ public class Country extends AbstractTypedString<Country>{
     return COUNTRIES.values().stream().collect(toISortedSet());
   };
 
-  private final String iso3166;
-  private final String name;
+  private final UStr iso3166;
+  private final UStr name;
   private final boolean euMember;
   private final boolean eftaMember;
 
-  Country(final String iso3166, final String name, final boolean euMember, final boolean eftaMember) {
+  private Country(final UStr iso3166, final UStr name, final boolean euMember, final boolean eftaMember) {
     this.iso3166 = iso3166;
     this.name = name;
     this.euMember = euMember;
@@ -95,15 +97,20 @@ public class Country extends AbstractTypedString<Country>{
 
   @Override
   public String toString() {
+    return toStr().toString();
+  }
+
+  @Override
+  public UStr toStr() {
     return iso3166;
   }
 
-  public String name() {
+  public UStr name() {
     return name;
   }
 
   public String name(final Locale locale) {
-    return new Locale(Language.ENGLISH.getLanguage(), iso3166).getDisplayCountry(locale);
+    return new Locale(Language.ENGLISH.getLanguage(), iso3166.toString()).getDisplayCountry(locale);
   }
 
   public boolean euMember(final LocalDate time){
