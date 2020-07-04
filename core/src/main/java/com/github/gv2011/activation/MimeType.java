@@ -22,10 +22,10 @@ package com.github.gv2011.activation;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,8 +35,10 @@ package com.github.gv2011.activation;
  * THE SOFTWARE.
  * #L%
  */
-
-import java.io.*;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Locale;
 
 /**
@@ -69,7 +71,7 @@ public class MimeType implements Externalizable {
      * @param rawdata	the MIME type string
      * @exception	MimeTypeParseException	if the MIME type can't be parsed
      */
-    public MimeType(String rawdata) throws MimeTypeParseException {
+    public MimeType(final String rawdata) throws MimeTypeParseException {
         parse(rawdata);
     }
 
@@ -82,7 +84,7 @@ public class MimeType implements Externalizable {
      * @exception	MimeTypeParseException	if the primary type or subtype
      *						is not a valid token
      */
-    public MimeType(String primary, String sub) throws MimeTypeParseException {
+    public MimeType(final String primary, final String sub) throws MimeTypeParseException {
         //    check to see if primary is valid
         if (isValidToken(primary)) {
             primaryType = primary.toLowerCase(Locale.ENGLISH);
@@ -103,9 +105,9 @@ public class MimeType implements Externalizable {
     /**
      * A routine for parsing the MIME type out of a String.
      */
-    private void parse(String rawdata) throws MimeTypeParseException {
-        int slashIndex = rawdata.indexOf('/');
-        int semIndex = rawdata.indexOf(';');
+    private void parse(final String rawdata) throws MimeTypeParseException {
+        final int slashIndex = rawdata.indexOf('/');
+        final int semIndex = rawdata.indexOf(';');
         if ((slashIndex < 0) && (semIndex < 0)) {
             //    neither character is present, so treat it
             //    as an error
@@ -161,7 +163,7 @@ public class MimeType implements Externalizable {
      * @exception	MimeTypeParseException	if the primary type
      *						is not a valid token
      */
-    public void setPrimaryType(String primary) throws MimeTypeParseException {
+    public void setPrimaryType(final String primary) throws MimeTypeParseException {
         //    check to see if primary is valid
         if (!isValidToken(primaryType))
             throw new MimeTypeParseException("Primary type is invalid.");
@@ -184,7 +186,7 @@ public class MimeType implements Externalizable {
      * @exception	MimeTypeParseException	if the subtype
      *						is not a valid token
      */
-    public void setSubType(String sub) throws MimeTypeParseException {
+    public void setSubType(final String sub) throws MimeTypeParseException {
         //    check to see if sub is valid
         if (!isValidToken(subType))
             throw new MimeTypeParseException("Sub type is invalid.");
@@ -207,7 +209,7 @@ public class MimeType implements Externalizable {
      * @param name	the parameter name
      * @return		the paramter's value
      */
-    public String getParameter(String name) {
+    public String getParameter(final String name) {
         return parameters.get(name);
     }
 
@@ -218,7 +220,7 @@ public class MimeType implements Externalizable {
      * @param name	the parameter name
      * @param value	the paramter's value
      */
-    public void setParameter(String name, String value) {
+    public void setParameter(final String name, final String value) {
         parameters.set(name, value);
     }
 
@@ -227,14 +229,15 @@ public class MimeType implements Externalizable {
      *
      * @param name	the parameter name
      */
-    public void removeParameter(String name) {
+    public void removeParameter(final String name) {
         parameters.remove(name);
     }
 
     /**
      * Return the String representation of this object.
      */
-    public String toString() {
+    @Override
+	public String toString() {
         return getBaseType() + parameters.toString();
     }
 
@@ -255,7 +258,7 @@ public class MimeType implements Externalizable {
      * @param type	the MimeType object to compare with
      * @return		true if they match
      */
-    public boolean match(MimeType type) {
+    public boolean match(final MimeType type) {
         return primaryType.equals(type.getPrimaryType())
                     && (subType.equals("*")
                             || type.getSubType().equals("*")
@@ -270,7 +273,7 @@ public class MimeType implements Externalizable {
      * @return		true if they match
      * @exception	MimeTypeParseException	if the MIME type can't be parsed
      */
-    public boolean match(String rawdata) throws MimeTypeParseException {
+    public boolean match(final String rawdata) throws MimeTypeParseException {
         return match(new MimeType(rawdata));
     }
 
@@ -283,7 +286,8 @@ public class MimeType implements Externalizable {
      * @param out	the ObjectOutput object to write to
      * @exception IOException Includes any I/O exceptions that may occur
      */
-    public void writeExternal(ObjectOutput out) throws IOException {
+    @Override
+	public void writeExternal(final ObjectOutput out) throws IOException {
         out.writeUTF(toString());
 	out.flush();
     }
@@ -299,11 +303,12 @@ public class MimeType implements Externalizable {
      * @exception ClassNotFoundException If the class for an object being
      *              restored cannot be found.
      */
-    public void readExternal(ObjectInput in)
+    @Override
+	public void readExternal(final ObjectInput in)
 				throws IOException, ClassNotFoundException {
         try {
             parse(in.readUTF());
-        } catch (MimeTypeParseException e) {
+        } catch (final MimeTypeParseException e) {
             throw new IOException(e.toString());
         }
     }
@@ -313,18 +318,18 @@ public class MimeType implements Externalizable {
     /**
      * Determine whether or not a given character belongs to a legal token.
      */
-    private static boolean isTokenChar(char c) {
+    private static boolean isTokenChar(final char c) {
         return ((c > 040) && (c < 0177)) && (TSPECIALS.indexOf(c) < 0);
     }
 
     /**
      * Determine whether or not a given string is a legal token.
      */
-    private boolean isValidToken(String s) {
-        int len = s.length();
+    private boolean isValidToken(final String s) {
+        final int len = s.length();
         if (len > 0) {
             for (int i = 0; i < len; ++i) {
-                char c = s.charAt(i);
+                final char c = s.charAt(i);
                 if (!isTokenChar(c)) {
                     return false;
                 }
