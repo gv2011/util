@@ -49,7 +49,7 @@ public final class BeanHashCode {
         final Function<B,?> attributeValeFunction = a.getValue();
         return (ToIntFunction<B>) b->attributeNameHash ^ attributeValeFunction.apply(b).hashCode();
       })
-      .collect(toISet());
+      .collect(toISet())
     ;
     return b->base + attributeFunctions.parallelStream().mapToInt(af->af.applyAsInt(b)).sum();
   }

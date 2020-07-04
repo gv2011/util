@@ -43,7 +43,7 @@ public class IsoDay implements Comparable<IsoDay>{
 
   public static IsoDay parse(final CharSequence yyyyMmDd) {
     return new IsoDay(LocalDate.parse(yyyyMmDd));
-  };
+  }
 
   public static final IsoDay fromDdMmYyyy(final String ddMmYyyy){
     final Matcher m = DD_MM_YYYY.matcher(ddMmYyyy);

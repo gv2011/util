@@ -23,7 +23,7 @@ public class Server implements AutoCloseableNt{
     while(!closed){
 
     }
-  };
+  }
 
   @Override
   public void close() {

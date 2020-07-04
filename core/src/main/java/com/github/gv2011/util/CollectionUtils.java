@@ -67,7 +67,7 @@ public final class CollectionUtils {
   private CollectionUtils(){staticClass();}
 
   public static final <T extends Comparable<? super T>> Collector<T, ?, NavigableSet<T>> toSortedSet(){
-    return new SortedSetCollector<T,NavigableSet<T>>(){
+    return new SortedSetCollector<>(){
       @Override
       public Function<NavigableSet<T>, NavigableSet<T>> finisher() {
         return Function.identity();
@@ -271,7 +271,7 @@ public final class CollectionUtils {
   }
 
   public static <T> Collector<T,?,T> toSingle(final Supplier<String> msg){
-    return new OptCollector<T,T>(){
+    return new OptCollector<>(){
       @Override
       public Function<AtomicReference<T>, T> finisher() {
         return r->notNull(r.get(), msg);
@@ -280,7 +280,7 @@ public final class CollectionUtils {
   }
 
   public static <T> Collector<T,?,Stream<T>> toSingleStream(){
-    return new OptCollector<T,Stream<T>>(){
+    return new OptCollector<>(){
       @Override
       public Function<AtomicReference<T>, Stream<T>> finisher() {
         return r->Stream.of(notNull(r.get(), ()->"Empty stream."));
@@ -290,7 +290,7 @@ public final class CollectionUtils {
 
   @Deprecated
   public static <T> Collector<T,?,Optional<T>> toOptional(){
-    return new OptCollector<T,Optional<T>>(){
+    return new OptCollector<>(){
       @Override
       public Function<AtomicReference<T>, Optional<T>> finisher() {
         return r->Optional.ofNullable(r.get());
@@ -299,7 +299,7 @@ public final class CollectionUtils {
   }
 
   public static <T> Collector<T,?,Opt<T>> toOpt(){
-    return new OptCollector<T,Opt<T>>(){
+    return new OptCollector<>(){
       @Override
       public Function<AtomicReference<T>, Opt<T>> finisher() {
         return r->Opt.ofNullable(r.get());
@@ -308,7 +308,7 @@ public final class CollectionUtils {
   }
 
   public static <T> Collector<T,?,Stream<T>> toOptionalStream(){
-    return new OptCollector<T,Stream<T>>(){
+    return new OptCollector<>(){
       @Override
       public Function<AtomicReference<T>, Stream<T>> finisher() {
         return r->{final T v=r.get(); return v==null?Stream.empty():Stream.of(v);};
@@ -359,7 +359,7 @@ public final class CollectionUtils {
   public static <S,T> Iterator<T> mapIterator(
     final Iterator<? extends S> delegate, final Function<? super S, ? extends T> mapping
   ){
-    return new Iterator<T>(){
+    return new Iterator<>(){
       @Override
       public boolean hasNext() {return delegate.hasNext();}
       @Override

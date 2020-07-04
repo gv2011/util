@@ -7,7 +7,6 @@ import java.nio.file.Files;
 
 import org.junit.Test;
 
-import com.github.gv2011.testutil.AbstractTest;
 import com.github.gv2011.util.FileUtils;
 
 public class AbstractTestTest extends AbstractTest{

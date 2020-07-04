@@ -51,9 +51,9 @@ import com.github.gv2011.util.icol.Opt;
 
 public final class Zipper {
 
-  public static final Zipper newZipper(){return new Zipper();};
+  public static final Zipper newZipper(){return new Zipper();}
 
-  Zipper(){};
+  Zipper(){}
 
   public void zip(final Path source, final Path zipFile) {
     if(Files.isDirectory(source)) zipFolder(source, zipFile);

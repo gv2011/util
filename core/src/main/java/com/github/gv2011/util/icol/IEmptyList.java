@@ -34,7 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-final class IEmptyList<E> extends AbstractIList<E> implements IList<E>{
+final class IEmptyList<E> extends AbstractIList<E>{
 
   @SuppressWarnings("rawtypes")
   static final IEmptyList INSTANCE = new IEmptyList();

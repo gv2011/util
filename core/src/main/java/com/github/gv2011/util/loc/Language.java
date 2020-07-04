@@ -64,7 +64,7 @@ public class Language extends AbstractTypedString<Language>{
 
   public static final ISortedSet<Language> languages(){
     return LANGUAGES.values().stream().collect(toISortedSet());
-  };
+  }
 
 
   private final String iso639_2;

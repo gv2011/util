@@ -133,7 +133,7 @@ public final class Exceptions {
   public static void tryAll(
     final List<ThrowingRunnable> operations
   ){
-    if(operations.isEmpty()); //do nothing
+    if(operations.isEmpty()){} //do nothing
     else if(operations.size()==1) {
       call(()->operations.get(0).run());
     }

@@ -65,11 +65,11 @@ public class Country extends AbstractTypedString<Country>{
 
   public static final Country forIso3166(final String iso3166){
     return COUNTRIES.get(iso3166);
-  };
+  }
 
   public static final ISortedSet<Country> countries(){
     return COUNTRIES.values().stream().collect(toISortedSet());
-  };
+  }
 
   private final String iso3166;
   private final String name;

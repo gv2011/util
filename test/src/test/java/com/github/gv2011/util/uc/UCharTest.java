@@ -7,8 +7,6 @@ import static com.github.gv2011.util.ex.Exceptions.format;
 
 import org.junit.Test;
 
-import com.github.gv2011.util.uc.UChar;
-
 public class UCharTest {
 
   @Test

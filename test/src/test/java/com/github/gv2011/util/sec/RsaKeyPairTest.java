@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import com.github.gv2011.testutil.AbstractTest;
 import com.github.gv2011.util.bytes.Bytes;
-import com.github.gv2011.util.sec.RsaKeyPair;
 
 public class RsaKeyPairTest extends AbstractTest{
 

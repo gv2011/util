@@ -137,7 +137,7 @@ public final class ArrayISortedSet<E extends Comparable<? super E>> extends Abst
       else{
         final Object[] array = new Object[size];
         System.arraycopy(elements, start, array, 0, size);
-        return new ArrayISortedSet<E>(array);
+        return new ArrayISortedSet<>(array);
       }
     }
   }

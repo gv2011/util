@@ -31,6 +31,6 @@ public interface TypeResolver<B> {
 
     Class<? extends B> resolve(JsonNode json);
 
-    default void addTypeProperty(final BeanBuilder<? extends B> builder){};
+    default void addTypeProperty(final BeanBuilder<? extends B> builder){}
 
 }

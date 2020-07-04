@@ -39,7 +39,7 @@ public final class LegacyCollections {
   private LegacyCollections(){staticClass();}
 
   public static <T> Iterator<T> asIterator(final Enumeration<? extends T> en){
-    return new Iterator<T>(){
+    return new Iterator<>(){
       @Override
       public boolean hasNext() {return en.hasMoreElements();}
       @Override
@@ -48,7 +48,7 @@ public final class LegacyCollections {
   }
 
   public static <T> Enumeration<T> asEnumeration(final Iterator<? extends T> it){
-    return new Enumeration<T>(){
+    return new Enumeration<>(){
       @Override
       public boolean hasMoreElements() {
         return it.hasNext();

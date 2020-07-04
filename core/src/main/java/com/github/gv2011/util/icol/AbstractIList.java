@@ -113,7 +113,7 @@ public abstract class AbstractIList<E> implements IList<E>{
 
   @Override
   public ListIterator<E> listIterator(final int index) {
-    return new ListIterator<E>(){
+    return new ListIterator<>(){
       private int i = index;
       @Override
       public boolean hasNext() {

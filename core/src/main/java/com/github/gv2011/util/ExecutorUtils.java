@@ -29,7 +29,7 @@ public final class ExecutorUtils {
   }
 
   public static <T> CloseableFuture<T> callAsync(final Callable<T> task){
-    return new CloseableFutureImp<T>(task);
+    return new CloseableFutureImp<>(task);
   }
 
 }
