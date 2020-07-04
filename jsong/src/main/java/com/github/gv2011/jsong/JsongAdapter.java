@@ -23,7 +23,6 @@ import com.github.gv2011.util.json.imp.JsonFactoryImp;
 public final class JsongAdapter implements Adapter{
 
   @Override
-  @SuppressWarnings("resource")
   public JsonWriter newJsonWriter(final Writer out) {
     final com.github.gv2011.gson.stream.JsonWriter delegate = new com.github.gv2011.gson.stream.JsonWriter(out);
     delegate.setIndent("  ");
