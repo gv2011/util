@@ -37,9 +37,8 @@ import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 
 import com.github.gv2011.util.XStream;
-import com.github.gv2011.util.beans.Value;
 
-public interface ICollection<E> extends Value, Collection<E>{
+public interface ICollection<E> extends Collection<E>{
 
   default Opt<E> asOpt(){
     final int size = size();

@@ -41,7 +41,6 @@
     <module>context</module>
     <module>core</module>
     <module>beans</module>
-    <module>beans-examples</module>
     <module>beanscglib</module>
     <module>filetypes-tika</module>
     <module>gcol</module>

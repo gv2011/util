@@ -41,8 +41,8 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
+import java.util.AbstractList;
 import java.util.Base64;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -53,24 +53,21 @@ import com.github.gv2011.util.Constant;
 import com.github.gv2011.util.Constants;
 import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.ann.Immutable;
-import com.github.gv2011.util.icol.AbstractIList;
-import com.github.gv2011.util.icol.ICollections;
-import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.uc.UChars;
 import com.github.gv2011.util.uc.UStr;
 
 
 @Immutable
-public abstract class AbstractBytes extends AbstractIList<Byte> implements Bytes{
+public abstract class AbstractBytes extends AbstractList<Byte> implements Bytes{
 
   private static String HEX_CHARS = "0123456789ABCDEF";
   private final Constant<Integer> hashCodeCache = Constants.cachedConstant(super::hashCode);
-  private final Constant<UStr> toStringCache = Constants.softRefConstant(this::toStringImp);
+  private final Constant<String> toStringCache = Constants.softRefConstant(this::toStringImp);
   private final Constant<Hash256> hashCache = Constants.cachedConstant(this::hashImp);
 
 
   @Override
-  public final UStr toStr(){
+  public final String toString(){
     return toStringCache.get();
   }
 
@@ -88,7 +85,7 @@ public abstract class AbstractBytes extends AbstractIList<Byte> implements Bytes
       if(i<s-1)result[i*3+2] = ' ';
       i++;
     }
-    return new BmpStrImp(result);
+    return new String(result);
   }
 
   @Override
@@ -396,10 +393,6 @@ public abstract class AbstractBytes extends AbstractIList<Byte> implements Bytes
     }
   }
 
-  @Override
-  public Bytes reversed() {
-    return new ReversedBytes(this);
-  }
 
   private final class It implements ListIterator<Byte> {
     private long index;
@@ -467,11 +460,5 @@ public abstract class AbstractBytes extends AbstractIList<Byte> implements Bytes
       public DataType dataType() {return dataType;}
     };
   }
-
-  @Override
-  public final ISet<Byte> intersection(final Collection<?> other) {
-    return ICollections.intersection(this, other);
-  }
-
 
 }

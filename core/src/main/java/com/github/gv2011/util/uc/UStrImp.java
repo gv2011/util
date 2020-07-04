@@ -27,22 +27,17 @@ package com.github.gv2011.util.uc;
  */
 import static com.github.gv2011.util.ex.Exceptions.notYetImplemented;
 import static com.github.gv2011.util.ex.Exceptions.notYetImplementedException;
-import static com.github.gv2011.util.icol.ICollections.toIList;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.stream.IntStream;
 
-import com.github.gv2011.util.Comparison;
 import com.github.gv2011.util.icol.AbstractIList;
 import com.github.gv2011.util.icol.IList;
 
 public abstract class UStrImp extends AbstractIList<UChar> implements UStr {
 
-  public static final UStrImp EMPTY = new Iso8859_15String(new byte[0]);
-
-  private static final Comparator<UStr> COMPARATOR = Comparison.listComparator();
+  public static final UStrImp EMPTY = new Iso8859_1String(new byte[0]);
 
   public static final UStrImp uStr(final UChar c) {
     final int cp = c.codePoint();
@@ -120,7 +115,7 @@ public abstract class UStrImp extends AbstractIList<UChar> implements UStr {
             .toString());
   }
 
-  static UStrImp join(final Iso8859_15String iso8859_1String, final UChar ch) {
+  static UStrImp join(final Iso8859_1String iso8859_1String, final UChar ch) {
     // TODO Auto-generated method stub
     throw notYetImplementedException();
   }
@@ -138,11 +133,6 @@ public abstract class UStrImp extends AbstractIList<UChar> implements UStr {
   }
 
   @Override
-  public final UStr toStr(){
-    return this;
-  }
-
-  @Override
   public final UStr addElement(final UChar ch) {
     return new UStrBuilderImp().append(this).append(ch).build();
   }
@@ -151,31 +141,6 @@ public abstract class UStrImp extends AbstractIList<UChar> implements UStr {
   public final IList<UChar> reversed() {
     // TODO Auto-generated method stub
     throw notYetImplementedException();
-  }
-
-  @Override
-  public int compareTo(final UStr o) {
-    if(this==o) return 0;
-    else return COMPARATOR.compare(this, o);
-  }
-
-  @Override
-  public final IList<UStr> split(final UChar tab) {
-    final int cp = tab.codePoint();
-    final int[] cuts =
-      IntStream.concat(
-        IntStream.concat(
-          IntStream.of(0),
-          IntStream.range(0, size()).parallel().filter(i->getCodePoint(i)==cp)
-        ),
-        IntStream.of(size())
-      )
-      .toArray()
-    ;
-    return IntStream.range(0, cuts.length-1).parallel()
-      .mapToObj(c->subList(cuts[c], cuts[c+1]))
-      .collect(toIList())
-    ;
   }
 
 }

@@ -1,14 +1,5 @@
 package com.github.gv2011.util.tstr;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.ListIterator;
-
-import com.github.gv2011.util.icol.IList;
-import com.github.gv2011.util.icol.ISet;
-import com.github.gv2011.util.uc.UChar;
-import com.github.gv2011.util.uc.UStr;
-
 /*-
  * #%L
  * The MIT License (MIT)
@@ -21,10 +12,10 @@ import com.github.gv2011.util.uc.UStr;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,13 +26,11 @@ import com.github.gv2011.util.uc.UStr;
  * #L%
  */
 
-public abstract class AbstractTypedString<T extends TypedString<T>>
+public abstract class AbstractTypedString<T extends AbstractTypedString<T>>
 implements TypedString<T>{
 
   @Override
-  public final String toString() {
-    return toStr().toString();
-  }
+  public abstract String toString();
 
   @Override
   public int hashCode(){
@@ -59,83 +48,18 @@ implements TypedString<T>{
   }
 
   @Override
-  public UChar get(final int index) {
-    return toStr().get(index);
+  public int length() {
+    return canonical().length();
   }
 
   @Override
-  public UStr addElement(final UChar other) {
-    return toStr().addElement(other);
+  public char charAt(final int index) {
+    return canonical().charAt(index);
   }
 
   @Override
-  public UStr subList(final int fromIndex, final int toIndex) {
-    return toStr().subList(fromIndex, toIndex);
-  }
-
-  @Override
-  public UStr subtract(final Collection<?> other) {
-    return toStr().subtract(other);
-  }
-
-  @Override
-  public UStr join(final Collection<? extends UChar> other) {
-    return toStr().join(other);
-  }
-
-  @Override
-  public UStr asList() {
-    return toStr().asList();
-  }
-
-  @Override
-  public UStr tail() {
-    return toStr().tail();
-  }
-
-  @Override
-  public IList<UChar> reversed() {
-    return toStr().reversed();
-  }
-
-  @Override
-  public ISet<UChar> intersection(final Collection<?> other) {
-    return toStr().intersection(other);
-  }
-
-  @Override
-  public boolean contains(final Object o) {
-    return toStr().contains(o);
-  }
-
-  @Override
-  public Iterator<UChar> iterator() {
-    return toStr().iterator();
-  }
-
-  @Override
-  public boolean containsAll(final Collection<?> c) {
-    return toStr().containsAll(c);
-  }
-
-  @Override
-  public ListIterator<UChar> listIterator() {
-    return toStr().listIterator();
-  }
-
-  @Override
-  public ListIterator<UChar> listIterator(final int index) {
-    return toStr().listIterator(index);
-  }
-
-  @Override
-  public int getCodePoint(final int index) {
-    return toStr().getCodePoint(index);
-  }
-
-  @Override
-  public int size() {
-    return toStr().size();
+  public CharSequence subSequence(final int start, final int end) {
+    return canonical().subSequence(start, end);
   }
 
 }

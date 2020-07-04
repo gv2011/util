@@ -35,7 +35,7 @@ final class Iso8859_1Builder extends DelegateBuilder{
 
   @Override
   UStr build() {
-    return new Iso8859_15String(bos.toByteArray());
+    return new Iso8859_1String(bos.toByteArray());
   }
 
   @Override

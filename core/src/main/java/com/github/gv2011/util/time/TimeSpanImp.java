@@ -12,10 +12,10 @@ package com.github.gv2011.util.time;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,16 +26,12 @@ package com.github.gv2011.util.time;
  * #L%
  */
 import static com.github.gv2011.util.Verify.verify;
-import static com.github.gv2011.util.uc.UChars.uStr;
 
 import java.time.Instant;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.github.gv2011.util.tstr.AbstractTypedString;
-import com.github.gv2011.util.uc.UStr;
-
-final class TimeSpanImp extends AbstractTypedString<TimeSpan> implements TimeSpan {
+final class TimeSpanImp implements TimeSpan {
 
   private static final Pattern SYNTAX = Pattern.compile("\\(([0-9TZ.:-]+,([0-9TZ.:-]+)\\)");
 
@@ -66,11 +62,6 @@ final class TimeSpanImp extends AbstractTypedString<TimeSpan> implements TimeSpa
   @Override
   public TimeSpan self() {
     return this;
-  }
-
-  @Override
-  public UStr toStr() {
-    return uStr("("+from+","+until+")");
   }
 
 }
