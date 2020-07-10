@@ -53,4 +53,6 @@ public interface ElementaryTypeHandler<T>{
     return false;
   }
 
+  T parse(String string);
+
 }

@@ -279,7 +279,7 @@ public class DefaultTypeRegistry implements TypeRegistry{
 
   @Override
   public <S extends TypedString<S>> S typedString(final Class<S> clazz, final String value) {
-    return ((TypedStringType<S>)type(clazz)).create(value);
+    return ((TypedStringType<S>)type(clazz)).parse(value);
   }
 
   @Override

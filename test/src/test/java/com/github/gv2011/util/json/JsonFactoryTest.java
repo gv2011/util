@@ -6,6 +6,7 @@ import static com.github.gv2011.testutil.Matchers.isA;
 import static com.github.gv2011.testutil.Matchers.meets;
 import static com.github.gv2011.util.CollectionUtils.pair;
 import static com.github.gv2011.util.icol.ICollections.listOf;
+import static org.hamcrest.Matchers.hasSize;
 
 import java.util.stream.Stream;
 
@@ -14,6 +15,7 @@ import org.junit.Test;
 import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.ResourceUtils;
 import com.github.gv2011.util.icol.ICollections;
+import com.github.gv2011.util.json.imp.JsonStringImp;
 
 public class JsonFactoryTest {
 
@@ -29,6 +31,21 @@ public class JsonFactoryTest {
     final JsonObject obj = (JsonObject)n;
     assertThat(obj, meets(o->o.size()==1));
     assertThat(obj.get("k").asString(), is("str"));
+  }
+
+  @Test
+  public void testDeserializeString() {
+    JsonNode n = jf.deserialize("\"tex\\\"t\"");
+    assertThat(n, isA(JsonStringImp.class));
+    assertThat(n.asString(), is("tex\"t"));
+  }
+
+  @Test
+  public void testDeserializeList() {
+    JsonNode n = jf.deserialize("[1,2]");
+    assertThat(n, isA(JsonList.class));
+    assertThat(n.asList(), hasSize(2));
+    assertThat(n.asList().first(), is(jf.primitive(1)));
   }
 
   @Test

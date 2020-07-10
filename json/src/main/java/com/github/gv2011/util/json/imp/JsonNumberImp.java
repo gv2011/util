@@ -27,6 +27,7 @@ package com.github.gv2011.util.json.imp;
  */
 import java.math.BigDecimal;
 
+import com.github.gv2011.util.NumUtils;
 import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonNodeType;
 import com.github.gv2011.util.json.JsonNumber;
@@ -35,7 +36,7 @@ import com.github.gv2011.util.json.JsonWriter;
 public class JsonNumberImp extends JsonPrimitiveImp<BigDecimal> implements JsonNumber{
 
   JsonNumberImp(final JsonFactoryImp f, final BigDecimal value) {
-    super(f, value.stripTrailingZeros());
+    super(f, NumUtils.canonical(value));
   }
 
   @Override

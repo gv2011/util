@@ -112,7 +112,7 @@ public final class ICollections {
   }
 
   public static <K,V> IMap<K,V> mapOf(final K key, final V value) {
-    return iCollections().emptyMap();
+    return iCollections().mapOf(key, value);
   }
 
   public static <K extends Comparable<? super K>,V> ISortedMap<K,V> sortedMapOf(final K key, final V value) {

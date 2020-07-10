@@ -32,6 +32,7 @@ package com.github.gv2011.util;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 public final class NumUtils {
@@ -64,4 +65,7 @@ public final class NumUtils {
     return i.compareTo(MIN_LONG)>=0 && i.compareTo(MAX_LONG)<=0;
   }
 
+  public static BigDecimal canonical(final BigDecimal dec){
+    return dec.stripTrailingZeros();
+  }
 }

@@ -81,4 +81,9 @@ abstract class AbstractElementaryType<E> extends TypeSupport<E>{
     return false;
   }
 
+  @Override
+  public final E parse(String string) {
+    return handler().parse(string);
+  }
+
 }

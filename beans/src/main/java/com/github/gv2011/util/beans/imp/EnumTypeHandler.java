@@ -52,17 +52,6 @@ final class EnumTypeHandler<E extends Enum<E>> extends AbstractElementaryTypeHan
   }
 
   @Override
-  public E fromJson(final JsonNode json) {
-    final String rawValue = json.asString();
-    try {
-      return Enum.valueOf(enumClass, rawValue);
-    } catch (final IllegalArgumentException ex) {
-      if(otherValue.isPresent()) return otherValue.get();
-      else throw ex;
-    }
-  }
-
-  @Override
   public Opt<E> defaultValue() {
     return defaultValue;
   }
@@ -70,6 +59,16 @@ final class EnumTypeHandler<E extends Enum<E>> extends AbstractElementaryTypeHan
   @Override
   public JsonNode toJson(final E enm, final JsonFactory jf) {
     return jf.primitive(enm.name());
+  }
+
+  @Override
+  public E parse(String string) {
+    try {
+      return Enum.valueOf(enumClass, string);
+    } catch (final IllegalArgumentException ex) {
+      if(otherValue.isPresent()) return otherValue.get();
+      else throw ex;
+    }
   }
 
 }

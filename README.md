@@ -9,3 +9,44 @@ General purpose utilities.
 ## License and copyright
 
 See file pom.xml.
+
+## Dependencies
+
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>util</artifactId>
+      <version>${util.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>gcol</artifactId>
+      <version>${util.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>util-beans</artifactId>
+      <version>${util.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>jsong</artifactId>
+      <version>${util.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>util-logback</artifactId>
+      <version>${util.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>testutil</artifactId>
+      <version>${util.version}</version>
+      <scope>test</scope>
+    </dependency>
+

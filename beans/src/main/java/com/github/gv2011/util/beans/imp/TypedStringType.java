@@ -34,7 +34,6 @@ import java.util.function.Function;
 import com.github.gv2011.util.beans.ElementaryTypeHandler;
 import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonFactory;
-import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.tstr.TypedString;
 
 class TypedStringType<S extends TypedString<S>> extends AbstractElementaryType<S>{
@@ -52,32 +51,28 @@ class TypedStringType<S extends TypedString<S>> extends AbstractElementaryType<S
       final Constructor<S> constr = call(()->clazz.getConstructor(String.class));
       constructor = v->call(()->constr.newInstance(v));
     }
-    this.handler = new TypeHandler();
-    this.defaultValue = Opt.of(create(""));
+    handler = new TypeHandler();
+    this.defaultValue = Opt.of(handler.parse(""));
   }
 
   @Override
   ElementaryTypeHandler<S> handler(){return handler;}
 
-  S create(final String value) {
-    return constructor.apply(value);
-//    return TypedString.create(clazz, value);
-  }
-
   @Override
   public final boolean hasStringForm() {
     return true;
   }
+  
 
   private final class TypeHandler extends AbstractElementaryTypeHandler<S>{
     @Override
-    public S fromJson(final JsonNode json) {
-      return create(json.asString());
+    public Opt<S> defaultValue() {
+      return defaultValue;
     }
 
     @Override
-    public Opt<S> defaultValue() {
-      return defaultValue;
+    public S parse(String string) {
+      return constructor.apply(string);
     }
   }
 

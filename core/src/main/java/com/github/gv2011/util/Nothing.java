@@ -2,49 +2,33 @@ package com.github.gv2011.util;
 
 import static com.github.gv2011.util.Verify.verifyEqual;
 
-/*-
- * #%L
- * The MIT License (MIT)
- * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
- * %%
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * #L%
- */
+import java.util.Locale;
 
 /**
- * Replacement for void/Void in some situations (avoids null).
- * Example: allows to treat consumer and suppliers formally as functions.
+ * Replacement for void/Void in some situations (avoids null). Example: allows
+ * to treat consumer and suppliers formally as functions.
  */
-public final class Nothing implements Parsable{
+public final class Nothing implements Parsable {
+  
+  private static final String STRING_VALUE = "NOTHING".intern();
 
   public static final Nothing INSTANCE = new Nothing();
 
   public static Nothing parse(final CharSequence cs) {
-    verifyEqual(cs.toString().toLowerCase(), "null");
+    verifyEqual(cs.toString().toUpperCase(Locale.ROOT), STRING_VALUE);
     return INSTANCE;
   }
 
-  private Nothing() {}
+  private Nothing() {
+  }
 
-  public static final Nothing nothing(){
+  public static final Nothing nothing() {
     return INSTANCE;
+  }
+
+  @Override
+  public String toString() {
+    return STRING_VALUE;
   }
 
 }

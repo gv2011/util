@@ -30,13 +30,13 @@ public enum HashAlgorithm {
   SHA3_512("SHA3-512");
 
   private final String algorithmName;
-  private final DataType dataType;
+  private final Constant<DataType> dataType;
 
   private HashAlgorithm(final String algorithmName){
     this.algorithmName = algorithmName;
-    dataType =
+    dataType = Constants.cachedConstant(()->
       DataType.parse(DataTypes.APPLICATION+"/x-"+StringUtils.toLowerCase(algorithmName.replace('/','-')))
-    ;
+    );
   }
 
 
@@ -45,7 +45,7 @@ public enum HashAlgorithm {
   }
 
   public DataType getDataType() {
-    return dataType;
+    return dataType.get();
   }
 
   @Override
@@ -59,7 +59,7 @@ public enum HashAlgorithm {
 
   public static Opt<HashAlgorithm> forDataType(final DataType dataType){
     return XStream.ofArray(HashAlgorithm.values())
-      .filter(n->n.dataType.equals(dataType))
+      .filter(n->n.dataType.get().equals(dataType))
       .tryFindAny()
     ;
   }

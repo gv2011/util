@@ -36,5 +36,9 @@ abstract class AbstractElementaryTypeHandler<E> implements ElementaryTypeHandler
     return jf.primitive(object.toString());
   }
 
+  @Override
+  public E fromJson(final JsonNode json) {
+    return parse(json.asString());
+  }
 
 }
