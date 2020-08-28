@@ -1,5 +1,9 @@
 package com.github.gv2011.util.ex;
 
+import static com.github.gv2011.util.Nothing.nothing;
+import static com.github.gv2011.util.icol.ICollections.asList;
+import static com.github.gv2011.util.icol.ICollections.toIList;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -37,6 +41,7 @@ import org.slf4j.helpers.MessageFormatter;
 import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.OptCloseable;
 import com.github.gv2011.util.ann.Nullable;
+import com.github.gv2011.util.icol.IList;
 
 public final class Exceptions {
 
@@ -122,15 +127,16 @@ public final class Exceptions {
     return throwing.asFunction().apply(null);
   }
 
-  public static void tryAll(final ThrowingRunnable... operations){
-    tryAll(Arrays.asList(operations));
+  public static Nothing tryAll(final ThrowingRunnable... operations){
+    return tryAll(Arrays.asList(operations));
   }
 
   /**
    * Tries to do all the operations even if some throw exceptions.
    * All but the last exception will be logged, but otherwise ignored.
+   * @return 
    */
-  public static void tryAll(
+  public static Nothing tryAll(
     final List<ThrowingRunnable> operations
   ){
     if(operations.isEmpty()){} //do nothing
@@ -156,6 +162,7 @@ public final class Exceptions {
         }
       }
     }
+    return nothing();
   }
 
   /**
@@ -273,5 +280,11 @@ public final class Exceptions {
     return logger;
   }
 
+  public static Nothing closeAll(AutoCloseable... closeables){
+    return closeAll(asList(closeables));
+  }
 
+  public static Nothing closeAll(IList<? extends AutoCloseable> closeables){
+    return tryAll(closeables.stream().map(c->(ThrowingRunnable)(c::close)).collect(toIList()));
+  }
 }

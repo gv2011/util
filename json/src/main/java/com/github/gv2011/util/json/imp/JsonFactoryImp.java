@@ -1,5 +1,7 @@
 package com.github.gv2011.util.json.imp;
 
+import java.io.Reader;
+
 /*-
  * #%L
  * The MIT License (MIT)
@@ -46,6 +48,7 @@ import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonNull;
 import com.github.gv2011.util.json.JsonNumber;
 import com.github.gv2011.util.json.JsonObject;
+import com.github.gv2011.util.json.JsonReader;
 import com.github.gv2011.util.json.JsonString;
 import com.github.gv2011.util.json.JsonWriter;
 
@@ -77,6 +80,11 @@ public final class JsonFactoryImp implements JsonFactory{
   }
 
   @Override
+  public JsonReader jsonReader(Reader in) {
+	return adapter.newJsonReader(this, in);
+  }
+
+@Override
   public Collector<JsonNode, ?, JsonList> toJsonList() {
     return new JsonListCollector(this);
   }

@@ -4,6 +4,7 @@ import static com.github.gv2011.util.CollectionUtils.pair;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.callWithCloseable;
 
+import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
 import java.math.BigDecimal;
@@ -13,12 +14,12 @@ import com.github.gv2011.gson.stream.JsonReader;
 import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.XStream;
 import com.github.gv2011.util.ex.ThrowingFunction;
+import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonList;
 import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonObject;
 import com.github.gv2011.util.json.JsonWriter;
 import com.github.gv2011.util.json.imp.Adapter;
-import com.github.gv2011.util.json.imp.JsonFactoryImp;
 
 public final class JsongAdapter implements Adapter{
 
@@ -31,13 +32,18 @@ public final class JsongAdapter implements Adapter{
   }
 
   @Override
-  public JsonNode deserialize(final JsonFactoryImp jf, final String json) {
+  public com.github.gv2011.util.json.JsonReader newJsonReader(final JsonFactory jf, final Reader in) {
+	  return new JsongReader(jf, new JsonReader(in));
+  }
+
+  @Override
+  public JsonNode deserialize(final JsonFactory jf, final String json) {
     return callWithCloseable(()->new JsonReader(new StringReader(json)),
     	(ThrowingFunction<JsonReader,JsonNode>)r->deserialize(jf, r)
     );
   }
 
-  private JsonNode deserialize(final JsonFactoryImp jf, final JsonReader in) {
+  private JsonNode deserialize(final JsonFactory jf, final JsonReader in) {
     return call(()->{
       switch (in.peek()) {
       case STRING:
@@ -72,9 +78,9 @@ public final class JsongAdapter implements Adapter{
 
   private final class It implements Iterator<JsonNode> {
     private final JsonReader in;
-    private final JsonFactoryImp jf;
+    private final JsonFactory jf;
 
-    private It(final JsonFactoryImp jf, final JsonReader in) {
+    private It(final JsonFactory jf, final JsonReader in) {
         this.jf = jf;
         this.in = in;
     }
@@ -93,9 +99,9 @@ public final class JsongAdapter implements Adapter{
 
   private final class Itm implements Iterator<Pair<String,JsonNode>> {
     private final JsonReader in;
-    private final JsonFactoryImp jf;
+    private final JsonFactory jf;
 
-    private Itm(final JsonFactoryImp jf, final JsonReader in) {
+    private Itm(final JsonFactory jf, final JsonReader in) {
         this.jf = jf;
         this.in = in;
     }

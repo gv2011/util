@@ -41,6 +41,7 @@ import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
 
+import java.io.Reader;
 import java.io.Writer;
 import java.util.Iterator;
 
@@ -50,9 +51,9 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.XStream;
 import com.github.gv2011.util.json.JsonNode;
+import com.github.gv2011.util.json.JsonReader;
 import com.github.gv2011.util.json.JsonWriter;
 import com.github.gv2011.util.json.imp.Adapter;
-import com.github.gv2011.util.json.imp.JsonFactoryImp;
 
 public class JacksonAdapter implements Adapter{
 
@@ -71,8 +72,13 @@ public class JacksonAdapter implements Adapter{
         return new JacksonJsonWriter(call(()->jackson.createGenerator(out)));
     }
 
+	@Override
+	public JsonReader newJsonReader(com.github.gv2011.util.json.JsonFactory jf, Reader in) {
+		throw new UnsupportedOperationException();
+	}
+
     @Override
-    public JsonNode deserialize(final JsonFactoryImp jsonFactory, final String json) {
+    public JsonNode deserialize(final com.github.gv2011.util.json.JsonFactory jsonFactory, final String json) {
         return deserialize(jsonFactory, call(()->{
             final JsonParser parser = jackson.createParser(json);
             parser.nextToken();
@@ -80,7 +86,7 @@ public class JacksonAdapter implements Adapter{
         }));
     }
 
-    static JsonNode deserialize(final JsonFactoryImp jf, final JsonParser parser) {
+    static JsonNode deserialize(final com.github.gv2011.util.json.JsonFactory jf, final JsonParser parser) {
       return call(()->{
         final JsonToken token = notNull(parser.currentToken());
         final JsonNode result;
@@ -107,9 +113,9 @@ public class JacksonAdapter implements Adapter{
     private static class It implements Iterator<JsonNode> {
 
         private final JsonParser in;
-        private final JsonFactoryImp jf;
+        private final com.github.gv2011.util.json.JsonFactory jf;
 
-        private It(final JsonFactoryImp jf, final JsonParser in) {
+        private It(final com.github.gv2011.util.json.JsonFactory jf, final JsonParser in) {
             this.jf = jf;
             this.in = in;
         }
@@ -129,9 +135,9 @@ public class JacksonAdapter implements Adapter{
     private static class Itm implements Iterator<Pair<String,JsonNode>> {
 
         private final JsonParser in;
-        private final JsonFactoryImp jf;
+        private final com.github.gv2011.util.json.JsonFactory jf;
 
-        private Itm(final JsonFactoryImp jf, final JsonParser in) {
+        private Itm(final com.github.gv2011.util.json.JsonFactory jf, final JsonParser in) {
             this.jf = jf;
             this.in = in;
         }

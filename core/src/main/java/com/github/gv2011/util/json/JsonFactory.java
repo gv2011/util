@@ -1,5 +1,6 @@
 package com.github.gv2011.util.json;
 
+import java.io.Reader;
 import java.math.BigDecimal;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -13,6 +14,8 @@ import com.github.gv2011.util.serviceloader.Service;
 public interface JsonFactory {
 
   JsonNode deserialize(String json);
+
+  JsonReader jsonReader(Reader in);
 
   JsonList asJsonList(IList<?> list, Function<Object,JsonNode> converter);
 
