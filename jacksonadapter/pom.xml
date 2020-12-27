@@ -1,56 +1,57 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>com.github.gv2011</groupId>
-        <artifactId>util-parent</artifactId>
-        <version>0.5.7-SNAPSHOT</version>
-    </parent>
+  <parent>
+    <groupId>com.github.gv2011</groupId>
+    <artifactId>util-parent</artifactId>
+    <version>0.5.7-SNAPSHOT</version>
+  </parent>
 
-    <artifactId>jacksonadapter</artifactId>
-    <inceptionYear>2018</inceptionYear>
+  <artifactId>jacksonadapter</artifactId>
+  <inceptionYear>2018</inceptionYear>
 
-    <dependencies>
-    
-        <dependency>
-            <groupId>com.github.gv2011</groupId>
-            <artifactId>util</artifactId>
-            <version>${util.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.gv2011</groupId>
-            <artifactId>util-json</artifactId>
-            <version>${util.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.gv2011</groupId>
-            <artifactId>util-beans</artifactId>
-            <version>${util.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
+  <dependencies>
 
-        <dependency>
-            <groupId>com.github.gv2011</groupId>
-            <artifactId>testutil</artifactId>
-            <version>${util.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.gv2011</groupId>
-            <artifactId>gcol</artifactId>
-            <version>${util.version}</version>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>util-apis</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>util-json</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>util-beans</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
 
-    </dependencies>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>testutil</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>gcol</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
 
 </project>

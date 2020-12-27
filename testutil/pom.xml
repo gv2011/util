@@ -29,8 +29,7 @@
   <dependencies>
     <dependency>
       <groupId>com.github.gv2011</groupId>
-      <artifactId>util</artifactId>
-      <version>${util.version}</version>
+      <artifactId>util-apis</artifactId>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -51,31 +50,31 @@
     <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>gcol</artifactId>
-      <version>${util.version}</version>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>jsong</artifactId>
-      <version>${util.version}</version>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>util-beans</artifactId>
-      <version>${util.version}</version>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>util-beans-cglib</artifactId>
-      <version>${util.version}</version>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>util-bc</artifactId>
-      <version>${util.version}</version>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

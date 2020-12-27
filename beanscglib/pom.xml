@@ -14,7 +14,7 @@
     <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>util-beans</artifactId>
-      <version>${util.version}</version>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
