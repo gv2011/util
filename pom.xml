@@ -44,7 +44,6 @@
 
   <modules>
     <module>bc</module>
-    <module>context</module>
     <module>beans</module>
     <module>beanscglib</module>
     <module>beans-examples</module>
