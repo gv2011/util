@@ -30,9 +30,6 @@ import static com.github.gv2011.util.ex.Exceptions.notYetImplementedException;
 import java.io.IOException;
 import java.util.Optional;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
@@ -43,6 +40,10 @@ import com.github.gv2011.util.http.RequestHandler;
 import com.github.gv2011.util.http.Response;
 import com.github.gv2011.util.icol.IMap;
 import com.github.gv2011.util.icol.Path;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 final class Dispatcher extends AbstractHandler {
 

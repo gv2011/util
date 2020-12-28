@@ -38,6 +38,7 @@ import com.github.gv2011.util.Constants;
 
 import ch.qos.logback.core.OutputStreamAppender;
 
+
 public class SwingAppender3<E> extends OutputStreamAppender<E>{
 
   private static final CachedConstant<SwingAppender3<?>> INSTANCE = Constants.cachedConstant();

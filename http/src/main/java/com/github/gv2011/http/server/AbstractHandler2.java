@@ -71,16 +71,6 @@ abstract class AbstractHandler2 implements Handler{
   }
 
   @Override
-  public void addLifeCycleListener(final Listener listener) {
-    unsupported();
-  }
-
-  @Override
-  public void removeLifeCycleListener(final Listener listener) {
-    unsupported();
-  }
-
-  @Override
   public void setServer(final Server server) {
   }
 

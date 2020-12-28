@@ -1,4 +1,4 @@
-package com.github.gv2011.http;
+package com.github.gv2011.http.imp;
 
 /*-
  * #%L

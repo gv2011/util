@@ -21,7 +21,7 @@
     <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>guava-core</artifactId>
-      <version>28.1</version>
+      <version>28.2-SNAPSHOT</version>
     </dependency>
 
   </dependencies>
