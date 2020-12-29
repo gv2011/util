@@ -1,4 +1,4 @@
 language: java
-jdk: openjdk15
+jdk: openjdk11
 install: true
 script: mvn clean install -B
