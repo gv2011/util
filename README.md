@@ -14,8 +14,8 @@ See file pom.xml.
 
     <dependency>
       <groupId>com.github.gv2011</groupId>
-      <artifactId>util</artifactId>
-      <version>${util.version}</version>
+      <artifactId>util-apis</artifactId>
+      <version>0.6</version>
     </dependency>
     
     <dependency>
