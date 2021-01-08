@@ -1,32 +1,5 @@
 package com.github.gv2011.util.html.imp;
 
-
-/*-
- * #%L
- * The MIT License (MIT)
- * %%
- * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
- * %%
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * #L%
- */
-
 import static com.github.gv2011.util.CollectionUtils.pair;
 import static com.github.gv2011.util.icol.ICollections.listOf;
 import static org.junit.Assert.fail;
@@ -34,15 +7,17 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 
 import com.github.gv2011.util.Pair;
+import com.github.gv2011.util.html.HtmlBuilder;
+import com.github.gv2011.util.html.HtmlUtils;
 import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonObject;
 import com.github.gv2011.util.json.JsonUtils;
 
 public class HtmlBuilderImpTest {
-
+  
   @Test
   public void testBuild() {
-    String html = new HtmlBuilderImp()
+    String html = HtmlUtils.htmlFactory().newBuilder()
       .setTitle("title1")
       .build().toString()
     ;
@@ -70,7 +45,7 @@ public class HtmlBuilderImpTest {
 
   @Test
   public void testLogin() {
-    final HtmlBuilderImp htmlBuilder = new HtmlBuilderImp();
+    final HtmlBuilder htmlBuilder = HtmlUtils.htmlFactory().newBuilder();
     htmlBuilder
       .setTitle("title1")
       .addForm()

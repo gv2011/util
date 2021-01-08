@@ -1,10 +1,10 @@
-package com.github.gv2011.http.server;
+package com.github.gv2011.util.html.imp;
 
 /*-
  * #%L
  * The MIT License (MIT)
  * %%
- * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016 - 2017 Vinz (https://github.com/gv2011)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,67 +25,53 @@ package com.github.gv2011.http.server;
  * THE SOFTWARE.
  * #L%
  */
-import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.Server;
 
-abstract class AbstractHandler2 implements Handler{
 
-  @Override
-  public void start() throws Exception {
-    unsupported();
+
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import com.github.gv2011.util.html.FormBuilder;
+import com.github.gv2011.util.html.TextFieldBuilder;
+
+class TextFieldBuilderImp implements TextFieldBuilder {
+
+  private final FormBuilderImp parent;
+  private String name;
+  private boolean password;
+  private final Element div;
+  private final Element input;
+
+  TextFieldBuilderImp(final FormBuilderImp formBuilder) {
+    parent = formBuilder;
+    final Element form = parent.element();
+    final Document doc = form.getOwnerDocument();
+    div = doc.createElement("div");
+    input = doc.createElement("input");
+    div.appendChild(input);
+    form.appendChild(div);
+    form.appendChild(doc.createTextNode("\n"));
   }
 
   @Override
-  public void stop() throws Exception {
-    unsupported();
+  public FormBuilder close() {
+    input.setAttribute("name", name);
+    input.setAttribute("id", name);
+    input.setAttribute("type", password?"password":"text");
+    return parent;
   }
 
   @Override
-  public boolean isRunning() {
-    return unsupported();
+  public TextFieldBuilder setName(final String name) {
+    this.name = name;
+    return this;
   }
 
   @Override
-  public boolean isStarted() {
-    return unsupported();
-  }
-
-  @Override
-  public boolean isStarting() {
-    return unsupported();
-  }
-
-  @Override
-  public boolean isStopping() {
-    return unsupported();
-  }
-
-  @Override
-  public boolean isStopped() {
-    return unsupported();
-  }
-
-  @Override
-  public boolean isFailed() {
-    return unsupported();
-  }
-
-  @Override
-  public void setServer(final Server server) {
-  }
-
-  @Override
-  public Server getServer() {
-    return unsupported();
-  }
-
-  @Override
-  public void destroy() {
-    unsupported();
-  }
-
-  private <T> T unsupported() {
-    throw new UnsupportedOperationException();
+  public TextFieldBuilder setPassword() {
+    password = true;
+    return this;
   }
 
 }

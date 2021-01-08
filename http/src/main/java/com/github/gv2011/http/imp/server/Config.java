@@ -1,4 +1,4 @@
-package com.github.gv2011.http.server;
+package com.github.gv2011.http.imp.server;
 
 /*-
  * #%L
@@ -25,38 +25,13 @@ package com.github.gv2011.http.server;
  * THE SOFTWARE.
  * #L%
  */
-import static com.github.gv2011.util.CollectionUtils.single;
-import static com.github.gv2011.util.ex.Exceptions.call;
+import java.net.URI;
 
-import org.eclipse.jetty.server.AbstractNetworkConnector;
-import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.Server;
+import com.github.gv2011.util.Pair;
+import com.github.gv2011.util.icol.IList;
 
-import com.github.gv2011.util.http.HttpServer;
-import com.github.gv2011.util.http.RequestHandler;
-import com.github.gv2011.util.icol.IMap;
-import com.github.gv2011.util.icol.Path;
+public interface Config {
 
-public class HttpServerImp implements HttpServer{
-
-  private final Server jetty;
-
-  public HttpServerImp(final IMap<Path, RequestHandler> handlers) {
-    jetty = new Server(80);
-    final Handler dispatcher = new Dispatcher(handlers);
-    jetty.setHandler(dispatcher );
-    call(jetty::start);
-  }
-
-  @Override
-  public void close() {
-    call(jetty::stop);
-    call(jetty::join);
-  }
-
-  @Override
-  public int port() {
-    return ((AbstractNetworkConnector)single(jetty.getConnectors())).getPort();
-  }
+  IList<Pair<URI,String>> handlers();
 
 }

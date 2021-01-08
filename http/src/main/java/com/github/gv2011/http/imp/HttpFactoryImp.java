@@ -1,10 +1,14 @@
 package com.github.gv2011.http.imp;
 
-import static com.github.gv2011.util.ex.Exceptions.notYetImplementedException;
+import static com.github.gv2011.util.icol.ICollections.iCollections;
 
-import java.util.Optional;
+import java.util.OptionalInt;
 
-import com.github.gv2011.http.server.HttpServerImp;
+import com.github.gv2011.http.imp.server.HttpServerImp;
+import com.github.gv2011.util.BeanUtils;
+import com.github.gv2011.util.Pair;
+import com.github.gv2011.util.StringUtils;
+import com.github.gv2011.util.UrlEncoding;
 import com.github.gv2011.util.bytes.TypedBytes;
 /*-
  * #%L
@@ -33,11 +37,14 @@ import com.github.gv2011.util.bytes.TypedBytes;
  */
 import com.github.gv2011.util.http.HttpFactory;
 import com.github.gv2011.util.http.HttpServer;
+import com.github.gv2011.util.http.Request;
 import com.github.gv2011.util.http.RequestHandler;
 import com.github.gv2011.util.http.Response;
 import com.github.gv2011.util.http.RestClient;
+import com.github.gv2011.util.http.Space;
 import com.github.gv2011.util.http.StatusCode;
-import com.github.gv2011.util.icol.IMap;
+import com.github.gv2011.util.icol.IList;
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.icol.Path;
 
 public final class HttpFactoryImp implements HttpFactory{
@@ -48,26 +55,45 @@ public final class HttpFactoryImp implements HttpFactory{
   }
 
   @Override
-  public HttpServer createServer(final IMap<Path, RequestHandler> handlers) {
-    return new HttpServerImp(handlers);
+  public HttpServer createServer(final IList<Pair<Space,RequestHandler>> handlers) {
+    return new HttpServerImp(this, handlers, OptionalInt.empty());
   }
 
   @Override
-  public Response createResponse() {
-    // TODO Auto-generated method stub
-    throw notYetImplementedException();
+  public HttpServer createServer(IList<Pair<Space,RequestHandler>> handlers, int httpPort) {
+    return new HttpServerImp(this, handlers, OptionalInt.of(httpPort));
   }
 
   @Override
-  public Response createResponse(final TypedBytes entity) {
-    // TODO Auto-generated method stub
-    throw notYetImplementedException();
+  public Response createResponse(final StatusCode statusCode, final Opt<TypedBytes> entity) {
+    return BeanUtils.beanBuilder(Response.class)
+      .set(Response::statusCode).to(statusCode)
+      .set(Response::entity).to(entity)
+      .build()
+    ;
   }
 
   @Override
-  public Response createResponse(final StatusCode statusCode, final Optional<TypedBytes> entity) {
-    // TODO Auto-generated method stub
-    throw notYetImplementedException();
+  public StatusCode statusOk() {
+    return StatusCodes.OK;
   }
 
+  @Override
+  public StatusCode statusNotFound() {
+    return StatusCodes.NOT_FOUND;
+  }
+  
+  public Path getPath(Request request){
+    return iCollections().pathFrom(request.path());
+  }
+
+  public String encodePath(Path path) {
+    return UrlEncoding.encodePath(path);
+  }
+
+  public Path decodePath(String path) {
+    return UrlEncoding.decodePath(StringUtils.removePrefix(path, "/"));
+  }
+
+  
 }

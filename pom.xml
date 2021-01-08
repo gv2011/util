@@ -49,6 +49,7 @@
     <module>context</module>
     <module>filetypes-tika</module>
     <module>gcol</module>
+    <module>html</module>
     <module>http</module>
     <module>image</module>
     <module>jacksonadapter</module>
@@ -64,7 +65,7 @@
       <dependency>
         <groupId>com.github.gv2011</groupId>
         <artifactId>util-apis</artifactId>
-        <version>0.6</version>
+        <version>0.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>com.github.gv2011.logback</groupId>
