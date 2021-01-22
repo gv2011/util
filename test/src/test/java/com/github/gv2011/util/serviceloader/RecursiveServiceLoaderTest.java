@@ -69,6 +69,10 @@ public class RecursiveServiceLoaderTest {
 
     assertThat(DOWNLOADER_FACTORY, is(DownloadTask.Factory.class.getName()));
     assertThat(DEFAULT_DOWNLOADER_FACTORY, is(DefaultDownloadTaskFactory.class.getName()));
+
+//    assertThat(UNICODE_PROVIDER, is(UnicodeProvider.class.getName()));
+//    assertThat(DEFAULT_UNICODE_PROVIDER, is(JdkUnicodeProviderTest.PROVIDER_CLASSNAME));
+    
   }
 
 }

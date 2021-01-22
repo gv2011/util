@@ -1,30 +1,5 @@
 package com.github.gv2011.util.sec;
 
-/*-
- * #%L
- * util-test
- * %%
- * Copyright (C) 2016 - 2019 Vinz (https://github.com/gv2011)
- * %%
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * #L%
- */
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -39,17 +14,17 @@ public class CertificateBuilderManualTest {
 
   public static void main(final String[] args) throws Exception{
     final RsaKeyPair keyPair = RsaKeyPair.create();
-    final X509Certificate cert = CertificateBuilder.create()
-      .setSubject(new LdapName("CN=default"))
+    final X509Certificate cert = SecProvider.instance().createCertificateBuilder()
+      .setSubject(new LdapName("CN=Vinz"))
       .build(keyPair)
     ;
     final KeyStore ks = KeyStore.getInstance(SecUtils.PKCS12);
     ks.load(null, null);
-    ks.setKeyEntry("default", keyPair.getPrivate(), "default".toCharArray(), new Certificate[]{cert});
+    ks.setKeyEntry("default", keyPair.getPrivate(), "".toCharArray(), new Certificate[]{cert});
     try(OutputStream out =
       Files.newOutputStream(Paths.get("cert.p12"), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
     ){
-      ks.store(out, "default".toCharArray());
+      ks.store(out, "".toCharArray());
     }
   }
 

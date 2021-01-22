@@ -26,6 +26,7 @@ final class DirectoryFormatter {
         (
           s
           .filter(f->Files.isRegularFile(f, NOFOLLOW_LINKS) || Files.isDirectory(f, NOFOLLOW_LINKS))
+          .filter(f->!f.getFileName().toString().equals(FileHandler.AUTHORISED_USERS))
           .map(f->pair(Files.isDirectory(f, NOFOLLOW_LINKS), f.getFileName().toString()))
         )
       );
