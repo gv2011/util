@@ -42,6 +42,7 @@
     <java.release>11</java.release>
     <logback.version>1.3.2</logback.version>
     <guava-core.version>28.3</guava-core.version>
+    <util-apis.version>0.7</util-apis.version>
   </properties>
 
   <modules>
@@ -68,7 +69,7 @@
       <dependency>
         <groupId>com.github.gv2011</groupId>
         <artifactId>util-apis</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>${util-apis.version}</version>
       </dependency>
       <dependency>
         <groupId>com.github.gv2011</groupId>
