@@ -1,5 +1,7 @@
 package com.github.gv2011.util.gcol;
 
+import static com.github.gv2011.util.Verify.verify;
+
 import java.util.Collection;
 /*-
  * #%L
@@ -32,6 +34,7 @@ import java.util.Optional;
 
 import com.github.gv2011.util.Comparison;
 import com.github.gv2011.util.icol.ICollections;
+import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.Path;
 
 final class PathImp extends IListWrapper<String> implements Path{
@@ -40,7 +43,7 @@ final class PathImp extends IListWrapper<String> implements Path{
 
   static final Path EMPTY = new PathImp(ICollections.emptyList());
 
-  private PathImp(final List<String> delegate) {
+  PathImp(final List<String> delegate) {
     super(delegate);
   }
 
@@ -70,5 +73,27 @@ final class PathImp extends IListWrapper<String> implements Path{
     return new PathImp(super.join(elements));
   }
 
+  @Override
+  public Path tail() {
+    return this.size()==1 ? EMPTY : new PathImp(super.tail());
+  }
 
+  @Override
+  public Path removePrefix(Path prefix) {
+    verify(startsWith(prefix));
+    return subList(prefix.size(), size());
+  }
+
+  @Override
+  public Path subList(int fromIndex, int toIndex) {
+    if(fromIndex==0 && toIndex==size()) return this;
+    else if(fromIndex==toIndex) return EMPTY;
+    else {
+      final IList<String> subList = super.subList(fromIndex, toIndex);
+      assert !subList.isEmpty();
+      return new PathImp(subList);
+    }
+  }
+
+  
 }

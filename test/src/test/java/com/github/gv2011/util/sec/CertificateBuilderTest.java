@@ -28,7 +28,7 @@ public class CertificateBuilderTest extends AbstractTest{
   public void testBuild() throws Exception {
     final RsaKeyPair keyPair = RsaKeyPair.parse(getResourceBytes("rsaprivcrt.pkcs8"));
     final LdapName subject = call(()->new LdapName("CN=test.example.com"));
-    final X509Certificate cert = CertificateBuilder.create()
+    final X509Certificate cert = SecProvider.instance().createCertificateBuilder()
       .setSubject(subject)
       .setSubjectPublicKey(keyPair.getPublic())
       .build(keyPair)

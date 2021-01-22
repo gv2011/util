@@ -248,7 +248,7 @@ public class DefaultTypeRegistry implements TypeRegistry{
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   private TypedStringType createTypedStringType(final Class<?> clazz) {
-    return new TypedStringType(jf, clazz);
+    return new TypedStringType(jf, annotationHandler, clazz);
   }
 
 

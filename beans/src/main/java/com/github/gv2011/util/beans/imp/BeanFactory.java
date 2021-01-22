@@ -87,7 +87,7 @@ public abstract class BeanFactory{
     }
     if(whyNot.isEmpty()){
       if(!(annotationHandler.annotatedAsBean(clazz) || Bean.class.isAssignableFrom(clazz))){
-        whyNot = format("{} is neither annotated as beann nor a subclass of Bean.", clazz);
+        whyNot = format("{} is neither annotated as bean nor a subclass of Bean.", clazz);
       }
     }
     return whyNot;

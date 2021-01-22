@@ -1,9 +1,15 @@
 package com.github.gv2011.util.beans.imp;
 
+import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
+import static com.github.gv2011.util.ex.Exceptions.format;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.function.Function;
+
+import com.github.gv2011.util.beans.AnnotationHandler;
 
 /*-
  * #%L
@@ -42,17 +48,37 @@ class TypedStringType<S extends TypedString<S>> extends AbstractElementaryType<S
   private final Opt<S> defaultValue;
   private final Function<String,S> constructor;
 
-  TypedStringType(final JsonFactory jf, final Class<S> clazz) {
+  TypedStringType(final JsonFactory jf, final AnnotationHandler annotationHandler, final Class<S> clazz) {
     super(jf, clazz);
     if(clazz.isInterface()){
       constructor = v->TypedString.create(clazz, v);
     }
     else{
-      final Constructor<S> constr = call(()->clazz.getConstructor(String.class));
-      constructor = v->call(()->constr.newInstance(v));
+      final Opt<Constructor<S>> constr = call(()->{
+        try {
+          return Opt.of(clazz.getConstructor(String.class));
+        } catch (NoSuchMethodException e) {
+          return Opt.empty();
+        }
+      });
+      constructor = constr
+        .map(c->(Function<String,S>)v->call(()->c.newInstance(v)))
+        .orElseGet(()->{
+          final Method staticParseMethod = call(()->clazz.getMethod("parse", String.class));
+          verify(
+            Modifier.isStatic(staticParseMethod.getModifiers()), 
+            ()->format("{} is not static.", staticParseMethod)
+          );
+          verify(
+            clazz.isAssignableFrom(staticParseMethod.getReturnType()),
+            ()->format("{} does not return {}.", staticParseMethod, clazz)
+          );
+          return v->clazz.cast(call(()->staticParseMethod.invoke(null, v)));
+        })
+      ;
     }
     handler = new TypeHandler();
-    this.defaultValue = Opt.of(handler.parse(""));
+    defaultValue = annotationHandler.getDefaultValue(clazz).map(handler::parse);
   }
 
   @Override
