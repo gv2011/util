@@ -53,6 +53,8 @@ import com.github.gv2011.util.time.TimeUtils;
 
 public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
   
+  private static final Duration WAIT_AFTER_UPDATE_ERROR = Duration.ofDays(1);
+
   private static final Logger LOG = getLogger(AcmeCertHandler.class);
   
   private static final Path TOKEN_BASE_PATH = pathOf(".well-known", "acme-challenge");
@@ -81,11 +83,14 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
     this.acmeAccess = acmeAccess;
     this.useBucket = useBucket;
     updaterThread = new Thread(this::update, "acme-updater");
-    updaterThread.start();
     bucketFiller = useBucket
       ? clock.runAtInterval(this::fillBucket, Duration.ofHours(4)) //50 per week
       : ()->{}
     ;
+  }
+  
+  public void start(){
+    updaterThread.start();
   }
 
   @Override
@@ -307,25 +312,29 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
     }
   }
   
-  private Instant updateTime(DomainEntry entry){
-    X509Certificate cert = entry.certificateChain().first();
-    final Instant latest = cert.getNotAfter().toInstant();
-    Duration validityPeriod = Duration.between(cert.getNotBefore().toInstant(), latest);
+  private Instant updateTimeX(DomainEntry entry){
+    final X509Certificate cert = entry.certificateChain().first();
+    final Instant expiryDate = cert.getNotAfter().toInstant();
+    final Duration validityPeriod = Duration.between(cert.getNotBefore().toInstant(), expiryDate);
     verify(!validityPeriod.isNegative() && !validityPeriod.isZero());
-    Duration reserve = TimeUtils.min(validityPeriod.dividedBy(2), Duration.ofDays(15));
-    Instant time = cert.getNotAfter().toInstant().minus(reserve);
+    final Duration reserve = TimeUtils.min(validityPeriod.dividedBy(2), Duration.ofDays(15));
+    final Instant updateTime = expiryDate.minus(reserve);
     return entry.lastError()
-      .map(l->{
-        final Instant t = TimeUtils.latest(time, l.plus(Duration.ofDays(3)));
-        if(t.isAfter(latest.minus(Duration.ofDays(1)))){
+      .map(lastErrorDate->{
+        //Don't repeat to frequently in case of errors:
+        final Instant correctedUpdateTime = TimeUtils.latest(updateTime, lastErrorDate.plus(WAIT_AFTER_UPDATE_ERROR));
+        if(correctedUpdateTime.isAfter(expiryDate.minus(WAIT_AFTER_UPDATE_ERROR))){
           LOG.warn("Expiry of {} due to errors imminent.", entry.domain());
         }
-        return t;
+        return correctedUpdateTime;
       })
-      .orElse(time)
+      .orElse(updateTime)
     ;
   }
 
+  private Instant updateTime(DomainEntry entry){
+    return entry.certificateChain().first().getNotBefore().toInstant().plus(Duration.ofMinutes(5));
+  }
 
 
   @Override

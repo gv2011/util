@@ -76,16 +76,18 @@ public final class HttpFactoryImp implements HttpFactory{
     AcmeStore acmeStore
   ) {
     final CachedConstant<HttpServerImp> server = Constants.cachedConstant();
+    final AcmeCertHandler certHandler = new AcmeCertHandler(Clock.get(), acmeStore, server::get, acmeStore.production());
     server.set(
       new HttpServerImp(
         this, 
         handlers, 
         httpPort, 
-        Opt.of(new AcmeCertHandler(Clock.get(), acmeStore, server::get, acmeStore.production())), 
+        Opt.of(certHandler), 
         new SimpleHttpsDomainPredicate(), 
         httpsPort
       )
     );
+    certHandler.start();
     return server.get();
   }
 
