@@ -1,5 +1,5 @@
-[![Maven Central](https://img.shields.io/maven-central/v/com.github.gv2011/util-parent.svg)](https://repo1.maven.org/maven2/com/github/gv2011/util/)
-[![Build Status](https://travis-ci.org/gv2011/util.svg?branch=master)](https://travis-ci.org/gv2011/util)
+[![Maven Central](https://img.shields.io/maven-central/v/com.github.gv2011/util-parent.svg)](https://repo1.maven.org/maven2/com/github/gv2011/util-parent/)
+[![Build Status](https://travis-ci.org/gv2011/util.svg?branch=dev)](https://travis-ci.org/gv2011/util)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 # util
@@ -15,7 +15,7 @@ See file pom.xml.
     <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>util-apis</artifactId>
-      <version>0.6</version>
+      <version>0.7</version>
     </dependency>
     
     <dependency>
@@ -50,3 +50,7 @@ See file pom.xml.
       <scope>test</scope>
     </dependency>
 
+
+## Sonatype repo
+
+[https://oss.sonatype.org/content/groups/public/com/github/gv2011/util-parent/](https://oss.sonatype.org/content/groups/public/com/github/gv2011/util-parent/)
