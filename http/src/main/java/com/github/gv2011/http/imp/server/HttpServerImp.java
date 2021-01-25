@@ -5,6 +5,7 @@ import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.bug;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.http.HttpFactory.SERVER_SELECTS_PORT;
+import static java.util.stream.Collectors.joining;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.security.KeyStore;
@@ -116,9 +117,15 @@ public class HttpServerImp implements HttpServer, AcmeAccess{
     call(()->keyStore.load(null));
     certificateHandler.availableDomains().forEach(d->{
       final Opt<ServerCertificate> cert = certHandler.get().getCertificate(d, this::updateCertificate);
-      cert.ifPresent(c->SecUtils.addToKeyStore(c, keyStore));
+      cert.ifPresent(c->{
+        SecUtils.addToKeyStore(c, keyStore);
+        activeHttpsDomains.add(d);
+      });
     });
-    
+    LOG.warn(
+      "Active https domains: {}.", 
+      activeHttpsDomains.stream().sorted().map(Domain::toString).collect(joining(", "))
+    );
     final SslContextFactory.Server sslContextFactory = new SslContextFactory.Server(){
       @Override
       protected TrustManager[] getTrustManagers(KeyStore trustStore, Collection<? extends CRL> crls) {
@@ -163,7 +170,10 @@ public class HttpServerImp implements HttpServer, AcmeAccess{
             });
           });
           activeHttpsDomains.add(domain);
-          LOG.warn("Activated https domain {}.", domain);
+          LOG.warn(
+            "Activated https domain {}. Active domains: {}.", 
+            domain, activeHttpsDomains.stream().sorted().map(Domain::toString).collect(joining(", "))
+          );
         }
       }
     } 

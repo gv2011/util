@@ -161,7 +161,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
   
   private boolean domainIsActive(Domain domain){
     final boolean active = domainIsActive.test(domain);
-    if(!active) LOG.warn("Domain {} is inactive.");
+    if(!active) LOG.warn("Domain {} is inactive.", domain);
     return active;
   }
 

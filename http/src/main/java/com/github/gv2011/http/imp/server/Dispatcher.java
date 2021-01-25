@@ -10,7 +10,6 @@ import static java.util.stream.Collectors.joining;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.IOException;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,7 +26,6 @@ import com.github.gv2011.http.imp.HttpFactoryImp;
 import com.github.gv2011.util.AutoCloseableNt;
 import com.github.gv2011.util.BeanUtils;
 import com.github.gv2011.util.Pair;
-import com.github.gv2011.util.StringUtils;
 import com.github.gv2011.util.bytes.DataType;
 import com.github.gv2011.util.bytes.TypedBytes;
 import com.github.gv2011.util.http.Request;
@@ -103,13 +101,16 @@ final class Dispatcher extends AbstractHandler {
         redirectUrl = Opt.empty();
         response = token.map(http::createResponse);
       }
-      else{      
-        if(request.isPresent() ? !secure && isHttpsHost.test(request.get().host()) : false){
+      else{
+        final Opt<Domain> redirectHost = getRedirectTargetHost(request, secure);
+        if(redirectHost.isPresent()){
           //Redirect to https
-          httpsActivator.accept(request.get().host());
+          if(!secure){ //Ensure domain is activated if request is plain.
+            httpsActivator.accept(redirectHost.get());
+          }
           redirectUrl = Opt.of(URIUtil.newURI(
             "https",
-            stripWww(baseRequest.getServerName()),
+            redirectHost.get().toAscii(),
             443,
             baseRequest.getRequestURI(),
             baseRequest.getQueryString()
@@ -142,9 +143,10 @@ final class Dispatcher extends AbstractHandler {
           request.flatMap(r->r.parameters().isEmpty() ? Opt.empty() : Opt.of("params: "+r.parameters())),
           token.map(t->"token"),
           redirectUrl.map(r->"redirect: "+r),
-          optSpaceAndHandler.map(sh->"handler: "+sh),
+          optSpaceAndHandler.map(sh->"space: "+sh.getKey()),
+          optSpaceAndHandler.map(sh->"handler: "+sh.getValue()),
           response.map(r->"status: "+r.statusCode().code()),
-          response.flatMap(Response::entity).map(e->"entity: "+e.content().longSize()+" bytes, type "+e.dataType())
+          response.flatMap(Response::entity).map(e->"entity: "+e.content().longSize()+" bytes; "+e.dataType())
         )
         .filter(Opt::isPresent)
         .map(o->o.get().toString())
@@ -172,6 +174,23 @@ final class Dispatcher extends AbstractHandler {
     }
   }
 
+  private Opt<Domain> getRedirectTargetHost(final Opt<Request> request, final boolean secure) {
+    if(!request.isPresent()) return Opt.empty();
+    else{
+      final Domain host = request.get().host();
+      final Domain stripped = stripWww(host);
+      if(!isHttpsHost.test(stripped)) return Opt.empty();
+      else{
+        if(secure){
+          return isWww(host) ? Opt.of(stripped) : Opt.empty();
+        }
+        else{
+          return Opt.of(stripped);
+        }
+      }
+    }
+  }
+
   private String errorInfo(HttpServletRequest r) {
     return
       "From "+r.getRemoteHost() + " | "+
@@ -181,8 +200,13 @@ final class Dispatcher extends AbstractHandler {
     ;
   }
 
-  private String stripWww(String serverName) {
-    return StringUtils.tryRemovePrefix(serverName.toLowerCase(Locale.ROOT), "www.").orElse(serverName);
+  private Domain stripWww(Domain domain) {
+    final Path path = domain.asPath();
+    return path.first().equals("www") ? Domain.parse(path.tail()) : domain;
+  }
+
+  private boolean isWww(Domain domain) {
+    return domain.asPath().first().equals("www") ;
   }
 
   private Opt<TypedBytes> getMatchingToken(final Opt<Request> optReq) {
