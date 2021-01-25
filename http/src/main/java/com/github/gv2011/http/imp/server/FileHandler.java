@@ -80,7 +80,7 @@ public final class FileHandler implements RequestHandler{
       }
     }
     else authorised = true;
-    tryRemovePrefix(PUB_RSA, AUTHORISED_USERS);
+    tryRemovePrefix(PUB_RSA, AUTHORISED_USERS); //TODO
     
     return
       (authorised ? resolve(dir, path) : Opt.<java.nio.file.Path>empty())

@@ -74,16 +74,20 @@ public final class HttpFactoryImp implements HttpFactory{
 
   @Override
   public HttpServer createServer(
-    IList<Pair<Space, RequestHandler>> handlers, 
-    OptionalInt httpPort, 
+    IList<Pair<Space, RequestHandler>> handlers,
+    Predicate<Domain> isHttpsHost,
+    OptionalInt httpPort,
     OptionalInt httpsPort,
+    OptionalInt tokenPort,
     AcmeStore acmeStore
   ) {
     final CachedConstant<HttpServerImp> server = Constants.cachedConstant();
-    //TODO: support server port selection?
-    final Constant<Integer> lazyPort = Constants.cachedConstant(()->server.get().httpPort());
+    final Constant<Integer> tokenPortConst = tokenPort.isPresent()
+      ? Constants.cachedConstant(tokenPort::getAsInt)
+      : Constants.cachedConstant(()->server.get().httpPort())
+    ;
     final AcmeCertHandler certHandler = new AcmeCertHandler(
-      Clock.get(), acmeStore, server::get, lazyPort, acmeStore.production()
+      Clock.get(), acmeStore, server::get, tokenPortConst, acmeStore.production()
     );
     server.set(
       new HttpServerImp(
@@ -91,7 +95,7 @@ public final class HttpFactoryImp implements HttpFactory{
         handlers, 
         httpPort, 
         Opt.of(certHandler), 
-        new SimpleHttpsDomainPredicate(), 
+        isHttpsHost, 
         httpsPort
       )
     );
