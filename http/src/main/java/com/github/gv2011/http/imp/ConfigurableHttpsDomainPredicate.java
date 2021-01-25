@@ -1,6 +1,7 @@
 package com.github.gv2011.http.imp;
 
-import static com.github.gv2011.util.icol.ICollections.toIMap;
+import static com.github.gv2011.util.CollectionUtils.pair;
+import static com.github.gv2011.util.icol.ICollections.toISet;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -11,8 +12,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import com.github.gv2011.util.FileUtils;
+import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.StringUtils;
-import com.github.gv2011.util.icol.IMap;
+import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.Path;
 import com.github.gv2011.util.sec.Domain;
 
@@ -57,14 +59,14 @@ public final class ConfigurableHttpsDomainPredicate extends SimpleHttpsDomainPre
       knownDomains.clear();
     }
     return knownDomains.computeIfAbsent(domain, d->{
-      final IMap<Domain, Boolean> domains = readDomains();
+      final ISet<Pair<Domain,Boolean>> domains = readDomains();
       boolean result;
-      if(domains.entrySet().stream() //exact match 
+      if(domains.stream() //exact match 
         .filter(e->!e.getValue().booleanValue())
         .anyMatch(e->e.getKey().equals(d))
       ) result = true;
       else{ //wildcard match 
-        result = domains.entrySet().stream()
+        result = domains.stream()
           .filter(e->e.getValue().booleanValue())
           .anyMatch(e->{
             final Path wildCard = e.getKey().asPath();
@@ -77,15 +79,25 @@ public final class ConfigurableHttpsDomainPredicate extends SimpleHttpsDomainPre
     });
   }
 
-  private final IMap<Domain,Boolean> readDomains() {
+  private final ISet<Pair<Domain,Boolean>> readDomains() {
     return 
       StringUtils.split(file.get(), '\n').stream()
       .map(String::trim)
       .filter(l->!l.isEmpty())
-      .collect(toIMap(
-        l->Domain.parse(StringUtils.tryRemovePrefix(l, WILDCARD).orElse(l)),
-        l->l.startsWith(WILDCARD)
-      ))
+      .map(l->{
+        String d;
+        boolean isWildcard;
+        if(l.startsWith(WILDCARD)) {
+          d = StringUtils.removePrefix(l, WILDCARD);
+          isWildcard = true;
+        }
+        else{
+          d = l;
+          isWildcard = false;
+        }
+        return pair(Domain.parse(d), isWildcard);
+      })
+      .collect(toISet())
     ;
   }
 

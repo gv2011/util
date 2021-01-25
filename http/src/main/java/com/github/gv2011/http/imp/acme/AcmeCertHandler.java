@@ -10,6 +10,7 @@ import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.ex.Exceptions.wrap;
 import static com.github.gv2011.util.icol.ICollections.listFrom;
 import static com.github.gv2011.util.icol.ICollections.pathOf;
+import static com.github.gv2011.util.icol.ICollections.toISet;
 import static java.util.Comparator.comparing;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -20,6 +21,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.shredzone.acme4j.Account;
@@ -59,14 +61,16 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
 
   private static final Logger LOG = getLogger(AcmeCertHandler.class);
   
-  private static final Path TOKEN_BASE_PATH = pathOf(".well-known", "acme-challenge");
+  private static final String WELL_KNOWN = ".well-known";
+  private static final Path TOKEN_BASE_PATH = pathOf(WELL_KNOWN, "acme-challenge");
   
   private static final int BUCKET_CAPACITY = 50;
   private static final Duration BUCKET_INTERVAL = Duration.ofHours(4);
   
   private final AcmeStore store;
+  private final Predicate<Domain> domainIsActive;
   private final Supplier<AcmeAccess> acmeAccess;
-  private final Constant<Integer> httpPort;
+  private final Constant<Integer> tokenPort;
   private final boolean useBucket;
  
   private final Poller poller = TimeUtils.poller(Duration.ofSeconds(3), Opt.of(Duration.ofSeconds(60)));
@@ -82,11 +86,20 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
 
 
 
-  public AcmeCertHandler(Clock clock, AcmeStore store, Supplier<AcmeAccess> acmeAccess, final Constant<Integer> httpPort, boolean useBucket) {
+
+  public AcmeCertHandler(
+    Clock clock, 
+    AcmeStore store,
+    Predicate<Domain> domainIsActive,
+    Supplier<AcmeAccess> acmeAccess, 
+    final Constant<Integer> tokenPort, 
+    boolean useBucket
+  ) {
     this.clock = clock;
     this.store = store;
+    this.domainIsActive = domainIsActive;
     this.acmeAccess = acmeAccess;
-    this.httpPort = httpPort;
+    this.tokenPort = tokenPort;
     this.useBucket = useBucket;
     updaterThread = new Thread(this::update, "acme-updater");
   }
@@ -97,7 +110,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
 
   @Override
   public ISet<Domain> availableDomains() {
-    return store.domains();
+    return store.availableDomains().stream().filter(this::domainIsActive).collect(toISet());
   }
 
   @Override
@@ -106,38 +119,50 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
   }
     
   public Opt<ServerCertificate> getCertificate(Domain host, Consumer<CertificateUpdate> updater, boolean create) {
-    verify(!host.isInetAddress() && !host.isLocalhost(), ()->format("Host {} not supported.", host));
-    synchronized(lock){
-      try{
-        final Opt<ServerCertificate> result;
-        final DomainEntry entry = store.getEntry(host);
-            
-        if(!entry.certificateChain().isEmpty()) {
-          result = Opt.of(BeanUtils.beanBuilder(ServerCertificate.class)
-            .set(ServerCertificate::domain).to(host)
-            .set(ServerCertificate::keyPair).to(entry.key())
-            .set(ServerCertificate::certificateChain).to(entry.certificateChain())
-            .build()
-          );
-          LOG.info("Certificate for {} exists.", host);
+    if(!domainIsActive(host)){
+      LOG.info("Host {} is not active.", host);
+      return Opt.empty();
+    }
+    else{
+      verify(!host.isInetAddress() && !host.isLocalhost(), ()->format("Host {} not supported.", host));
+      synchronized(lock){
+        try{
+          final Opt<ServerCertificate> result;
+          final DomainEntry entry = store.getEntry(host);
+              
+          if(!entry.certificateChain().isEmpty()) {
+            result = Opt.of(BeanUtils.beanBuilder(ServerCertificate.class)
+              .set(ServerCertificate::domain).to(host)
+              .set(ServerCertificate::keyPair).to(entry.key())
+              .set(ServerCertificate::certificateChain).to(entry.certificateChain())
+              .build()
+            );
+            LOG.info("Certificate for {} exists.", host);
+          }
+          else if(!create){
+            result = Opt.empty();
+            LOG.info("Certificate for {} does not exist - should not create one.", host);
+          }
+          else {
+            LOG.info("Creating certificate for {}.", entry.domain());
+            if(useBucket){checkBucket();}
+            result = Opt.of(orderCertificate(entry));
+          }
+          return result;
+        }catch(Throwable t){
+          LOG.error("Could not get certificate.", t);
+          throw t;
+        }finally{
+          lock.notifyAll();
         }
-        else if(!create){
-          result = Opt.empty();
-          LOG.info("Certificate for {} does not exist - should not create one.", host);
-        }
-        else {
-          LOG.info("Creating certificate for {}.", entry.domain());
-          if(useBucket){checkBucket();}
-          result = Opt.of(orderCertificate(entry));
-        }
-        return result;
-      }catch(Throwable t){
-        LOG.error("Could not get certificate.", t);
-        throw t;
-      }finally{
-        lock.notifyAll();
       }
     }
+  }
+  
+  private boolean domainIsActive(Domain domain){
+    final boolean active = domainIsActive.test(domain);
+    if(!active) LOG.warn("Domain {} is inactive.");
+    return active;
   }
 
   private void checkBucket() {
@@ -221,7 +246,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
   private void checkTokenCanBeSet(Domain domain) {
     final UUID random = UUID.randomUUID();
     final Path path = TOKEN_BASE_PATH.addElement(random.toString());
-    final URL url = call(()->new URL("http://"+domain.toAscii()+":"+httpPort.get()+"/"+path.urlEncoded()));
+    final URL url = call(()->new URL("http://"+domain.toAscii()+":"+tokenPort.get()+"/"+path.urlEncoded()));
     final String content = random.toString();
     try(final AutoCloseableNt token = acmeAccess.get().activate(
       domain, 
@@ -282,7 +307,8 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
       synchronized(lock){
         try{
           Instant now = clock.instant();
-          Opt<Pair<Instant, DomainEntry>> nextUpdate = store.domains().stream()
+          Opt<Pair<Instant, DomainEntry>> nextUpdate = store.availableDomains().stream()
+            .filter(this::domainIsActive)
             .map(d->store.getEntry(d))
             .filter(e->!e.certificateChain().isEmpty())
             .map(e->pair(updateTime(e),e))

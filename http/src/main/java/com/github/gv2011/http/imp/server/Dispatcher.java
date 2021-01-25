@@ -3,6 +3,7 @@ package com.github.gv2011.http.imp.server;
 import static com.github.gv2011.util.CollectionUtils.pair;
 import static com.github.gv2011.util.CollectionUtils.tryGet;
 import static com.github.gv2011.util.ex.Exceptions.call;
+import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.icol.ICollections.pathFrom;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
@@ -11,6 +12,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -83,84 +85,100 @@ final class Dispatcher extends AbstractHandler {
   ) throws IOException, ServletException {
     
     final Opt<Request> request = tryConvert(servletRequest);
-
-    final Opt<TypedBytes> token = getMatchingToken(request);
-
-    final Opt<Pair<Space, RequestHandler>> optSpaceAndHandler;
+    final boolean secure = servletRequest.isSecure();
     
-    final Opt<Response> response;
+    try{
     
-    final Opt<String> redirectUrl;
-    
-    if(token.isPresent()){
-      //Token response
-      optSpaceAndHandler = Opt.empty();
-      redirectUrl = Opt.empty();
-      response = token.map(http::createResponse);
-    }
-    else{      
-      if(request.isPresent() ? !servletRequest.isSecure() && isHttpsHost.test(request.get().host()) : false){
-        //Redirect to https
-        httpsActivator.accept(request.get().host());
-        redirectUrl = Opt.of(URIUtil.newURI(
-          "https",
-          stripWww(baseRequest.getServerName()),
-          443,
-          baseRequest.getRequestURI(),
-          baseRequest.getQueryString()
-        ));
+      final Opt<TypedBytes> token = getMatchingToken(request);
+  
+      final Opt<Pair<Space, RequestHandler>> optSpaceAndHandler;
+      
+      final Opt<Response> response;
+      
+      final Opt<String> redirectUrl;
+      
+      if(token.isPresent()){
+        //Token response
         optSpaceAndHandler = Opt.empty();
-        response = Opt.empty();
-      }
-      else{
-        //Regular response
         redirectUrl = Opt.empty();
-        optSpaceAndHandler = request.flatMap(this::selectHandler);
-        response = request
-          .flatMap(req->
-            optSpaceAndHandler
-            .map(spaceAndHandler->{
-              final RequestHandler hndlr = spaceAndHandler.getValue();
-              return hndlr.handle(removePathPrefix(req, pathFrom(spaceAndHandler.getKey().path())));
-            })
-          )
-        ;
+        response = token.map(http::createResponse);
       }
+      else{      
+        if(request.isPresent() ? !secure && isHttpsHost.test(request.get().host()) : false){
+          //Redirect to https
+          httpsActivator.accept(request.get().host());
+          redirectUrl = Opt.of(URIUtil.newURI(
+            "https",
+            stripWww(baseRequest.getServerName()),
+            443,
+            baseRequest.getRequestURI(),
+            baseRequest.getQueryString()
+          ));
+          optSpaceAndHandler = Opt.empty();
+          response = Opt.empty();
+        }
+        else{
+          //Regular response
+          redirectUrl = Opt.empty();
+          optSpaceAndHandler = request.flatMap(this::selectHandler);
+          response = request
+            .flatMap(req->
+              optSpaceAndHandler
+              .map(spaceAndHandler->{
+                final RequestHandler hndlr = spaceAndHandler.getValue();
+                return hndlr.handle(removePathPrefix(req, pathFrom(spaceAndHandler.getKey().path())));
+              })
+            )
+          ;
+        }
+      }
+      
+      //Log request:
+      if(LOG.isInfoEnabled())LOG.info(
+        Stream.of(
+          Opt.of("From: "+servletRequest.getRemoteHost()),
+          request.map(r->(secure ? "host: " : "host (plain): ")+r.host()),
+          request.map(r->"path: "+r.path()),
+          request.flatMap(r->r.parameters().isEmpty() ? Opt.empty() : Opt.of("params: "+r.parameters())),
+          token.map(t->"token"),
+          redirectUrl.map(r->"redirect: "+r),
+          optSpaceAndHandler.map(sh->"handler: "+sh),
+          response.map(r->"status: "+r.statusCode().code()),
+          response.flatMap(Response::entity).map(e->"entity: "+e.content().longSize()+" bytes, type "+e.dataType())
+        )
+        .filter(Opt::isPresent)
+        .map(o->o.get().toString())
+        .collect(joining(" | "))
+      );
+      
+      response
+        .ifPresent(
+          r->write(r, servletResponse)
+        ).orElseDo(()->{
+          redirectUrl.ifPresent(u->{
+            servletResponse.setHeader("Location", u);          
+            servletResponse.setStatus(HttpStatus.MOVED_PERMANENTLY_301);
+            call(servletResponse::flushBuffer);
+          }).orElseDo(()->{
+            call(()->servletResponse.sendError(HttpStatus.NOT_FOUND_404));
+          });
+        })
+      ;
+    
+    } catch(Throwable t){
+      final UUID id = UUID.randomUUID();
+      LOG.error(format("Handling error {}. Request: {}"), id, errorInfo(servletRequest), t);
+      call(()->servletResponse.sendError(HttpStatus.NOT_FOUND_404, id.toString()));
     }
-    
-    //Log request:
-    if(LOG.isInfoEnabled())LOG.info(
-      Stream.of(
-        Opt.of("From "+servletRequest.getRemoteHost()),
-        request.map(r->"host: "+r.host()),
-        request.map(r->"path: "+r.path()),
-        request.flatMap(r->r.parameters().isEmpty() ? Opt.empty() : Opt.of(r.parameters())),
-        token.map(t->"token"),
-        redirectUrl.map(r->"redirect: "+r),
-        optSpaceAndHandler.map(sh->"handler: "+sh),
-        response.map(r->"status: "+r.statusCode().code()),
-        response.flatMap(Response::entity).map(e->"entity: "+e.content().longSize()+" bytes")
-      )
-      .filter(Opt::isPresent)
-      .map(o->o.get().toString())
-      .collect(joining(", "))
-    );
-    
-    response
-      .ifPresent(
-        r->write(r, servletResponse)
-      ).orElseDo(()->{
-        redirectUrl.ifPresent(u->{
-          servletResponse.setHeader("Location", u);          
-          servletResponse.setStatus(HttpStatus.MOVED_PERMANENTLY_301);
-          call(servletResponse::flushBuffer);
-        }).orElseDo(()->{
-          servletResponse.setStatus(HttpStatus.NOT_FOUND_404);
-          call(servletResponse::flushBuffer);
-        });
-      })
-    ;
+  }
 
+  private String errorInfo(HttpServletRequest r) {
+    return
+      "From "+r.getRemoteHost() + " | "+
+      (r.isSecure() ? "host: " : "host (plain): ")+r.getHeader("Host") + " | "+
+      "path: "+r.getRequestURI() + " | "+
+      "params: "+r.getParameterMap()
+    ;
   }
 
   private String stripWww(String serverName) {
@@ -194,7 +212,7 @@ final class Dispatcher extends AbstractHandler {
       return Opt.of(requestConverter.convert(request));
     }
     catch(final RuntimeException e){
-      LOG.error("Could not convert request.", e);
+      LOG.error(format("Could not convert request {}.", errorInfo(request)), e);
       return Opt.empty();
     }
   }
@@ -212,7 +230,7 @@ final class Dispatcher extends AbstractHandler {
       final ServletOutputStream out = call(httpResponse::getOutputStream);
       e.content().write(out);
       call(httpResponse::flushBuffer);
-      LOG.info("Entity sent: {} bytes, type: {}.", size, dataType);
+      LOG.debug("Entity sent: {} bytes, type: {}.", size, dataType);
     });
   }
 

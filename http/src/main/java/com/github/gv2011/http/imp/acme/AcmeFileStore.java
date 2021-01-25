@@ -126,7 +126,7 @@ public final class AcmeFileStore implements AcmeStore{
   }
 
   @Override
-  public ISet<Domain> domains() {
+  public ISet<Domain> availableDomains() {
     return callWithCloseable(()->Files.list(domainsDir), dirs->(ISet<Domain>) dirs
       .filter(d->Files.exists(d.resolve(d.getFileName()+format(CRT_PATTERN, "01"))))
       .map(d->Domain.parse(d.getFileName().toString()))

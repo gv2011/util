@@ -1,5 +1,6 @@
 package com.github.gv2011.http.imp.server;
 
+import static com.github.gv2011.util.StringUtils.tryRemovePrefix;
 import static com.github.gv2011.util.ex.Exceptions.callWithCloseable;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.icol.ICollections.listOf;
@@ -17,7 +18,6 @@ import org.slf4j.Logger;
 
 import com.github.gv2011.http.imp.HttpFactoryImp;
 import com.github.gv2011.util.FileUtils;
-import static com.github.gv2011.util.StringUtils.*;
 import com.github.gv2011.util.UrlEncoding;
 import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.bytes.DataTypes;
@@ -33,7 +33,7 @@ import com.github.gv2011.util.sec.SecUtils;
 public final class FileHandler implements RequestHandler{
   
   static final String AUTHORISED_USERS = ".authorised-users";
-
+  
   private static final String PUB_RSA = ".pub.rsa";
 
   private static final String INACTIVE = "inactive-";
@@ -45,7 +45,6 @@ public final class FileHandler implements RequestHandler{
   private final DirectoryFormatter directoryFormatter = new DirectoryFormatter();
   private final boolean useIndexFiles;
 
-  
   public FileHandler(HttpFactoryImp http, java.nio.file.Path dir, boolean useIndexFiles) {
     this.http = http;
     this.dir = dir;
@@ -109,7 +108,10 @@ public final class FileHandler implements RequestHandler{
   }
 
   private Opt<java.nio.file.Path> resolve(java.nio.file.Path dir, Path path) {
-    return path.containsElement(AUTHORISED_USERS) ? Opt.empty() : FileUtils.resolveSafely(dir, path);
+    return 
+      path.stream().anyMatch(pe->pe.startsWith("."))
+      ? Opt.empty()
+      : FileUtils.resolveSafely(dir, path);
   }
 
   private ISet<RSAPublicKey> authorisedUsers(Domain host) {
@@ -165,6 +167,11 @@ public final class FileHandler implements RequestHandler{
         ;
       }
     );
+  }
+
+  @Override
+  public String toString() {
+    return "FH-"+dir;
   }
 
 
