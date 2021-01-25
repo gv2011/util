@@ -9,6 +9,7 @@ import static java.util.stream.Collectors.joining;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -24,6 +25,7 @@ import com.github.gv2011.http.imp.HttpFactoryImp;
 import com.github.gv2011.util.AutoCloseableNt;
 import com.github.gv2011.util.BeanUtils;
 import com.github.gv2011.util.Pair;
+import com.github.gv2011.util.StringUtils;
 import com.github.gv2011.util.bytes.DataType;
 import com.github.gv2011.util.bytes.TypedBytes;
 import com.github.gv2011.util.http.Request;
@@ -96,14 +98,13 @@ final class Dispatcher extends AbstractHandler {
       redirectUrl = Opt.empty();
       response = token.map(http::createResponse);
     }
-    else{
-      final Domain host = request.get().host();
-      if(request.isPresent() ? !servletRequest.isSecure() && isHttpsHost.test(host) : false){
+    else{      
+      if(request.isPresent() ? !servletRequest.isSecure() && isHttpsHost.test(request.get().host()) : false){
         //Redirect to https
-        httpsActivator.accept(host);
+        httpsActivator.accept(request.get().host());
         redirectUrl = Opt.of(URIUtil.newURI(
           "https",
-          baseRequest.getServerName(),
+          stripWww(baseRequest.getServerName()),
           443,
           baseRequest.getRequestURI(),
           baseRequest.getQueryString()
@@ -130,6 +131,7 @@ final class Dispatcher extends AbstractHandler {
     //Log request:
     if(LOG.isInfoEnabled())LOG.info(
       Stream.of(
+        Opt.of("From "+servletRequest.getRemoteHost()),
         request.map(r->"host: "+r.host()),
         request.map(r->"path: "+r.path()),
         request.flatMap(r->r.parameters().isEmpty() ? Opt.empty() : Opt.of(r.parameters())),
@@ -159,6 +161,10 @@ final class Dispatcher extends AbstractHandler {
       })
     ;
 
+  }
+
+  private String stripWww(String serverName) {
+    return StringUtils.tryRemovePrefix(serverName.toLowerCase(Locale.ROOT), "www.").orElse(serverName);
   }
 
   private Opt<TypedBytes> getMatchingToken(final Opt<Request> optReq) {

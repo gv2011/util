@@ -69,8 +69,8 @@ public class HttpServerImp implements HttpServer, AcmeAccess{
     jetty = new Server();
     assert jetty.getConnectors().length==0;
     
-    final int effectiveHttpsPort = httpsPort.orElse(8443);
-    final int effectiveHttpPort = httpPort.orElse(8080);
+    final int effectiveHttpsPort = httpsPort.orElse(HttpFactoryImp.DEFAULT_HTTPS_PORT);
+    final int effectiveHttpPort = httpPort.orElse(HttpFactoryImp.DEFAULT_HTTP_PORT);
     
     if(certHandler.isPresent()){
       verify(effectiveHttpsPort==SERVER_SELECTS_PORT.getAsInt() || effectiveHttpsPort!=effectiveHttpPort);
@@ -87,8 +87,7 @@ public class HttpServerImp implements HttpServer, AcmeAccess{
       
       final ServerConnector httpsConnector = new ServerConnector(jetty, tlsConnFac, plainConnFac);
       
-      final int p = httpsPort.orElse(8443);
-      httpsConnector.setPort(p);
+      httpsConnector.setPort(effectiveHttpsPort);
       jetty.addConnector(httpsConnector);
       
       this.httpsConnector = Opt.of(httpsConnector);

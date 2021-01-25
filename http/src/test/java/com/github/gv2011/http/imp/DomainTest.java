@@ -10,7 +10,6 @@ import org.junit.Test;
 
 import com.github.gv2011.util.BeanUtils;
 import com.github.gv2011.util.beans.Bean;
-import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.sec.Domain;
 import com.github.gv2011.util.sec.RsaKeyPair;
 

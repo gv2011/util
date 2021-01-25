@@ -7,6 +7,7 @@ import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.closeAll;
 import static com.github.gv2011.util.ex.Exceptions.format;
+import static com.github.gv2011.util.ex.Exceptions.wrap;
 import static com.github.gv2011.util.icol.ICollections.listFrom;
 import static com.github.gv2011.util.icol.ICollections.pathOf;
 import static java.util.Comparator.comparing;
@@ -34,6 +35,7 @@ import org.slf4j.Logger;
 import com.github.gv2011.http.imp.AcmeAccess;
 import com.github.gv2011.util.AutoCloseableNt;
 import com.github.gv2011.util.BeanUtils;
+import com.github.gv2011.util.Constant;
 import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.StreamUtils;
 import com.github.gv2011.util.bytes.ByteUtils;
@@ -60,33 +62,33 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
   private static final Path TOKEN_BASE_PATH = pathOf(".well-known", "acme-challenge");
   
   private static final int BUCKET_CAPACITY = 50;
+  private static final Duration BUCKET_INTERVAL = Duration.ofHours(4);
   
   private final AcmeStore store;
   private final Supplier<AcmeAccess> acmeAccess;
+  private final Constant<Integer> httpPort;
   private final boolean useBucket;
  
   private final Poller poller = TimeUtils.poller(Duration.ofSeconds(3), Opt.of(Duration.ofSeconds(60)));
-  private final AutoCloseableNt bucketFiller;
 
   private final Clock clock;
   private final Thread updaterThread;
   private final Object lock = new Object();
   
   private int bucket = BUCKET_CAPACITY / 2;
+  private Instant lastBucketFill = Instant.now();
   
   private boolean closed;
 
 
-  public AcmeCertHandler(Clock clock, AcmeStore store, Supplier<AcmeAccess> acmeAccess, boolean useBucket) {
+
+  public AcmeCertHandler(Clock clock, AcmeStore store, Supplier<AcmeAccess> acmeAccess, final Constant<Integer> httpPort, boolean useBucket) {
     this.clock = clock;
     this.store = store;
     this.acmeAccess = acmeAccess;
+    this.httpPort = httpPort;
     this.useBucket = useBucket;
     updaterThread = new Thread(this::update, "acme-updater");
-    bucketFiller = useBucket
-      ? clock.runAtInterval(this::fillBucket, Duration.ofHours(4)) //50 per week
-      : ()->{}
-    ;
   }
   
   public void start(){
@@ -140,6 +142,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
 
   private void checkBucket() {
     assert Thread.holdsLock(lock);
+    fillBucket();
     verify(bucket>0, ()->format("Bucket is empty."));
     bucket--;
     if(bucket==0) LOG.warn("Bucket is empty.");
@@ -147,13 +150,14 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
   }
   
   private void fillBucket(){
-    synchronized(lock){
-      if(bucket<BUCKET_CAPACITY){
-        bucket++;
-        LOG.info("Bucket increased to: {}.", bucket);
-      }
-      else LOG.info("Bucket is full ({}).", bucket);
+    assert Thread.holdsLock(lock);
+    final Instant now = Instant.now();
+    final int before = bucket;
+    while(lastBucketFill.plus(BUCKET_INTERVAL).isBefore(now) && bucket<BUCKET_CAPACITY){
+      lastBucketFill = lastBucketFill.plus(BUCKET_INTERVAL);
+      bucket++;
     }
+    if(bucket!=before) LOG.info("Bucket increased to: {} (bucket time: {}).", bucket, lastBucketFill);
   }
 
   private ServerCertificate orderCertificate(DomainEntry entry) {
@@ -217,6 +221,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
   private void checkTokenCanBeSet(Domain domain) {
     final UUID random = UUID.randomUUID();
     final Path path = TOKEN_BASE_PATH.addElement(random.toString());
+    final URL url = call(()->new URL("http://"+domain.toAscii()+":"+httpPort.get()+"/"+path.urlEncoded()));
     final String content = random.toString();
     try(final AutoCloseableNt token = acmeAccess.get().activate(
       domain, 
@@ -224,16 +229,18 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
       ByteUtils.asUtf8(content)
     )){
       verifyEqual(
-        StreamUtils.readText(call(()->new URL("http://"+domain.toAscii()+"/"+path.urlEncoded()))::openStream),
+        StreamUtils.readText(url::openStream),
         content
       );
     }
-    LOG.info("Successfully checked token access for domain {}.", domain);
+    catch(Exception e){
+      throw wrap(e, format("Setting token failed for {} at url {}.", domain, url));
+    }
+    LOG.info("Successfully checked token access for domain {} at url {}.", domain, url);
   }
 
   private Account openAccount() {
     final Session session = new Session(store.acmeUrl());
-//    final Session session = new Session("acme://letsencrypt.org/staging");
     final KeyPair userKeyPair = store.userKeyPair().asKeyPair();
   
     return store.accountUrl()
@@ -312,7 +319,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
     }
   }
   
-  private Instant updateTimeX(DomainEntry entry){
+  private Instant updateTime(DomainEntry entry){
     final X509Certificate cert = entry.certificateChain().first();
     final Instant expiryDate = cert.getNotAfter().toInstant();
     final Duration validityPeriod = Duration.between(cert.getNotBefore().toInstant(), expiryDate);
@@ -331,19 +338,14 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
       .orElse(updateTime)
     ;
   }
-
-  private Instant updateTime(DomainEntry entry){
-    return entry.certificateChain().first().getNotBefore().toInstant().plus(Duration.ofMinutes(5));
-  }
-
-
+  
   @Override
   public void close() {
     synchronized(lock){
       closed = true;
       lock.notifyAll();
     }
-    closeAll(updaterThread::join, poller, bucketFiller);
+    closeAll(updaterThread::join, poller);
   }
   
 }

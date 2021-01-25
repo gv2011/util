@@ -91,10 +91,10 @@ public final class FileHandler implements RequestHandler{
             resp = 
               tryGetIndexFile(p)
               .map(i->http.createResponse(ByteUtils.readTyped(i)))
-              .orElseGet(()->createDirectoryResponse(path, p))
+              .orElseGet(()->createDirectoryResponse(host, path, p))
             ;
           }
-          else resp = createDirectoryResponse(path, p);
+          else resp = createDirectoryResponse(host, path, p);
         }
         else {
           if(request.parameters().tryGet("txt").equals(Opt.of(listOf("true")))){
@@ -129,8 +129,13 @@ public final class FileHandler implements RequestHandler{
     return Files.isRegularFile(indexFile, NOFOLLOW_LINKS) ? Opt.of(indexFile) : Opt.empty();
   }
 
-  private Response createDirectoryResponse(final Path path, java.nio.file.Path p) {
-    return http.createResponse(directoryFormatter.format(path, p).asEntity());
+  private Response createDirectoryResponse(Domain host, final Path path, java.nio.file.Path p) {
+    if(listDirectories(host, path)) return http.createResponse(directoryFormatter.format(path, p).asEntity());
+    else return http.createResponse();
+  }
+
+  private boolean listDirectories(Domain host, Path path) {
+    return useAuthorisation(host);
   }
 
   @Override

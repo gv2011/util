@@ -2,6 +2,7 @@ package com.github.gv2011.http.imp.acme;
 
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.callWithCloseable;
+import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.icol.ICollections.toISet;
 
 import java.net.URI;
@@ -26,7 +27,7 @@ import com.github.gv2011.util.sec.ServerCertificate;
 public final class AcmeFileStore implements AcmeStore{
   
   private static final URI ACME_STAGING_URL = URI.create("acme://letsencrypt.org/staging");
-  private static final String CRT_PATTERN = "{}.crt";
+  private static final String CRT_PATTERN = ".{}.crt";
   private static final String RSA_EXT = ".rsa";
   private static final String LAST_ERROR_TXT = "lastError.txt";
   
@@ -127,7 +128,7 @@ public final class AcmeFileStore implements AcmeStore{
   @Override
   public ISet<Domain> domains() {
     return callWithCloseable(()->Files.list(domainsDir), dirs->(ISet<Domain>) dirs
-      .filter(d->Files.exists(d.resolve(d.getFileName()+RSA_EXT)))
+      .filter(d->Files.exists(d.resolve(d.getFileName()+format(CRT_PATTERN, "01"))))
       .map(d->Domain.parse(d.getFileName().toString()))
       .collect(toISet())
     );

@@ -10,6 +10,7 @@ import com.github.gv2011.http.imp.acme.AcmeFileStore;
 import com.github.gv2011.http.imp.server.HttpServerImp;
 import com.github.gv2011.util.BeanUtils;
 import com.github.gv2011.util.CachedConstant;
+import com.github.gv2011.util.Constant;
 import com.github.gv2011.util.Constants;
 import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.StringUtils;
@@ -57,6 +58,9 @@ import com.github.gv2011.util.sec.Domain;
 import com.github.gv2011.util.time.Clock;
 
 public final class HttpFactoryImp implements HttpFactory{
+  
+  public static final int DEFAULT_HTTP_PORT = 8080;
+  public static final int DEFAULT_HTTPS_PORT = 8443;
 
   @Override
   public RestClient createRestClient() {
@@ -76,7 +80,11 @@ public final class HttpFactoryImp implements HttpFactory{
     AcmeStore acmeStore
   ) {
     final CachedConstant<HttpServerImp> server = Constants.cachedConstant();
-    final AcmeCertHandler certHandler = new AcmeCertHandler(Clock.get(), acmeStore, server::get, acmeStore.production());
+    //TODO: support server port selection?
+    final Constant<Integer> lazyPort = Constants.cachedConstant(()->server.get().httpPort());
+    final AcmeCertHandler certHandler = new AcmeCertHandler(
+      Clock.get(), acmeStore, server::get, lazyPort, acmeStore.production()
+    );
     server.set(
       new HttpServerImp(
         this, 
