@@ -6,6 +6,7 @@ import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.icol.ICollections.listOf;
 import static com.github.gv2011.util.icol.ICollections.pathBuilder;
 import static com.github.gv2011.util.icol.ICollections.toISet;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -20,7 +21,11 @@ import com.github.gv2011.http.imp.HttpFactoryImp;
 import com.github.gv2011.util.FileUtils;
 import com.github.gv2011.util.UrlEncoding;
 import com.github.gv2011.util.bytes.ByteUtils;
+import com.github.gv2011.util.bytes.DataType;
+import com.github.gv2011.util.bytes.DataTypeProvider;
 import com.github.gv2011.util.bytes.DataTypes;
+import com.github.gv2011.util.bytes.FileExtension;
+import com.github.gv2011.util.bytes.TypedBytes;
 import com.github.gv2011.util.http.Request;
 import com.github.gv2011.util.http.RequestHandler;
 import com.github.gv2011.util.http.Response;
@@ -34,19 +39,23 @@ public final class FileHandler implements RequestHandler{
   
   static final String AUTHORISED_USERS = ".authorised-users";
   
+  private static final FileExtension ASC = FileExtension.parse("asc");
+  
   private static final String PUB_RSA = ".pub.rsa";
 
   private static final String INACTIVE = "inactive-";
 
   private static final Logger LOG = getLogger(FileHandler.class);
   
-  private final java.nio.file.Path dir;
   private final HttpFactoryImp http;
+  private final DataTypeProvider dataTypeProvider;
+  private final java.nio.file.Path dir;
   private final DirectoryFormatter directoryFormatter = new DirectoryFormatter();
   private final boolean useIndexFiles;
 
-  public FileHandler(HttpFactoryImp http, java.nio.file.Path dir, boolean useIndexFiles) {
+  public FileHandler(HttpFactoryImp http, DataTypeProvider dataTypeProvider, java.nio.file.Path dir, boolean useIndexFiles) {
     this.http = http;
+    this.dataTypeProvider = dataTypeProvider;
     this.dir = dir;
     this.useIndexFiles = useIndexFiles;
   }
@@ -83,23 +92,23 @@ public final class FileHandler implements RequestHandler{
     
     return
       (authorised ? resolve(dir, path) : Opt.<java.nio.file.Path>empty())
-      .map(p->{
+      .map(filePath->{
         final Response resp;
-        if(Files.isDirectory(p, NOFOLLOW_LINKS)) {
+        if(Files.isDirectory(filePath, NOFOLLOW_LINKS)) {
           if(useIndexFiles){
             resp = 
-              tryGetIndexFile(p)
+              tryGetIndexFile(filePath)
               .map(i->http.createResponse(ByteUtils.readTyped(i)))
-              .orElseGet(()->createDirectoryResponse(host, path, p))
+              .orElseGet(()->createDirectoryResponse(host, path, filePath))
             ;
           }
-          else resp = createDirectoryResponse(host, path, p);
+          else resp = createDirectoryResponse(host, path, filePath);
         }
         else {
           if(request.parameters().tryGet("txt").equals(Opt.of(listOf("true")))){
-            resp = http.createResponse(ByteUtils.read(p).typed(DataTypes.TEXT_PLAIN_UTF_8));
+            resp = http.createResponse(ByteUtils.read(filePath).typed(DataTypes.TEXT_PLAIN_UTF_8));
           }
-          else resp = http.createResponse(ByteUtils.readTyped(p));
+          else resp = http.createResponse(readFile(filePath));
         }
         return resp;
       })
@@ -107,11 +116,27 @@ public final class FileHandler implements RequestHandler{
     ;
   }
 
-  private Opt<java.nio.file.Path> resolve(java.nio.file.Path dir, Path path) {
+  private TypedBytes readFile(java.nio.file.Path filePath) {
+    final FileExtension extension = FileUtils.getExtension(filePath);
+    DataType dataType = 
+      localDataTypeOverride(extension)
+      .orElseGet(()->dataTypeProvider.dataTypeForExtension(extension))
+    ;
+    if(dataType.charset().isEmpty() && dataType.primaryType().equals(DataTypes.TEXT)){
+      dataType = dataType.withCharset(UTF_8);
+    }
+    return ByteUtils.read(filePath).typed(dataType);
+  }
+
+  private Opt<DataType> localDataTypeOverride(FileExtension extension) {
+    return extension.equals(ASC) ? Opt.of(DataTypes.TEXT_PLAIN_UTF_8) : Opt.empty();
+  }
+
+  private Opt<java.nio.file.Path> resolve(java.nio.file.Path baseDirectory, Path path) {
     return 
       path.stream().anyMatch(pe->pe.startsWith("."))
       ? Opt.empty()
-      : FileUtils.resolveSafely(dir, path);
+      : FileUtils.resolveSafely(baseDirectory, path);
   }
 
   private ISet<RSAPublicKey> authorisedUsers(Domain host) {

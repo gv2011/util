@@ -1,0 +1,41 @@
+Return-Path: <mail@example.eu>
+Delivered-To: test@example.com
+Received: from [192.168.101.10] (55d41001.example.net [85.102.10.22])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	(Authenticated sender: mail@example.eu)
+	by mail.example.de (Postfix) with ESMTPSA id 936BBF7F
+	for <test@example.com>; Wed, 10 Feb 2021 13:26:48 +0100 (CET)
+From: =?UTF-8?Q?Anna_=c3=84rmel?= <mail@example.eu>
+To: test@example.com
+Subject: =?UTF-8?B?QsOkdHLDtmZmIDk=?=
+Message-ID: <29b09683-d824-edc1-64b2-f3a36532a270@example.eu>
+Date: Wed, 10 Feb 2021 13:26:48 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.7.1
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="------------819D5D595FECAFFF2EE9B70B"
+
+This is a multi-part message in MIME format.
+--------------819D5D595FECAFFF2EE9B70B
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+
+Inhalt, der länger ist als das, was in eine Zeile passt und deswegen von 
+Thunderbird umgebrochen wurde.
+
+.
+
+
+
+--------------819D5D595FECAFFF2EE9B70B
+Content-Type: text/plain; charset=IBM866;
+ name="attachment.txt"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="attachment.txt"
+
+RXJzdGUgWmVpbGUgZGVzIGVyc3RlbiBBYnNhdHplcy7igKgKWndlaXRlIFplaWxlIGRlcyBl
+cnN0ZW4gQWJzYXR6ZXMuAKgKRXJzdGUgWmVpbGUgZGVzIHp3ZWl0ZW4gQWJzYXR6ZXMuCg==
+--------------819D5D595FECAFFF2EE9B70B--

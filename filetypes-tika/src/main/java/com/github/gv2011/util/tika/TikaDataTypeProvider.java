@@ -81,7 +81,7 @@ public final class TikaDataTypeProvider implements DataTypeProvider{
   }
 
   private FileExtension fileExtension(final String extension){
-    return new FileExtension(toLowerCase(removePrefix(extension, ".")));
+    return FileExtension.parse(toLowerCase(removePrefix(extension, ".")));
   }
 
   @Override

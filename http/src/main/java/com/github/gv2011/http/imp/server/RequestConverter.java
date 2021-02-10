@@ -16,6 +16,7 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import static java.util.function.Predicate.not;
 import java.util.Map.Entry;
 
 import javax.net.ssl.ExtendedSSLSession;
@@ -55,12 +56,11 @@ final class RequestConverter {
 
   final Request convert(final HttpServletRequest request) {
     final Domain host = Opt.ofNullable(request.getHeader("Host"))
-      .map(h->{
-        final IList<String> parts = StringUtils.split(h, ':');
-        verify(parts.size()==1 || parts.size()==2);
-        return Domain.parse(parts.get(0));
-      })
-      .filter(d->!d.isInetAddress())
+      .map(String::trim)
+      .filter(not(String::isEmpty))
+      .map(this::stripPort)
+      .map(Domain::parse)
+      .filter(not(Domain::isInetAddress))
       .orElse(Domain.LOCALHOST)
     ;
     
@@ -123,6 +123,12 @@ final class RequestConverter {
       .set(Request::entity).to(entity)
       .build()
     ;
+  }
+
+  private String stripPort(String hostAndOptionalPort) {
+    final IList<String> parts = StringUtils.split(hostAndOptionalPort, ':');
+    verify(parts.size()==1 || parts.size()==2);
+    return parts.get(0).trim();
   }
 
   private void checkSelectedServerCertificate(Domain host, ExtendedSSLSession session) {

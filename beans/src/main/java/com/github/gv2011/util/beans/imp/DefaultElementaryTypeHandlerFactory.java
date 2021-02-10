@@ -23,6 +23,8 @@ import com.github.gv2011.util.NumUtils;
 import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.beans.ElementaryTypeHandler;
 import com.github.gv2011.util.beans.ElementaryTypeHandlerFactory;
+import com.github.gv2011.util.bytes.ByteUtils;
+import com.github.gv2011.util.bytes.Bytes;
 import com.github.gv2011.util.bytes.Hash256;
 import com.github.gv2011.util.icol.ISortedSet;
 import com.github.gv2011.util.icol.Opt;
@@ -51,7 +53,8 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     LocalDate.class.getName(),
     UUID.class.getName(),
     InetSocketAddress.class.getName(),
-    Hash256.class.getName()
+    Hash256.class.getName(),
+    Bytes.class.getName()
   );
 
   private final AutoElementarySupport auto = new AutoElementarySupport();
@@ -82,6 +85,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     else if(clazz.equals(Nothing.class)) result = new NothingType();
     else if(clazz.equals(Boolean.class)) result = new BooleanType();
     else if(clazz.equals(Integer.class)) result = new IntegerType();
+    else if(clazz.equals(Bytes.class)) result = new BytesType();
     else if(clazz.equals(int.class)) result = new IntegerType();
     else if(clazz.equals(Long.class)) result = new LongType();
     else if(clazz.equals(long.class)) result = new PrimitiveLongType();
@@ -275,6 +279,29 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     @Override
     public BigDecimal parse(String string) {
       return NumUtils.canonical(new BigDecimal(string));
+    }
+  }
+
+  private static class BytesType extends AbstractElementaryTypeHandler<Bytes> {
+    @Override
+    public Bytes fromJson(final JsonNode json) {
+      return ByteUtils.parseBase64(json.asString());
+    }
+    @Override
+    public JsonString toJson(final Bytes i, final JsonFactory jf) {
+      return jf.primitive(i.toBase64String());
+    }
+    @Override
+    public Opt<Bytes> defaultValue() {
+      return Opt.of(ByteUtils.emptyBytes());
+    }
+    @Override
+    public JsonNodeType jsonNodeType() {
+      return JsonNodeType.STRING;
+    }
+    @Override
+    public Bytes parse(String string) {
+      return ByteUtils.parseBase64(string);
     }
   }
 

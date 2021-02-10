@@ -59,6 +59,8 @@ import com.github.gv2011.util.XStream;
 import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.beans.AnnotationHandler;
 import com.github.gv2011.util.beans.BeanBuilder;
+import com.github.gv2011.util.beans.BeanHandler;
+import com.github.gv2011.util.beans.BeanHandlerFactory;
 import com.github.gv2011.util.beans.BeanHashCode;
 import com.github.gv2011.util.beans.BeanType;
 import com.github.gv2011.util.beans.Parser;
@@ -72,6 +74,7 @@ import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonNodeType;
 import com.github.gv2011.util.json.JsonObject;
+import com.github.gv2011.util.serviceloader.RecursiveServiceLoader;
 
 
 public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements BeanType<T> {
@@ -85,6 +88,7 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   final AnnotationHandler annotationHandler;
   private final BeanFactory beanFactory;
   private final boolean writeAsJsonString;
+  private final Opt<BeanHandler<T>> beanHandler;
   private final Function<String,T> parser;
   private final Constant<ToIntFunction<T>> hashCodeFunction = Constants.cachedConstant(this::createHashCodeFunction);
   protected final UnaryOperator<T> resultWrapper;
@@ -105,21 +109,31 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
     this.jf = jf;
     this.annotationHandler = annotationHandler;
     this.beanFactory = beanFactory;
+    this.beanHandler = findBeanHandler(beanClass);
     final Opt<Class<? extends Parser<?>>> annotatedParser = annotationHandler.getParser(clazz);
     writeAsJsonString = annotatedParser.isPresent();
-    parser = annotatedParser
-      .map(this::createParserFromClass)
+    parser = beanHandler
+      .flatMap(h->h.canParse() ? Opt.of(h::parse) : Opt.<Function<String,T>>empty())
       .orElseGet(()->
-        s->parse(jf().deserialize(s).asObject())
+        annotatedParser
+        .map(this::createParserFromClass)
+        .orElseGet(()->
+          s->parse(jf().deserialize(s).asObject())
+        )
       )
     ;
-    resultWrapper = annotationHandler.getImplementingClass(clazz)
-      .map(this::createResultWrapperFromClass)
-      .orElseGet(UnaryOperator::identity)
-    ;
+    resultWrapper = createResultWrapper(annotationHandler.getImplementingClass(clazz), beanHandler);
     validator = annotationHandler.getValidatorClass(clazz)
       .map(this::createValidatorFromClass)
       .orElseGet(UnaryOperator::identity)
+    ;
+  }
+
+  private final Opt<BeanHandler<T>> findBeanHandler(Class<T> beanClass) {
+    return RecursiveServiceLoader
+      .services(BeanHandlerFactory.class).stream()
+      .flatMap(bhf->bhf.createBeanHandler(beanClass).stream())
+      .toOpt()
     ;
   }
 
@@ -129,9 +143,18 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
     return s->clazz.cast(parserInstance.parse(s, createBuilder()));
   }
 
-  private final UnaryOperator<T> createResultWrapperFromClass(final Class<?> implementingClass){
-    final Constructor<? extends T> constructor = call(()->implementingClass.asSubclass(clazz).getConstructor(clazz));
-    return core->call(()->constructor.newInstance(core));
+  private final UnaryOperator<T> createResultWrapper(final Opt<Class<?>> implementingClass, Opt<BeanHandler<T>> beanHandler){
+    final UnaryOperator<T> annotatedWrapper = implementingClass
+      .map(c->{
+        final Constructor<? extends T> constructor = call(()->c.asSubclass(clazz).getConstructor(clazz));
+        return (UnaryOperator<T>)(core->call(()->constructor.newInstance(core)));
+      })
+      .orElseGet(UnaryOperator::identity)
+    ;
+    return beanHandler
+      .map(h->(UnaryOperator<T>)core->h.wrapBean(core, annotatedWrapper))
+      .orElse(annotatedWrapper)
+    ;
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -257,12 +280,12 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
 //  }
 
   private <V> PropertyImp<T,V> createProperty(final Method m) {
+    @SuppressWarnings("unchecked")
+    final TypeSupport<V> type = (TypeSupport<V>) registry().apply(m.getGenericReturnType());
     try {
-      @SuppressWarnings("unchecked")
-      final TypeSupport<V> type = (TypeSupport<V>) registry().apply(m.getGenericReturnType());
       return createProperty(m, type);
     } catch (final RuntimeException e) {
-      throw new RuntimeException(format("{}: Could not create property for method {}.", this, m), e);
+      throw new RuntimeException(format("{}: Could not create property of type {} for method {}.", this, type, m), e);
     }
   }
 
@@ -301,15 +324,23 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   private <V> Function<T,V> createFunction(final Method m) {
     if(annotationHandler.getImplementingClass(clazz).isPresent()) return unsupported();
     else {
-      final Method staticMethod;
+      Opt<Method> optStaticMethod;
       try {
-        staticMethod = clazz.getMethod(m.getName(), new Class<?>[] {clazz});
+        optStaticMethod = Opt.of(clazz.getMethod(m.getName(), new Class<?>[] {clazz}));
       } catch (final NoSuchMethodException e) {
-        throw new RuntimeException(format("No implementation found for computed attribute {}.", m.getName()), e) ;
+        optStaticMethod = Opt.empty();
+        if(beanHandler.isEmpty()){
+          throw new RuntimeException(format("No implementation found for computed attribute {}.", m.getName()), e);
+        }
       }
-      verify(Modifier.isStatic(staticMethod.getModifiers()));
-      verify(m.getReturnType().isAssignableFrom(staticMethod.getReturnType()));
-      return t->(V)call(()->staticMethod.invoke(null, t));
+      return optStaticMethod
+        .map(staticMethod->{
+          verify(Modifier.isStatic(staticMethod.getModifiers()));
+          verify(m.getReturnType().isAssignableFrom(staticMethod.getReturnType()));
+          return (Function<T,V>) t->(V)call(()->staticMethod.invoke(null, t));
+        })
+        .orElseGet(this::unsupported)
+      ;
     }
   }
 

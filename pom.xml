@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.github.gv2011</groupId>
     <artifactId>parent-gv</artifactId>
-    <version>1.1</version>
+    <version>1.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>util-parent</artifactId>
@@ -40,8 +40,8 @@
     <java.release>11</java.release>
     <guava-core.version>28.3</guava-core.version>
     <gsoncore.version>0.8</gsoncore.version>
-    <util-apis.version>0.8</util-apis.version>
-    <logback.version>1.3.3</logback.version>
+    <util-apis.version>0.9-SNAPSHOT</util-apis.version>
+    <logback.version>1.3.4-SNAPSHOT</logback.version>
   </properties>
 
   <modules>
@@ -50,6 +50,7 @@
     <module>beanscglib</module>
     <module>beans-examples</module>
     <module>context</module>
+    <module>email</module>
     <module>filetypes-tika</module>
     <module>gcol</module>
     <module>html</module>
