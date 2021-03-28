@@ -27,11 +27,10 @@ package com.github.gv2011.jacksonadapter;
  */
 import static com.github.gv2011.util.ex.Exceptions.call;
 
-import java.math.BigDecimal;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.github.gv2011.util.ex.ThrowingRunnable;
 import com.github.gv2011.util.json.JsonWriter;
+import com.github.gv2011.util.num.Decimal;
 
 final class JacksonJsonWriter implements JsonWriter{
 
@@ -67,19 +66,10 @@ final class JacksonJsonWriter implements JsonWriter{
     }
 
     @Override
-    public void writeNumber(final BigDecimal value) {
+    public void writeDecimal(final Decimal value) {
         call(()->{
-          final long longValue = value.longValue();
-          if(BigDecimal.valueOf(longValue).compareTo(value)==0) {
-              gen.writeNumber(longValue);
-          }
-          else {
-              final double doubleValue = value.doubleValue();
-              if(BigDecimal.valueOf(doubleValue).compareTo(value)==0) {
-                  gen.writeNumber(doubleValue);
-              }
-              else gen.writeNumber(value);
-          }
+          if(value.fitsLong()){gen.writeNumber(value.longValue());}
+          else gen.writeNumber(value.toBigDecimal());
         });
     }
 

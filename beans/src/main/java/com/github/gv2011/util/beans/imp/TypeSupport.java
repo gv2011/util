@@ -3,8 +3,8 @@ package com.github.gv2011.util.beans.imp;
 import static com.github.gv2011.util.Verify.verifyEqual;
 
 import com.github.gv2011.util.Equal;
-import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.beans.Type;
+import com.github.gv2011.util.icol.Nothing;
 import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonFactory;
 

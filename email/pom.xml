@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -28,28 +30,34 @@
       <artifactId>imap</artifactId>
       <scope>compile</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>com.github.gv2011</groupId>
-      <artifactId>gcol</artifactId>
+      <artifactId>util-gcol</artifactId>
       <version>${project.version}</version>
       <scope>runtime</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>util-beans</artifactId>
       <version>${project.version}</version>
       <scope>runtime</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>com.github.gv2011</groupId>
-      <artifactId>jsong</artifactId>
+      <artifactId>util-json</artifactId>
       <version>${project.version}</version>
       <scope>runtime</scope>
     </dependency>
-    
+
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>gsoncore</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
     <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>testutil</artifactId>

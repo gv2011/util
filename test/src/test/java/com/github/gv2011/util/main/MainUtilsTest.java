@@ -10,7 +10,7 @@ import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 
 import com.github.gv2011.util.AutoCloseableNt;
-import com.github.gv2011.util.Nothing;
+import com.github.gv2011.util.icol.Nothing;
 import com.github.gv2011.util.main.MainUtils.ServiceBuilder;
 import com.github.gv2011.util.time.Clock;
 import com.github.gv2011.util.time.SimpleLatch;

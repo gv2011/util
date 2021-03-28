@@ -8,9 +8,9 @@ import java.math.BigDecimal;
 import java.util.Iterator;
 
 import com.github.gv2011.gson.stream.JsonReader;
-import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.XStream;
+import com.github.gv2011.util.icol.Nothing;
 import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonBoolean;
 import com.github.gv2011.util.json.JsonFactory;

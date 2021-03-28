@@ -7,7 +7,8 @@
     <version>0.9-SNAPSHOT</version>
   </parent>
 
-  <artifactId>filetypes-tika</artifactId>
+  <artifactId>util-jackson</artifactId>
+  <inceptionYear>2018</inceptionYear>
 
   <dependencies>
 
@@ -15,53 +16,39 @@
       <groupId>com.github.gv2011</groupId>
       <artifactId>util-apis</artifactId>
     </dependency>
-
     <dependency>
-      <groupId>org.apache.tika</groupId>
-      <artifactId>tika-core</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.github.gv2011</groupId>
-      <artifactId>gcol</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
+      <groupId>jakarta.activation</groupId>
+      <artifactId>jakarta.activation-api</artifactId>
     </dependency>
     <dependency>
       <groupId>com.github.gv2011</groupId>
-      <artifactId>jsong</artifactId>
+      <artifactId>util-json</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>util-beans</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>testutil</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>util-gcol</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
 
   </dependencies>
-  
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifestEntries>
-              <Automatic-Module-Name>com.github.gv2011.util.tika</Automatic-Module-Name>
-            </manifestEntries>
-          </archive>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
 </project>

@@ -29,7 +29,6 @@ import java.io.Reader;
  */
 
 import java.io.StringWriter;
-import java.math.BigDecimal;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collector;
@@ -41,6 +40,7 @@ import com.github.gv2011.util.icol.ICollectionFactory;
 import com.github.gv2011.util.icol.ICollections;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.ISet;
+import com.github.gv2011.util.json.Adapter;
 import com.github.gv2011.util.json.JsonBoolean;
 import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonList;
@@ -51,6 +51,7 @@ import com.github.gv2011.util.json.JsonObject;
 import com.github.gv2011.util.json.JsonReader;
 import com.github.gv2011.util.json.JsonString;
 import com.github.gv2011.util.json.JsonWriter;
+import com.github.gv2011.util.num.Decimal;
 
 
 public final class JsonFactoryImp implements JsonFactory{
@@ -127,31 +128,16 @@ public final class JsonFactoryImp implements JsonFactory{
   }
 
   @Override
-  public JsonNumber primitive(final int number) {
-    return primitive(BigDecimal.valueOf(number));
-  }
-
-  @Override
-  public JsonNumber primitive(final long number) {
-    return primitive(BigDecimal.valueOf(number));
-  }
-
-  @Override
-  public JsonNumber primitive(final BigDecimal number) {
+  public JsonNumber primitive(final Decimal number) {
     return new JsonNumberImp(this, number);
   }
 
   @Override
   public JsonBoolean primitive(final boolean b) {
-    return primitive(Boolean.valueOf(b));
-  }
-
-  @Override
-  public JsonBoolean primitive(final Boolean b) {
     return new JsonBooleanImp(this, b);
   }
 
-  String serialize(final JsongNode e) {
+  String serialize(final JsonNode e) {
     final StringWriter out = new StringWriter();
     final JsonWriter jsonWriter = adapter.newJsonWriter(out);
     e.write(jsonWriter);
@@ -161,13 +147,13 @@ public final class JsonFactoryImp implements JsonFactory{
 
   @Override
   public JsonList asJsonList(final IList<?> list, final Function<Object, JsonNode> converter) {
-    return list.isEmpty() ? emptyList :new JsonListWrapper<Object>(this, list, o->(JsongNode)converter.apply(o));
+    return list.isEmpty() ? emptyList :new JsonListWrapper<Object>(this, list, o->(JsonNode)converter.apply(o));
   }
 
   private AbstractJsonList createEmptyList() {
     return new AbstractJsonList(this){
       @Override
-      public JsongNode get(final int index) {
+      public JsonNode get(final int index) {
         throw new IndexOutOfBoundsException();
       }
       @Override

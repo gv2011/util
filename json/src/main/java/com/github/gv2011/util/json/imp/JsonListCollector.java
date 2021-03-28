@@ -40,7 +40,7 @@ import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.json.JsonList;
 import com.github.gv2011.util.json.JsonNode;
 
-final class JsonListCollector implements Collector<JsonNode, IList.Builder<JsongNode>, JsonList> {
+final class JsonListCollector implements Collector<JsonNode, IList.Builder<JsonNode>, JsonList> {
 
   private final JsonFactoryImp f;
 
@@ -49,8 +49,8 @@ final class JsonListCollector implements Collector<JsonNode, IList.Builder<Jsong
   }
 
   @Override
-  public BiConsumer<Builder<JsongNode>, JsonNode> accumulator() {
-    return (b,e)->b.add((JsongNode)e);
+  public BiConsumer<Builder<JsonNode>, JsonNode> accumulator() {
+    return (b,e)->b.add((JsonNode)e);
   }
 
   @Override
@@ -59,17 +59,17 @@ final class JsonListCollector implements Collector<JsonNode, IList.Builder<Jsong
   }
 
   @Override
-  public BinaryOperator<Builder<JsongNode>> combiner() {
+  public BinaryOperator<Builder<JsonNode>> combiner() {
     return (b1,b2)->b1.addAll(b2.build());
   }
 
   @Override
-  public Function<Builder<JsongNode>, JsonList> finisher() {
+  public Function<Builder<JsonNode>, JsonList> finisher() {
     return b->new JsonListImp(f, b.build());
   }
 
   @Override
-  public Supplier<Builder<JsongNode>> supplier() {
+  public Supplier<Builder<JsonNode>> supplier() {
     return f.iCollections()::listBuilder;
   }
 

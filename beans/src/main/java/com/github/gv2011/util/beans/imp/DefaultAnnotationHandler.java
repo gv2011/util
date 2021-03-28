@@ -14,7 +14,6 @@ import java.util.function.Function;
 
 import org.slf4j.Logger;
 
-import com.github.gv2011.util.Nothing;
 import com.github.gv2011.util.beans.AbstractRoot;
 import com.github.gv2011.util.beans.AnnotationHandler;
 import com.github.gv2011.util.beans.Final;
@@ -29,6 +28,7 @@ import com.github.gv2011.util.beans.TypeNameStrategy;
 import com.github.gv2011.util.beans.TypeResolver;
 import com.github.gv2011.util.beans.Validator;
 import com.github.gv2011.util.icol.ISet;
+import com.github.gv2011.util.icol.Nothing;
 import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.tstr.TypedString;
 

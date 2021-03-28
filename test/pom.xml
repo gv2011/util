@@ -62,7 +62,7 @@
     </dependency>
     <dependency>
       <groupId>com.github.gv2011</groupId>
-      <artifactId>gcol</artifactId>
+      <artifactId>util-gcol</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
@@ -70,6 +70,11 @@
       <groupId>com.github.gv2011</groupId>
       <artifactId>jsong</artifactId>
       <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>gsoncore</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -86,7 +91,7 @@
     </dependency>
     <dependency>
       <groupId>com.github.gv2011</groupId>
-      <artifactId>html</artifactId>
+      <artifactId>util-html</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
@@ -103,7 +108,7 @@
     </dependency>
     <dependency>
       <groupId>com.github.gv2011</groupId>
-      <artifactId>http</artifactId>
+      <artifactId>util-http</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>

@@ -18,8 +18,6 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.function.Function;
 
-import com.github.gv2011.util.Nothing;
-import com.github.gv2011.util.NumUtils;
 import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.beans.ElementaryTypeHandler;
 import com.github.gv2011.util.beans.ElementaryTypeHandlerFactory;
@@ -27,6 +25,7 @@ import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.bytes.Bytes;
 import com.github.gv2011.util.bytes.Hash256;
 import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.icol.Nothing;
 import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonBoolean;
 import com.github.gv2011.util.json.JsonFactory;
@@ -35,6 +34,9 @@ import com.github.gv2011.util.json.JsonNodeType;
 import com.github.gv2011.util.json.JsonNull;
 import com.github.gv2011.util.json.JsonNumber;
 import com.github.gv2011.util.json.JsonString;
+import com.github.gv2011.util.num.BigDecimalUtils;
+import com.github.gv2011.util.num.Decimal;
+import com.github.gv2011.util.num.NumUtils;
 import com.github.gv2011.util.time.IsoDay;
 
 @SuppressWarnings("removal")//IsoDay
@@ -84,6 +86,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     else if(clazz.equals(String.class)) result = new StringType();
     else if(clazz.equals(Nothing.class)) result = new NothingType();
     else if(clazz.equals(Boolean.class)) result = new BooleanType();
+    else if(clazz.equals(Decimal.class)) result = new NumberType();
     else if(clazz.equals(Integer.class)) result = new IntegerType();
     else if(clazz.equals(Bytes.class)) result = new BytesType();
     else if(clazz.equals(int.class)) result = new IntegerType();
@@ -203,15 +206,40 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     }
   }
 
+  //TODO rename to DecimalType
+  private static class NumberType extends AbstractElementaryTypeHandler<Decimal> {
+    private static final Opt<Decimal> ZERO = Opt.of(NumUtils.zero());
+    @Override
+    public Decimal fromJson(final JsonNode json) {
+      return json.asNumber();
+    }
+    @Override
+    public JsonNumber toJson(final Decimal n, final JsonFactory jf) {
+      return jf.primitive(n);
+    }
+    @Override
+    public Opt<Decimal> defaultValue() {
+      return ZERO;
+    }
+    @Override
+    public JsonNodeType jsonNodeType() {
+      return JsonNodeType.NUMBER;
+    }
+    @Override
+    public Decimal parse(String string) {
+      return NumUtils.parse(string);
+    }
+  }
+
   private static class IntegerType extends AbstractElementaryTypeHandler<Integer> {
     private static final Opt<Integer> ZERO = Opt.of(0);
     @Override
     public Integer fromJson(final JsonNode json) {
-      return json.asNumber().intValueExact();
+      return json.asNumber().intValue();
     }
     @Override
     public JsonNumber toJson(final Integer i, final JsonFactory jf) {
-      return jf.primitive(i);
+      return jf.primitive(NumUtils.from(i));
     }
     @Override
     public Opt<Integer> defaultValue() {
@@ -231,11 +259,11 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     private static final Opt<Long> ZERO = Opt.of(0l);
     @Override
     public Long fromJson(final JsonNode json) {
-      return json.asNumber().longValueExact();
+      return json.asNumber().longValue();
     }
     @Override
     public JsonNumber toJson(final Long i, final JsonFactory jf) {
-      return jf.primitive(i);
+      return jf.primitive(NumUtils.from(i));
     }
     @Override
     public Opt<Long> defaultValue() {
@@ -258,15 +286,16 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     }
   }
 
+  //TODO rename to BigDecimalType
   private static class DecimalType extends AbstractElementaryTypeHandler<BigDecimal> {
     private static final Opt<BigDecimal> ZERO = Opt.of(BigDecimal.ZERO);
     @Override
     public BigDecimal fromJson(final JsonNode json) {
-      return json.asNumber();
+      return json.asNumber().toBigDecimal();
     }
     @Override
     public JsonNumber toJson(final BigDecimal dec, final JsonFactory jf) {
-      return jf.primitive(dec);
+      return jf.primitive(NumUtils.from(dec));
     }
     @Override
     public Opt<BigDecimal> defaultValue() {
@@ -278,7 +307,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     }
     @Override
     public BigDecimal parse(String string) {
-      return NumUtils.canonical(new BigDecimal(string));
+      return BigDecimalUtils.canonical(new BigDecimal(string));
     }
   }
 
@@ -309,7 +338,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     @Override
     public Date fromJson(final JsonNode json) {
       if(json instanceof JsonNumber) {
-          return new Date(json.asNumber().longValueExact());
+          return new Date(json.asNumber().longValue());
       }
       else return parse(json.asString());
     }
@@ -336,7 +365,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     @Override
     public Duration fromJson(final JsonNode json) {
       if(json instanceof JsonNumber) {
-          return Duration.ofMillis(json.asNumber().longValueExact());
+          return Duration.ofMillis(json.asNumber().longValue());
       }
       else return parse(json.asString());
     }

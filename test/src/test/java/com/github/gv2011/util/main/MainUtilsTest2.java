@@ -1,6 +1,6 @@
 package com.github.gv2011.util.main;
 
-import com.github.gv2011.util.Nothing;
+import com.github.gv2011.util.icol.Nothing;
 
 public class MainUtilsTest2 {
 

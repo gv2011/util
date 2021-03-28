@@ -49,7 +49,7 @@
     </dependency>
     <dependency>
       <groupId>com.github.gv2011</groupId>
-      <artifactId>gcol</artifactId>
+      <artifactId>util-gcol</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>

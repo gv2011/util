@@ -1,41 +1,15 @@
 package com.github.gv2011.util.json.imp;
 
-/*-
- * #%L
- * jsong
- * %%
- * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
- * %%
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * #L%
- */
 import static com.github.gv2011.util.ex.Exceptions.format;
-
-import java.math.BigDecimal;
 
 import com.github.gv2011.util.json.JsonList;
 import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonNodeType;
 import com.github.gv2011.util.json.JsonNull;
 import com.github.gv2011.util.json.JsonObject;
+import com.github.gv2011.util.num.Decimal;
 
-abstract class AbstractJsongNode implements JsongNode{
+abstract class AbstractJsongNode implements JsonNode{
 
   @Override
   public JsonList asList() {
@@ -53,7 +27,7 @@ abstract class AbstractJsongNode implements JsongNode{
   }
 
   @Override
-  public BigDecimal asNumber() {
+  public Decimal asNumber() {
     return asNumber(this);
   }
 
@@ -72,7 +46,7 @@ abstract class AbstractJsongNode implements JsongNode{
     return compare(this,o);
   }
 
-  static final int compare(final JsongNode n1, final JsonNode n2) {
+  static final int compare(final JsonNode n1, final JsonNode n2) {
     final int result;
     if(n1==n2) result = 0;
     else {
@@ -89,35 +63,35 @@ abstract class AbstractJsongNode implements JsongNode{
     return toString(this);
   }
 
-  static final JsongNode toJsongNode(final JsonNode n) {
-    return (JsongNode) n;
+  static final JsonNode toJsonNode(final JsonNode n) {
+    return (JsonNode) n;
   }
 
-  static final JsonObject asObject(final JsongNode n) {
+  static final JsonObject asObject(final JsonNode n) {
     throw new ClassCastException(format("{} is not a JsonObject (actual class is {}).", n, n.getClass()));
   }
 
-  static final JsonNull asNull(final JsongNode n) {
+  static final JsonNull asNull(final JsonNode n) {
     throw new ClassCastException(format("{} is not a JsonNull (actual class is {}).", n, n.getClass()));
   }
 
-  static final JsonList asList(final JsongNode n) {
+  static final JsonList asList(final JsonNode n) {
     throw new ClassCastException(format("{} is not a JsonList (actual class is {}).", n, n.getClass()));
   }
 
-  static final boolean asBoolean(final JsongNode n) {
+  static final boolean asBoolean(final JsonNode n) {
     throw new ClassCastException(format("{} is not a Boolean node (actual class is {}).", n, n.getClass()));
   }
 
-  static final String asString(final JsongNode n) {
+  static final String asString(final JsonNode n) {
     throw new ClassCastException(format("{} is not a String node (actual class is {}).", n, n.getClass()));
   }
 
-  static final BigDecimal asNumber(final JsongNode n) {
+  static final Decimal asNumber(final JsonNode n) {
     throw new ClassCastException(format("{} is not a Number node (actual class is {}).", n, n.getClass()));
   }
 
-  static final String toString(final JsongNode n) {
+  static final String toString(final JsonNode n) {
     return n.jsonNodeType()+"("+n.rawToString()+")";
   }
 

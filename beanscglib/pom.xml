@@ -16,6 +16,10 @@
       <artifactId>util-beans</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>jakarta.activation</groupId>
+      <artifactId>jakarta.activation-api</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>cglib</groupId>

@@ -50,8 +50,8 @@ import com.fasterxml.jackson.databind.deser.Deserializers;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import com.github.gv2011.util.beans.imp.DefaultTypeRegistry;
 import com.github.gv2011.util.beans.imp.TypeSupport;
+import com.github.gv2011.util.json.Adapter;
 import com.github.gv2011.util.json.JsonNode;
-import com.github.gv2011.util.json.imp.Adapter;
 import com.github.gv2011.util.json.imp.JsonFactoryImp;
 
 

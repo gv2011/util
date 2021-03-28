@@ -16,6 +16,10 @@
       <artifactId>util-apis</artifactId>
     </dependency>
     <dependency>
+      <groupId>jakarta.activation</groupId>
+      <artifactId>jakarta.activation-api</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>util-json</artifactId>
       <version>${project.version}</version>
@@ -23,7 +27,7 @@
     </dependency>
     <dependency>
       <groupId>com.github.gv2011</groupId>
-      <artifactId>gsoncore</artifactId>
+      <artifactId>gsoncore-old</artifactId>
     </dependency>
   </dependencies>
 

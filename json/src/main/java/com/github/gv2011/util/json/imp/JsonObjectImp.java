@@ -3,33 +3,6 @@ package com.github.gv2011.util.json.imp;
 import static com.github.gv2011.util.icol.ICollections.toISortedSet;
 import static com.github.gv2011.util.icol.ICollections.upcast;
 
-/*-
- * #%L
- * jsong
- * %%
- * Copyright (C) 2017 Vinz (https://github.com/gv2011)
- * %%
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
@@ -44,16 +17,17 @@ import com.github.gv2011.util.json.JsonNodeType;
 import com.github.gv2011.util.json.JsonNull;
 import com.github.gv2011.util.json.JsonObject;
 import com.github.gv2011.util.json.JsonWriter;
+import com.github.gv2011.util.num.Decimal;
 
 
-final class JsonObjectImp extends AbstractISortedMap<String,JsonNode> implements JsongNode, JsonObject{
+final class JsonObjectImp extends AbstractISortedMap<String,JsonNode> implements JsonObject{
 
   private static final Comparator<Opt<JsonNode>> OPT_COMPARATOR = Comparison.optComparator();
 
   private final JsonFactoryImp f;
-  private final ISortedMap<String,JsongNode> entries;
+  private final ISortedMap<String,JsonNode> entries;
 
-  JsonObjectImp(final JsonFactoryImp f, final ISortedMap<String,JsongNode> entries) {
+  JsonObjectImp(final JsonFactoryImp f, final ISortedMap<String,JsonNode> entries) {
     this.f = f;
     this.entries = entries;
   }
@@ -77,23 +51,23 @@ final class JsonObjectImp extends AbstractISortedMap<String,JsonNode> implements
   public void write(final JsonWriter out){
     out.beginObject();
     //For better readability, write simple values first:
-    for (final Entry<String, JsongNode> e : entries.entrySet()) {
-      final JsongNode value = e.getValue();
+    for (final Entry<String, JsonNode> e : entries.entrySet()) {
+      final JsonNode value = e.getValue();
       if(isSimple(value)) writeEntry(out, e.getKey(), value);
     }
-    for (final Entry<String, JsongNode> e : entries.entrySet()) {
-      final JsongNode value = e.getValue();
+    for (final Entry<String, JsonNode> e : entries.entrySet()) {
+      final JsonNode value = e.getValue();
       if(!isSimple(value)) writeEntry(out, e.getKey(), value);
     }
     out.endObject();
   }
 
-  private void writeEntry(final JsonWriter out, final String key, final JsongNode value) {
+  private void writeEntry(final JsonWriter out, final String key, final JsonNode value) {
     out.name(key);
     value.write(out);
   }
 
-  private boolean isSimple(final JsongNode value) {
+  private boolean isSimple(final JsonNode value) {
     final JsonNodeType nodeType = value.jsonNodeType();
     return !nodeType.equals(JsonNodeType.OBJECT) && !nodeType.equals(JsonNodeType.LIST);
   }
@@ -111,8 +85,8 @@ final class JsonObjectImp extends AbstractISortedMap<String,JsonNode> implements
   @Override
   public Stream<JsonNode> stream() {
     return entries.entrySet().stream().map(e->{
-      final ISortedMap.Builder<String, JsongNode> b = f.iCollections().sortedMapBuilder();
-      b.put("key", (JsongNode)f.primitive(e.getKey()));
+      final ISortedMap.Builder<String, JsonNode> b = f.iCollections().sortedMapBuilder();
+      b.put("key", (JsonNode)f.primitive(e.getKey()));
       b.put("value", e.getValue());
       return new JsonObjectImp(f, b.build());
     });
@@ -129,7 +103,7 @@ final class JsonObjectImp extends AbstractISortedMap<String,JsonNode> implements
   }
 
   @Override
-  public BigDecimal asNumber() {
+  public Decimal asNumber() {
     return AbstractJsongNode.asNumber(this);
   }
 

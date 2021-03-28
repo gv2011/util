@@ -15,6 +15,10 @@
       <groupId>com.github.gv2011</groupId>
       <artifactId>util-apis</artifactId>
     </dependency>
+    <dependency>
+      <groupId>jakarta.activation</groupId>
+      <artifactId>jakarta.activation-api</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.bouncycastle</groupId>
@@ -27,7 +31,7 @@
     
     <dependency>
       <groupId>com.github.gv2011</groupId>
-      <artifactId>gcol</artifactId>
+      <artifactId>util-gcol</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>

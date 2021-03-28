@@ -3,12 +3,13 @@ package com.github.gv2011.util.beans.imp;
 import static com.github.gv2011.util.CollectionUtils.single;
 import static com.github.gv2011.util.CollectionUtils.stream;
 import static com.github.gv2011.util.CollectionUtils.toOpt;
-import static com.github.gv2011.util.Nothing.nothing;
+
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.icol.ICollections.listBuilder;
 import static com.github.gv2011.util.icol.ICollections.setOf;
 import static com.github.gv2011.util.icol.ICollections.toISet;
+import static com.github.gv2011.util.icol.Nothing.nothing;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.ParameterizedType;
