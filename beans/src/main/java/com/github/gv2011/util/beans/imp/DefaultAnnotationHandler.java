@@ -6,9 +6,11 @@ import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.icol.ICollections.asSet;
 import static com.github.gv2011.util.icol.ICollections.emptySet;
+import static com.github.gv2011.util.icol.ICollections.setOf;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.function.Function;
 
@@ -18,6 +20,7 @@ import com.github.gv2011.util.beans.AbstractRoot;
 import com.github.gv2011.util.beans.AnnotationHandler;
 import com.github.gv2011.util.beans.Final;
 import com.github.gv2011.util.beans.Computed;
+import com.github.gv2011.util.beans.Constructor.Variant;
 import com.github.gv2011.util.beans.DefaultValue;
 import com.github.gv2011.util.beans.FixedBooleanValue;
 import com.github.gv2011.util.beans.FixedValue;
@@ -139,7 +142,7 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
     return
       Opt.ofNullable(clazz.getAnnotation(Final.class))
       .map(Final::implementation)
-      .flatMap(impl->impl.equals(Void.class) ? Opt.empty() : Opt.of(impl))
+      .flatMap(impl->impl.equals(Nothing.class) ? Opt.empty() : Opt.of(impl))
     ;
   }
 
@@ -162,11 +165,41 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
   }
 
   @Override
-  public <S extends TypedString<S>> Opt<String> getDefaultValue(Class<S> clazz) {
+  public <S extends TypedString<S>> Opt<String> getDefaultValue(final Class<S> clazz) {
     final boolean noDefAnn = clazz.getAnnotation(NoDefaultValue.class)!=null;
     final Opt<String> def = Opt.ofNullable(clazz.getAnnotation(DefaultValue.class)).map(DefaultValue::value);
     verify(!(noDefAnn && def.isPresent()));
     return noDefAnn ? Opt.empty() : def.isPresent() ? def : Opt.of("");
+  }
+
+  @Override
+  public boolean annotatedAsConstructor(final Constructor<?> constructor) {
+    return tryGetType(constructor).isPresent();
+  }
+
+  @Override
+  public boolean delegateConstructor(final Constructor<?> constr) {
+    return tryGetType(constr).equals(Opt.of(Variant.DELEGATE));
+  }
+
+  @Override
+  public boolean propertiesConstructor(final Constructor<?> constr) {
+    return tryGetType(constr)
+      .map(t->setOf(Variant.PARAMETER_NAMES, Variant.ALPHABETIC).contains(t))
+      .orElse(false)
+    ;
+  }
+
+  @Override
+  public Variant getType(final Constructor<?> constr) {
+    return tryGetType(constr).get();
+  }
+
+  private Opt<Variant> tryGetType(final Constructor<?> constr) {
+    return
+      Opt.ofNullable(constr.getAnnotation(com.github.gv2011.util.beans.Constructor.class))
+      .map(com.github.gv2011.util.beans.Constructor::value)
+    ;
   }
 
 }

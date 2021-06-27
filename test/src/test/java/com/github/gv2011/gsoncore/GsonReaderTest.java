@@ -37,6 +37,7 @@ import com.github.gv2011.util.num.NumUtils;
 
 import junit.framework.TestCase;
 
+@SuppressWarnings("resource")
 public final class GsonReaderTest extends TestCase {
   public void testReadArray() {
     GsonReader reader = new GsonReader(reader("[true, true]"));
@@ -408,7 +409,7 @@ public final class GsonReaderTest extends TestCase {
     GsonReader reader = new GsonReader(reader(json));
     reader.readArrayStart();
     assertEquals(
-      NumUtils.parse("-1.23456789012345678901234567890123456789012345678901234567890123456789012345678901234567823456789e+195"), 
+      NumUtils.parse("-1.23456789012345678901234567890123456789012345678901234567890123456789012345678901234567823456789e+195"),
       reader.readNumberRaw()
     );
     reader.readArrayEnd();

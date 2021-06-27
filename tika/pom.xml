@@ -25,36 +25,6 @@
       <artifactId>tika-core</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>com.github.gv2011</groupId>
-      <artifactId>util-gcol</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.github.gv2011</groupId>
-      <artifactId>util-json</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.github.gv2011</groupId>
-      <artifactId>gsoncore</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.github.gv2011</groupId>
-      <artifactId>util-beans</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.github.gv2011</groupId>
-      <artifactId>testutil</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-
   </dependencies>
   
   <build>

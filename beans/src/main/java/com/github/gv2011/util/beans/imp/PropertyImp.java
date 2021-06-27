@@ -126,6 +126,10 @@ public final class PropertyImp<B,T> implements Property<T> {
       return function;
     }
 
+    public boolean computed() {
+      return function.isPresent();
+    }
+
     boolean isOptional() {
       return type().isOptional();
     }

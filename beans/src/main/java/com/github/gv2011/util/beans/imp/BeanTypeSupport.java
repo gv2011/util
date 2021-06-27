@@ -1,30 +1,5 @@
 package com.github.gv2011.util.beans.imp;
 
-/*-
- * #%L
- * util-beans
- * %%
- * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
- * %%
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * #L%
- */
 
 import static com.github.gv2011.util.CollectionUtils.pair;
 import static com.github.gv2011.util.Verify.notNull;
@@ -35,9 +10,10 @@ import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.ex.Exceptions.wrap;
 import static com.github.gv2011.util.icol.ICollections.toIMap;
 import static com.github.gv2011.util.icol.ICollections.toISortedMap;
+import static java.util.function.Predicate.not;
+import static java.util.stream.Collectors.joining;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
@@ -67,6 +43,7 @@ import com.github.gv2011.util.beans.Parser;
 import com.github.gv2011.util.beans.Partial;
 import com.github.gv2011.util.beans.Property;
 import com.github.gv2011.util.beans.Validator;
+import com.github.gv2011.util.icol.IEntry;
 import com.github.gv2011.util.icol.IMap;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.Opt;
@@ -98,6 +75,8 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   private @Nullable ISortedMap<String, PropertyImp<T,?>> properties;
   //recursion, init later
   private @Nullable Opt<T> defaultValue;
+  //recursion, init later
+  protected @Nullable Opt<Function<ISortedMap<String, Object>, T>> constructor;
 
   protected BeanTypeSupport(
     final Class<T> beanClass,
@@ -122,14 +101,26 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
         )
       )
     ;
-    resultWrapper = createResultWrapper(annotationHandler.getImplementingClass(clazz), beanHandler);
+    final Opt<Class<?>> implementingClass = annotationHandler.getImplementingClass(clazz);
+    implementingClass.ifPresent(this::verifyHasConstructor);
+    resultWrapper = createResultWrapper(implementingClass, beanHandler);
     validator = annotationHandler.getValidatorClass(clazz)
       .map(this::createValidatorFromClass)
       .orElseGet(UnaryOperator::identity)
     ;
   }
 
-  private final Opt<BeanHandler<T>> findBeanHandler(Class<T> beanClass) {
+  private void verifyHasConstructor(final Class<?> implementingClass) {
+    verifyEqual(
+      ( XStream.of(implementingClass.getConstructors())
+        .filter(annotationHandler::annotatedAsConstructor)
+        .count()
+      ),
+      1L
+    );
+  }
+
+  private final Opt<BeanHandler<T>> findBeanHandler(final Class<T> beanClass) {
     return RecursiveServiceLoader
       .services(BeanHandlerFactory.class).stream()
       .flatMap(bhf->bhf.createBeanHandler(beanClass).stream())
@@ -143,17 +134,26 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
     return s->clazz.cast(parserInstance.parse(s, createBuilder()));
   }
 
-  private final UnaryOperator<T> createResultWrapper(final Opt<Class<?>> implementingClass, Opt<BeanHandler<T>> beanHandler){
+  private final UnaryOperator<T> createResultWrapper(final Opt<Class<?>> implementingClass, final Opt<BeanHandler<T>> beanHandler){
     final UnaryOperator<T> annotatedWrapper = implementingClass
-      .map(c->{
-        final Constructor<? extends T> constructor = call(()->c.asSubclass(clazz).getConstructor(clazz));
-        return (UnaryOperator<T>)(core->call(()->constructor.newInstance(core)));
-      })
+      .flatMap(this::tryGetCoreConstructor)
       .orElseGet(UnaryOperator::identity)
     ;
     return beanHandler
       .map(h->(UnaryOperator<T>)core->h.wrapBean(core, annotatedWrapper))
       .orElse(annotatedWrapper)
+    ;
+  }
+
+  private Opt<UnaryOperator<T>> tryGetCoreConstructor(final Class<?> c) {
+    return
+      XStream.ofArray(call(()->c.asSubclass(clazz).getConstructors()))
+      .tryFindAny(constr->annotationHandler.delegateConstructor(constr))
+      .map(constr->{
+        verifyEqual(constr.getParameterCount(), 1);
+        verifyEqual(constr.getParameterTypes()[0], clazz);
+        return (core->clazz.cast(call(()->constr.newInstance(core))));
+      })
     ;
   }
 
@@ -185,6 +185,9 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
       properties = createProperties();
       checkProperties(properties);
       LOG.debug("{}: initialized properties: {}.", this, properties.keySet());
+      constructor = new ConstructorHandler<>(clazz, annotationHandler, properties)
+        .tryCreateConstructor(annotationHandler.getImplementingClass(clazz))
+      ;
       LOG.debug("{}: initializing default value.", this);
       defaultValue = createDefaultValue(properties);
       LOG.debug("{} initialized default value.", this);
@@ -208,13 +211,38 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   private ToIntFunction<T> createHashCodeFunction(){
     final IMap<String, Function<T,?>> attributes =
       properties.values().stream()
-      .filter(p->p.function().isEmpty())
+      .filter(not(PropertyImp::computed))
       .collect(toIMap(
         Property::name,
         p->bean->p.getValue(bean)
       ))
     ;
     return BeanHashCode.createHashCodeFunctionNamed(clazz, attributes);
+  }
+
+  @Override
+  public final boolean equal(final T bean, final Object other) {
+    if(bean==other) return true;
+    else if(!clazz.isInstance(other)) return false;
+    else if(bean.hashCode()!=other.hashCode()) return false;
+    else{
+      final T otherBean = clazz.cast(other);
+      return
+        properties.values().stream()
+        .filter(not(PropertyImp::computed))
+        .allMatch(p->p.getValue(bean).equals(p.getValue(otherBean)))
+      ;
+    }
+  }
+
+  @Override
+  public String toString(final T bean) {
+    return
+      properties.values().stream()
+      .filter(not(PropertyImp::computed))
+      .map(p->p.name() + IEntry.KEY_VALUE_SEPARATOR + p.getValue(bean))
+      .collect(joining(IMap.ENTRY_SEPARATOR, clazz.getSimpleName()+IMap.PREFIX, IMap.SUFFIX))
+    ;
   }
 
   final ISortedMap<String, Object> getValues(final T bean) {
@@ -265,6 +293,10 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
       return notNull(properties);
   }
 
+  protected final Opt<Function<ISortedMap<String, Object>, T>> constructor() {
+      return notNull(constructor);
+  }
+
   private ISortedMap<String, PropertyImp<T,?>> createProperties() {
     return Arrays.stream(clazz.getMethods())
     .filter(m->beanFactory.isPropertyMethod(clazz, m))
@@ -274,10 +306,6 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
         p->p
     ));
   }
-
-//  private static boolean isPropertyMethod(final Method m) {
-//      return m.getParameterCount()>0 ? false : ! RESERVED.contains(m.getName());
-//  }
 
   private <V> PropertyImp<T,V> createProperty(final Method m) {
     @SuppressWarnings("unchecked")
@@ -451,7 +479,6 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
     return notNull(defaultValue, ()->clazz.toString());
   }
 
-
   private <V> boolean isDefault(final T bean, final PropertyImp<T,V> property) {
     return property.type().isDefault(get(bean, property));
   }
@@ -496,5 +523,6 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   protected <V> Method getMethod(final Function<T, V> method) {
     return ReflectionUtils.method(clazz, method);
   }
+
 
 }

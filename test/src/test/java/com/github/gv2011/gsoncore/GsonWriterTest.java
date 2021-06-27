@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.github.gv2011.gsoncore;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -29,6 +28,7 @@ import com.github.gv2011.util.num.NumUtils;
 
 import junit.framework.TestCase;
 
+@SuppressWarnings("resource")
 public final class GsonWriterTest extends TestCase {
 
   public void testTopLevelValueTypes() {
@@ -483,7 +483,7 @@ public final class GsonWriterTest extends TestCase {
     }
     jsonWriter.endObject();
     assertThat(
-      stringWriter.toString(), 
+      stringWriter.toString(),
       is( "{\n"
         + "  \"a\": {\n"
         + "    \"a\": {\n"

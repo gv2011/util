@@ -104,6 +104,7 @@ public class DefaultTypeRegistry implements TypeRegistry{
 
   @Override
   public <T> BeanTypeSupport<T> beanType(final Class<T> beanClass) {
+    assert beanClass!=null;
     try {
       return (BeanTypeSupport<T>) type(beanClass);
     } catch (final RuntimeException e) {

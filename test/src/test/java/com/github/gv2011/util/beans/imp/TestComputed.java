@@ -11,6 +11,7 @@ import org.junit.Test;
 import com.github.gv2011.testutil.Matchers;
 import com.github.gv2011.util.beans.Bean;
 import com.github.gv2011.util.beans.Computed;
+import com.github.gv2011.util.beans.Constructor;
 import com.github.gv2011.util.beans.Final;
 
 public class TestComputed {
@@ -33,7 +34,7 @@ public class TestComputed {
         )
       );
   }
-  
+
   @Final(implementation=BeanAImp.class)
   public static interface BeanA extends Bean{
     Integer a();
@@ -43,7 +44,8 @@ public class TestComputed {
 
   public static final class BeanAImp implements BeanA{
     private final BeanA core;
-    public BeanAImp(BeanA core) {
+    @Constructor
+    public BeanAImp(final BeanA core) {
       this.core = core;
     }
     @Override

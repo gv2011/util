@@ -29,6 +29,7 @@ import java.io.Reader;
  */
 
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collector;
@@ -81,11 +82,16 @@ public final class JsonFactoryImp implements JsonFactory{
   }
 
   @Override
-  public JsonReader jsonReader(Reader in) {
+  public JsonReader jsonReader(final Reader in) {
 	return adapter.newJsonReader(this, in);
   }
 
-@Override
+  @Override
+  public JsonWriter jsonWriter(final Writer writer) {
+  	return adapter.newJsonWriter(writer);
+  }
+
+  @Override
   public Collector<JsonNode, ?, JsonList> toJsonList() {
     return new JsonListCollector(this);
   }
@@ -137,7 +143,8 @@ public final class JsonFactoryImp implements JsonFactory{
     return new JsonBooleanImp(this, b);
   }
 
-  String serialize(final JsonNode e) {
+  @Override
+public String serialize(final JsonNode e) {
     final StringWriter out = new StringWriter();
     final JsonWriter jsonWriter = adapter.newJsonWriter(out);
     e.write(jsonWriter);

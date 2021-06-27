@@ -7,9 +7,9 @@
     <version>0.10-SNAPSHOT</version>
   </parent>
 
-  <artifactId>util-test</artifactId>
+  <artifactId>util-test5</artifactId>
 
-  <description>Common test module for all other modules</description>
+  <description>Common Jupiter test module for all other modules</description>
 
   <licenses>
     <license>
@@ -39,17 +39,11 @@
       <artifactId>util-apis</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>com.github.gv2011</groupId>
-      <artifactId>testutil</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
+		<dependency>
+		    <groupId>org.junit.jupiter</groupId>
+		    <artifactId>junit-jupiter-api</artifactId>
+		    <scope>test</scope>
+		</dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest</artifactId>
@@ -85,12 +79,6 @@
     </dependency>
     <dependency>
       <groupId>com.github.gv2011</groupId>
-      <artifactId>util-email</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.github.gv2011</groupId>
       <artifactId>util-html</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
@@ -109,12 +97,6 @@
     <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>util-http</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.github.gv2011</groupId>
-      <artifactId>util-tika</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
