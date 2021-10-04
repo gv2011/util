@@ -15,7 +15,7 @@ See file pom.xml.
     <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>util-apis</artifactId>
-      <version>0.7</version>
+      <version>0.10</version>
     </dependency>
     
     <dependency>

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Spliterator;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
@@ -133,7 +134,7 @@ final class GuavaIcolFactory implements ICollectionFactory{
   public <E> IList.Builder<E> listBuilder() {
     return new IListBuilder<>();
   }
-  
+
   @Override
   public Path.Builder pathBuilder() {
     return new PathCollector.PathBuilder();
@@ -204,9 +205,9 @@ final class GuavaIcolFactory implements ICollectionFactory{
   public Path emptyPath() {
     return PathImp.EMPTY;
   }
-  
+
   @Override
-  public Path pathFrom(Collection<String> collection) {
+  public Path pathFrom(final Collection<String> collection) {
     return collection.isEmpty() ? PathImp.EMPTY : new PathImp(listFrom(collection));
   }
 
@@ -223,6 +224,15 @@ final class GuavaIcolFactory implements ICollectionFactory{
   @Override
   public <E> XStream<E> xStream(final Spliterator<E> spliterator, final boolean parallel) {
     return XStreamImp.xStream(StreamSupport.stream(spliterator, parallel));
+  }
+
+  @Override
+  public <K extends Comparable<? super K>, V> ISortedMap<K, V> priorityMerge(
+      final IList<Stream<? extends V>> sources,
+      final Function<? super V, ? extends K> key,
+      final BinaryOperator<V> mergeFunction
+    ) {
+    return PriorityMerger.priorityMerge(sources, key, mergeFunction);
   }
 
 }

@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.gv2011.util.BeanUtils;
 
+
 class AbstractBeanTest {
 
   @Test
