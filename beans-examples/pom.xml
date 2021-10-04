@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.github.gv2011</groupId>
     <artifactId>util-parent</artifactId>
-    <version>0.10</version>
+    <version>0.11-SNAPSHOT</version>
   </parent>
 
   <artifactId>util-beans-examples</artifactId>
