@@ -43,24 +43,4 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <generatedSourcesDirectory>${project.build.directory}/generated-sources/</generatedSourcesDirectory>
-          <annotationProcessors>
-            <annotationProcessor>com.github.gv2011.util.beans.processor.BeansProcessor</annotationProcessor>
-          </annotationProcessors>
-          <verbose>true</verbose>
-          <fork>true</fork>
-          <showWarnings>true</showWarnings>
-          <compilerArgs>
-            <arg>-Adebug=true</arg>
-          </compilerArgs>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>
