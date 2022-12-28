@@ -78,7 +78,10 @@ public abstract class BeanInvocationHandlerSupport<B,P>  {
           assert obih.beanType.equals(beanType);
           if(getHashCode(proxy)!=other.hashCode()){
             result = false;
-            assert result == equals1(proxy, otherBean);
+//            assert result == equals1(proxy, otherBean);
+            if(!(result == equals1(proxy, otherBean))){
+              assert false;
+            }
           }
           else{
             result = obih.values.equals(values);

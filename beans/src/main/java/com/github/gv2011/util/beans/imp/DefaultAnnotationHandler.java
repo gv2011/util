@@ -18,10 +18,10 @@ import org.slf4j.Logger;
 
 import com.github.gv2011.util.beans.AbstractRoot;
 import com.github.gv2011.util.beans.AnnotationHandler;
-import com.github.gv2011.util.beans.Final;
 import com.github.gv2011.util.beans.Computed;
 import com.github.gv2011.util.beans.Constructor.Variant;
 import com.github.gv2011.util.beans.DefaultValue;
+import com.github.gv2011.util.beans.Final;
 import com.github.gv2011.util.beans.FixedBooleanValue;
 import com.github.gv2011.util.beans.FixedValue;
 import com.github.gv2011.util.beans.NoDefaultValue;
@@ -33,7 +33,9 @@ import com.github.gv2011.util.beans.Validator;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.Nothing;
 import com.github.gv2011.util.icol.Opt;
+import com.github.gv2011.util.tstr.AbstractTypedString;
 import com.github.gv2011.util.tstr.TypedString;
+import com.github.gv2011.util.tstr.TypedString.TypedStringParser;
 
 final class DefaultAnnotationHandler implements AnnotationHandler{
 
@@ -200,6 +202,11 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
       Opt.ofNullable(constr.getAnnotation(com.github.gv2011.util.beans.Constructor.class))
       .map(com.github.gv2011.util.beans.Constructor::value)
     ;
+  }
+
+  @Override
+  public <T extends TypedString<T>> Opt<TypedStringParser<T>> getTypedStringParser(final Class<T> typedStringClass) {
+    return AbstractTypedString.getTypedStringParser(typedStringClass);
   }
 
 }

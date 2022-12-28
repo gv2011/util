@@ -7,8 +7,8 @@
     <version>0.11-SNAPSHOT</version>
   </parent>
 
-  <artifactId>util-beans-examples</artifactId>
-  <inceptionYear>2020</inceptionYear>
+  <artifactId>util-csv</artifactId>
+  <inceptionYear>2022</inceptionYear>
 
   <dependencies>
     <dependency>
@@ -20,27 +20,9 @@
       <artifactId>jakarta.activation-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.github.gv2011</groupId>
-      <artifactId>util-beans-processor</artifactId>
-      <version>${project.version}</version>
-      <optional>true</optional>
-    </dependency>
-
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.github.gv2011.logback</groupId>
-      <artifactId>logback-adapter</artifactId>
-      <scope>test</scope>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
     </dependency>
   </dependencies>
+
 </project>

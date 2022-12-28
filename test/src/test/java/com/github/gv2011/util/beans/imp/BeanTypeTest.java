@@ -23,6 +23,7 @@ import com.github.gv2011.util.icol.IMap;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
 import com.github.gv2011.util.icol.Opt;
+import com.github.gv2011.util.time.TimeSpan;
 import com.github.gv2011.util.tstr.TypedString;
 
 public class BeanTypeTest {
@@ -159,6 +160,9 @@ public class BeanTypeTest {
   @Test
   public void testTimeSpan(){
     @SuppressWarnings("unused")
-    final BlackPea pea = beanBuilder(BlackPea.class).build();
+    final BlackPea pea = beanBuilder(BlackPea.class)
+      .set(BlackPea::timeSpan).to(TimeSpan.parse("(2022-12-28T09:15:53Z,2022-12-28T09:15:55Z)"))
+      .build()
+    ;
   }
 }

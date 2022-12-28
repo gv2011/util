@@ -17,7 +17,7 @@
     </dependency>
     <dependency>
       <groupId>com.github.gv2011.logback</groupId>
-      <artifactId>logback-classic</artifactId>
+      <artifactId>logback-adapter</artifactId>
       <scope>compile</scope>
     </dependency>
   </dependencies>

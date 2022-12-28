@@ -51,13 +51,16 @@ class TypedStringType<S extends TypedString<S>> extends AbstractElementaryType<S
   TypedStringType(final JsonFactory jf, final AnnotationHandler annotationHandler, final Class<S> clazz) {
     super(jf, clazz);
     if(clazz.isInterface()){
-      constructor = v->TypedString.create(clazz, v);
+      constructor =
+        annotationHandler.getTypedStringParser(clazz).map(p->(Function<String,S>)p::parse)
+        .orElseGet(()->v->TypedString.create(clazz, v))
+      ;
     }
     else{
       final Opt<Constructor<S>> constr = call(()->{
         try {
           return Opt.of(clazz.getConstructor(String.class));
-        } catch (NoSuchMethodException e) {
+        } catch (final NoSuchMethodException e) {
           return Opt.empty();
         }
       });
@@ -66,7 +69,7 @@ class TypedStringType<S extends TypedString<S>> extends AbstractElementaryType<S
         .orElseGet(()->{
           final Method staticParseMethod = call(()->clazz.getMethod("parse", String.class));
           verify(
-            Modifier.isStatic(staticParseMethod.getModifiers()), 
+            Modifier.isStatic(staticParseMethod.getModifiers()),
             ()->format("{} is not static.", staticParseMethod)
           );
           verify(
@@ -88,7 +91,7 @@ class TypedStringType<S extends TypedString<S>> extends AbstractElementaryType<S
   public final boolean hasStringForm() {
     return true;
   }
-  
+
 
   private final class TypeHandler extends AbstractElementaryTypeHandler<S>{
     @Override
@@ -97,7 +100,7 @@ class TypedStringType<S extends TypedString<S>> extends AbstractElementaryType<S
     }
 
     @Override
-    public S parse(String string) {
+    public S parse(final String string) {
       return constructor.apply(string);
     }
   }

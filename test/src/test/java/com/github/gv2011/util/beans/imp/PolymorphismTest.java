@@ -11,6 +11,7 @@ import com.github.gv2011.util.beans.imp.TestModel.NormalPot;
 import com.github.gv2011.util.beans.imp.TestModel.Pea;
 import com.github.gv2011.util.beans.imp.TestModel.SnowPea;
 import com.github.gv2011.util.icol.Opt;
+import com.github.gv2011.util.time.TimeSpan;
 
 
 public class PolymorphismTest {
@@ -30,18 +31,27 @@ public class PolymorphismTest {
     assertThat(blackPeaType.isAbstract(), is(false));
     assertThat(blackPeaType.isPolymorphic(), is(true));
 
-    final BlackPea blackPea = blackPeaType.createBuilder().build();
+    final BlackPea blackPea = blackPeaType.createBuilder()
+      .set(BlackPea::timeSpan).to(TimeSpan.parse("(2022-12-28T09:15:53Z,2022-12-28T09:15:55Z)"))
+      .build()
+    ;
     assertThat(blackPea.type(), is(BlackPea.class.getSimpleName()));
 
     final BeanTypeSupport<ChickPea> chickPeaType = reg.beanType(ChickPea.class);
     assertThat(chickPeaType.getClass(), is(PolymorphicBeanType.class));
     final PropertyImp<ChickPea,String> typeProp = chickPeaType.getProperty(ChickPea::type);
     assertThat(typeProp.fixedValue(), is(Opt.of("chicks")));
-    final ChickPea chickPea = chickPeaType.createBuilder().build();
+    final ChickPea chickPea = chickPeaType.createBuilder()
+      .set(ChickPea::timeSpan).to(TimeSpan.parse("(2022-12-27T09:15:53Z,2022-12-28T09:15:55Z)"))
+      .build()
+    ;
     assertThat(chickPea.type(), is("chicks"));
 
     final BeanTypeSupport<SnowPea> snowPeaType = reg.beanType(SnowPea.class);
-    final SnowPea snowPea = snowPeaType.createBuilder().build();
+    final SnowPea snowPea = snowPeaType.createBuilder()
+      .set(SnowPea::timeSpan).to(TimeSpan.parse("(2022-12-26T09:15:53Z,2022-12-28T09:15:55Z)"))
+      .build()
+    ;
     assertThat(snowPea.type(), is("saccharatum"));
 
   }

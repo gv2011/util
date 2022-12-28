@@ -13,6 +13,8 @@ import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -53,6 +55,8 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     Duration.class.getName(),
     IsoDay.class.getName(),
     LocalDate.class.getName(),
+    LocalDateTime.class.getName(),
+    LocalTime.class.getName(),
     UUID.class.getName(),
     InetSocketAddress.class.getName(),
     Hash256.class.getName(),
@@ -98,6 +102,8 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     else if(clazz.equals(Date.class)) result = new DateType();
     else if(clazz.equals(Duration.class)) result = new DurationType();
     else if(clazz.equals(LocalDate.class)) result = stringBasedType(LocalDate.class);
+    else if(clazz.equals(LocalDateTime.class)) result = stringBasedType(LocalTime.class);
+    else if(clazz.equals(LocalTime.class)) result = stringBasedType(LocalTime.class);
     else if(clazz.equals(IsoDay.class)) result = stringBasedType(IsoDay.class);
     else if(clazz.equals(InetSocketAddress.class)) result = new InetSocketAddressType();
     else if(clazz.equals(Hash256.class)) result = stringBasedType(Hash256.class);
