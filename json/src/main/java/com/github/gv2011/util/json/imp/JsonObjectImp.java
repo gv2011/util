@@ -33,8 +33,8 @@ final class JsonObjectImp extends AbstractISortedMap<String,JsonNode> implements
   }
 
   @Override
-  public String serialize() {
-    return f.serialize(this);
+  public String serialize(final boolean compact) {
+    return f.serialize(this, compact);
   }
 
   @Override

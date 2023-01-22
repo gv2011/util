@@ -12,10 +12,10 @@ package com.github.gv2011.testutil;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -60,7 +60,7 @@ public final class TestThreadFactory implements ThreadFactory, AutoCloseableNt{
       Opt<Entry<Thread,ThrowingRunnable>> thread;
       synchronized(threads) {
         thread = threads.isEmpty() ? Opt.empty() : Opt.of(threads.entrySet().iterator().next());
-        thread.ifPresent(t->threads.remove(t.getKey()));
+        thread.ifPresentDo(t->threads.remove(t.getKey()));
       }
       if(!thread.isPresent()) done = true;
       else{
@@ -68,7 +68,7 @@ public final class TestThreadFactory implements ThreadFactory, AutoCloseableNt{
         try {
           if(t.getKey().isAlive()) {
             LOG.info("Terminating thread {}.", t.getKey().getName());
-            t.getValue().run();
+            t.getValue().runThrowing();
             t.getKey().join();
           }
         } catch (final Throwable e) {

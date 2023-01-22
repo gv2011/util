@@ -44,8 +44,8 @@ abstract class AbstractJsonList extends AbstractIList<JsonNode> implements JsonL
 
 
   @Override
-  public String serialize() {
-    return f.serialize(this);
+  public String serialize(final boolean compact) {
+    return f.serialize(this, compact);
   }
 
   @Override

@@ -5,7 +5,7 @@ import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.icol.ICollections.sortedSetOf;
 import static java.util.stream.Collectors.joining;
-
+import static com.github.gv2011.util.icol.ICollections.nothing;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.net.InetSocketAddress;
@@ -134,7 +134,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
         return defaultValue;
       }
       @Override
-      public T parse(String string) {
+      public T parse(final String string) {
         return constructor.apply(string);
       }
     };
@@ -158,17 +158,17 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
       return true;
     }
     @Override
-    public String parse(String string) {
+    public String parse(final String string) {
       return string;
     }
   }
 
   private static class NothingType extends AbstractElementaryTypeHandler<Nothing> {
-    private static final Opt<Nothing> DEF = Opt.of(Nothing.INSTANCE);
+    private static final Opt<Nothing> DEF = Opt.of(nothing());
     @Override
     public Nothing fromJson(final JsonNode json) {
       json.asNull();
-      return Nothing.INSTANCE;
+      return nothing();
     }
     @Override
     public JsonNull toJson(final Nothing object, final JsonFactory jf) {
@@ -183,7 +183,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
       return JsonNodeType.NULL;
     }
     @Override
-    public Nothing parse(String string) {
+    public Nothing parse(final String string) {
        return Nothing.parse(string);
     }
   }
@@ -207,7 +207,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
       return JsonNodeType.BOOLEAN;
     }
     @Override
-    public Boolean parse(String string) {
+    public Boolean parse(final String string) {
       return Boolean.valueOf(string);
     }
   }
@@ -232,7 +232,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
       return JsonNodeType.NUMBER;
     }
     @Override
-    public Decimal parse(String string) {
+    public Decimal parse(final String string) {
       return NumUtils.parse(string);
     }
   }
@@ -256,7 +256,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
       return JsonNodeType.NUMBER;
     }
     @Override
-    public Integer parse(String string) {
+    public Integer parse(final String string) {
       return Integer.valueOf(string);
     }
   }
@@ -280,7 +280,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
       return JsonNodeType.NUMBER;
     }
     @Override
-    public Long parse(String string) {
+    public Long parse(final String string) {
       return Long.valueOf(string);
     }
   }
@@ -312,7 +312,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
       return JsonNodeType.NUMBER;
     }
     @Override
-    public BigDecimal parse(String string) {
+    public BigDecimal parse(final String string) {
       return BigDecimalUtils.canonical(new BigDecimal(string));
     }
   }
@@ -335,7 +335,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
       return JsonNodeType.STRING;
     }
     @Override
-    public Bytes parse(String string) {
+    public Bytes parse(final String string) {
       return ByteUtils.parseBase64(string);
     }
   }
@@ -361,7 +361,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
       return JsonNodeType.STRING;
     }
     @Override
-    public Date parse(String string) {
+    public Date parse(final String string) {
       return Date.from(Instant.parse(string));
     }
   }
@@ -388,7 +388,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
       return JsonNodeType.STRING;
     }
     @Override
-    public Duration parse(String string) {
+    public Duration parse(final String string) {
       return Duration.parse(string);
     }
   }
@@ -407,7 +407,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
       return JsonNodeType.STRING;
     }
     @Override
-    public UUID parse(String string) {
+    public UUID parse(final String string) {
       return UUID.fromString(string);
     }
   }
@@ -418,7 +418,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
       return jf.primitive(socket.getHostString()+":"+socket.getPort());
     }
     @Override
-    public InetSocketAddress parse(String colonNotation) {
+    public InetSocketAddress parse(final String colonNotation) {
       final int i = colonNotation.lastIndexOf(':');
       verify(i!=-1);
       final String host = colonNotation.substring(0, i);

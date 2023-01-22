@@ -46,7 +46,7 @@ import com.github.gv2011.util.sec.ServerCertificate;
 import com.github.gv2011.util.sec.TrustAllTrustManager;
 
 public class HttpServerImp implements HttpServer, AcmeAccess{
-    
+
   private static final Logger LOG = getLogger(HttpServerImp.class);
 
   private final Server jetty;
@@ -54,43 +54,43 @@ public class HttpServerImp implements HttpServer, AcmeAccess{
   private final Opt<ServerConnector> httpsConnector;
   private final Opt<SslContextFactory.Server> sslContextFactory;
   private final Set<Domain> activeHttpsDomains = Collections.synchronizedSet(new HashSet<>());
-  
+
   private final Opt<CertificateHandler> certHandler;
   private final Dispatcher dispatcher;
 
   public HttpServerImp(
-    HttpFactoryImp http,
-    IList<Pair<Space,RequestHandler>> handlers, 
-    OptionalInt httpPort,
-    Opt<CertificateHandler> certHandler,
-    Predicate<Domain> isHttpsHost,
-    OptionalInt httpsPort
+    final HttpFactoryImp http,
+    final IList<Pair<Space,RequestHandler>> handlers,
+    final OptionalInt httpPort,
+    final Opt<CertificateHandler> certHandler,
+    final Predicate<Domain> isHttpsHost,
+    final OptionalInt httpsPort
   ) {
     this.certHandler = certHandler;
     jetty = new Server();
     assert jetty.getConnectors().length==0;
-    
+
     final int effectiveHttpsPort = httpsPort.orElse(HttpFactoryImp.DEFAULT_HTTPS_PORT);
     final int effectiveHttpPort = httpPort.orElse(HttpFactoryImp.DEFAULT_HTTP_PORT);
-    
+
     if(certHandler.isPresent()){
       verify(effectiveHttpsPort==SERVER_SELECTS_PORT.getAsInt() || effectiveHttpsPort!=effectiveHttpPort);
 
       final HttpConfiguration config = new HttpConfiguration();
       config.setSendServerVersion(false);
-      
+
       final HttpConnectionFactory plainConnFac = new HttpConnectionFactory(config);
       verifyEqual(plainConnFac.getProtocol(), "HTTP/1.1");
-      
+
       sslContextFactory = Opt.of(createSslContextFactory(certHandler.get()));
 
       final SslConnectionFactory tlsConnFac = new SslConnectionFactory(sslContextFactory.get(), plainConnFac.getProtocol());
-      
+
       final ServerConnector httpsConnector = new ServerConnector(jetty, tlsConnFac, plainConnFac);
-      
+
       httpsConnector.setPort(effectiveHttpsPort);
       jetty.addConnector(httpsConnector);
-      
+
       this.httpsConnector = Opt.of(httpsConnector);
       dispatcher = new Dispatcher(http, isHttpsHost, handlers, this::ensureActivated);
     }
@@ -100,35 +100,35 @@ public class HttpServerImp implements HttpServer, AcmeAccess{
       sslContextFactory = Opt.empty();
       dispatcher = new Dispatcher(http, d->false, handlers, d->bug());
     }
-    
+
     final HttpConfiguration config = new HttpConfiguration();
     config.setSendServerVersion(false);
     httpConnector = new ServerConnector(jetty, new HttpConnectionFactory(config));
     httpConnector.setPort(httpPort.orElse(8080));
     jetty.addConnector(httpConnector);
-    
+
     jetty.setHandler(dispatcher);
-    
+
     call(jetty::start);
   }
 
-  private SslContextFactory.Server createSslContextFactory(CertificateHandler certificateHandler) {
+  private SslContextFactory.Server createSslContextFactory(final CertificateHandler certificateHandler) {
     final KeyStore keyStore = call(()->(KeyStore)KeyStore.getInstance(SecUtils.JKS));
     call(()->keyStore.load(null));
     certificateHandler.availableDomains().forEach(d->{
       final Opt<ServerCertificate> cert = certHandler.get().getCertificate(d, this::updateCertificate);
-      cert.ifPresent(c->{
+      cert.ifPresentDo(c->{
         SecUtils.addToKeyStore(c, keyStore);
         activeHttpsDomains.add(d);
       });
     });
     LOG.warn(
-      "Active https domains: {}.", 
+      "Active https domains: {}.",
       activeHttpsDomains.stream().sorted().map(Domain::toString).collect(joining(", "))
     );
     final SslContextFactory.Server sslContextFactory = new SslContextFactory.Server(){
       @Override
-      protected TrustManager[] getTrustManagers(KeyStore trustStore, Collection<? extends CRL> crls) {
+      protected TrustManager[] getTrustManagers(final KeyStore trustStore, final Collection<? extends CRL> crls) {
         return new TrustManager[]{new TrustAllTrustManager()};
       }
     };
@@ -144,8 +144,8 @@ public class HttpServerImp implements HttpServer, AcmeAccess{
     call(jetty::stop);
     call(jetty::join);
   }
-  
-  
+
+
 
   @Override
   public OptionalInt httpsPort() {
@@ -156,9 +156,9 @@ public class HttpServerImp implements HttpServer, AcmeAccess{
   public int httpPort() {
     return httpConnector.getLocalPort();
   }
-  
-  
-  private void ensureActivated(Domain domain){
+
+
+  private void ensureActivated(final Domain domain){
     if(!activeHttpsDomains.contains(domain)){
       synchronized(activeHttpsDomains){
         if(!activeHttpsDomains.contains(domain)){
@@ -171,14 +171,14 @@ public class HttpServerImp implements HttpServer, AcmeAccess{
           });
           activeHttpsDomains.add(domain);
           LOG.warn(
-            "Activated https domain {}. Active domains: {}.", 
+            "Activated https domain {}. Active domains: {}.",
             domain, activeHttpsDomains.stream().sorted().map(Domain::toString).collect(joining(", "))
           );
         }
       }
-    } 
+    }
   }
-  
+
   private void updateCertificate(final CertificateUpdate update){
     call(()->{
       sslContextFactory.get().reload(scf->{
@@ -188,7 +188,7 @@ public class HttpServerImp implements HttpServer, AcmeAccess{
   }
 
   @Override
-  public AutoCloseableNt activate(Domain host, Path tokenPath, TypedBytes token) {
+  public AutoCloseableNt activate(final Domain host, final Path tokenPath, final TypedBytes token) {
     return dispatcher.activate(host, tokenPath, token);
   }
 }

@@ -24,9 +24,9 @@ import com.github.gv2011.util.json.JsonWriter;
 public final class JsongAdapter implements Adapter{
 
   @Override
-  public JsonWriter newJsonWriter(final Writer out) {
+  public JsonWriter newJsonWriter(final Writer out, final boolean compact) {
     final com.github.gv2011.gson.stream.JsonWriter delegate = new com.github.gv2011.gson.stream.JsonWriter(out);
-    delegate.setIndent("  ");
+    delegate.setIndent(compact ? "" : "  ");
     delegate.setSerializeNulls(false);
     return new JsongWriter(delegate);
   }

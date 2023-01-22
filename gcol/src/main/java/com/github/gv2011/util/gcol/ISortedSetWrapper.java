@@ -45,6 +45,10 @@ final class ISortedSetWrapper<E extends Comparable<? super E>>
 extends ISetWrapper<E,NavigableSet<E>>
 implements ISortedSet<E>{
 
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  static final ISortedSetWrapper EMPTY = new ISortedSetWrapper(ImmutableSortedSet.of());
+
+
   private final CachedConstant<IList<E>> index = softRefConstant(()->GuavaIcolFactory.INSTANCE.listFrom(this));
 
   ISortedSetWrapper(final NavigableSet<E> delegate) {

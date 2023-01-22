@@ -45,12 +45,12 @@ import com.github.gv2011.util.tstr.TypedString;
 import jakarta.servlet.http.HttpServletRequest;
 
 final class RequestConverter {
-  
+
   private static final Logger LOG = getLogger(RequestConverter.class);
-  
+
   private final HttpFactoryImp http;
-  
-  RequestConverter(HttpFactoryImp http) {
+
+  RequestConverter(final HttpFactoryImp http) {
     this.http = http;
   }
 
@@ -63,7 +63,7 @@ final class RequestConverter {
       .filter(not(Domain::isInetAddress))
       .orElse(Domain.LOCALHOST)
     ;
-    
+
     final boolean secure = request.isSecure();
     final IList<X509Certificate> peerCertificateChain;
     if(secure){
@@ -74,14 +74,14 @@ final class RequestConverter {
       ;
       checkSelectedServerCertificate(host, session);
       peerCertificateChain = getPeerCertificateChain(session);
-      Opt<Domain> sniHost = getSniHost(session);
-      sniHost.ifPresent(sni->verifyEqual(host, sni));
+      final Opt<Domain> sniHost = getSniHost(session);
+      sniHost.ifPresentDo(sni->verifyEqual(host, sni));
       verifyEqual(Domain.from(session.getLocalPrincipal()), host);
     }
     else{
       peerCertificateChain = emptyList();
     }
-    
+
     final Method method = TypedString.create(Method.class, request.getMethod());
 
     final IList<String> path = http.decodePath(request.getRequestURI());
@@ -125,30 +125,30 @@ final class RequestConverter {
     ;
   }
 
-  private String stripPort(String hostAndOptionalPort) {
+  private String stripPort(final String hostAndOptionalPort) {
     final IList<String> parts = StringUtils.split(hostAndOptionalPort, ':');
     verify(parts.size()==1 || parts.size()==2);
     return parts.get(0).trim();
   }
 
-  private void checkSelectedServerCertificate(Domain host, ExtendedSSLSession session) {
+  private void checkSelectedServerCertificate(final Domain host, final ExtendedSSLSession session) {
     verifyEqual(Domain.from(((X509Certificate)session.getLocalCertificates()[0]).getSubjectDN()), host);
   }
 
-  private IList<X509Certificate> getPeerCertificateChain(ExtendedSSLSession session) {
+  private IList<X509Certificate> getPeerCertificateChain(final ExtendedSSLSession session) {
     try{
       return Arrays.stream(session.getPeerCertificates()).map(c->(X509Certificate)c).collect(toIList());
     }
-    catch (SSLPeerUnverifiedException e) {
+    catch (final SSLPeerUnverifiedException e) {
       return emptyList();
     }
-    catch(RuntimeException e){
+    catch(final RuntimeException e){
       LOG.error("Could not obtain peer certificate chain.", e);
       return emptyList();
-    } 
+    }
   }
 
-  private Opt<Domain> getSniHost(ExtendedSSLSession session) {
+  private Opt<Domain> getSniHost(final ExtendedSSLSession session) {
     final List<SNIServerName> sniNames = session.getRequestedServerNames();
     try{
       return Opt.of(sniNames.stream()
@@ -160,10 +160,10 @@ final class RequestConverter {
         .collect(toSingle()))
       ;
       }
-    catch(RuntimeException e){
+    catch(final RuntimeException e){
       LOG.error(format("Could not obtain sni name from {}.", sniNames), e);
       return Opt.empty();
-    } 
+    }
   }
 
 

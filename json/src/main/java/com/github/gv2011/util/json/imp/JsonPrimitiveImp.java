@@ -19,8 +19,8 @@ abstract class JsonPrimitiveImp<P> extends AbstractJsongNode implements JsonPrim
   }
 
   @Override
-  public String serialize() {
-    return f.serialize(this);
+  public String serialize(final boolean compact) {
+    return f.serialize(this, compact);
   }
 
   @Override

@@ -32,6 +32,11 @@ public abstract class TypeSupport<T> implements Type<T> {
     }
 
     @Override
+    public boolean isInstance(final Object object) {
+      return clazz.isInstance(object);
+    }
+
+    @Override
     public T cast(final Object object) {
         return clazz.cast(object);
     }

@@ -18,7 +18,9 @@ import com.github.gv2011.util.icol.IMap;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
+import com.github.gv2011.util.icol.Nothing;
 import com.github.gv2011.util.icol.Path;
+import com.github.gv2011.util.icol.Single;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
@@ -30,28 +32,43 @@ final class GuavaIcolFactory implements ICollectionFactory{
 
   private GuavaIcolFactory(){}
 
-  @SuppressWarnings({ "unchecked", "rawtypes" })
-  private static final ISortedSet EMPTY_SORTED_SET = new ISortedSetWrapper(ImmutableSortedSet.of());
+  @Override
+  public Nothing nothing() {
+    return IEmpty.INSTANCE;
+  }
 
-  @SuppressWarnings({ "unchecked", "rawtypes" })
-  static final ISortedMap EMPTY_MAP = new ISortedMapWrapper(ImmutableSortedMap.of());
+  @Override
+  public Nothing empty() {
+     return IEmpty.INSTANCE;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public <E> IList<E> emptyList() {
+    return IEmptyList.INSTANCE;
+  }
+
+  @Override
+  public <E> Single<E> setOf(final E element) {
+    return ISingle.of(element);
+  }
 
   @SuppressWarnings("unchecked")
   @Override
   public <T extends Comparable<? super T>> ISortedSet<T> emptySortedSet() {
-    return EMPTY_SORTED_SET;
+    return ISortedSetWrapper.EMPTY;
   }
 
   @SuppressWarnings("unchecked")
   @Override
   public <K, V> IMap<K, V> emptyMap() {
-    return EMPTY_MAP;
+    return ISortedMapWrapper.EMPTY;
   }
 
   @SuppressWarnings("unchecked")
   @Override
   public <K extends Comparable<? super K>, V> ISortedMap<K, V> emptySortedMap() {
-    return EMPTY_MAP;
+    return ISortedMapWrapper.EMPTY;
   }
 
   @Override
@@ -234,5 +251,4 @@ final class GuavaIcolFactory implements ICollectionFactory{
     ) {
     return PriorityMerger.priorityMerge(sources, key, mergeFunction);
   }
-
 }

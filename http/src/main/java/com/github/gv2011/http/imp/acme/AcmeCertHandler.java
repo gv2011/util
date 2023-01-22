@@ -289,7 +289,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
 
   private void waitForSuccess(String name, Supplier<Status> status, ThrowingRunnable update) {
     final Opt<Boolean> result = poller.poll(()->{
-      update.run();
+      update.runThrowing();
       final Status s = status.get();
       LOG.info("{} status is {}.", name, s);
       return

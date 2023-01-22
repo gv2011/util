@@ -47,6 +47,11 @@ abstract class AbstractElementaryType<E> extends TypeSupport<E>{
   }
 
   @Override
+  public boolean isInstance(final Object object) {
+    return handler().isInstance(clazz, object);
+  }
+
+  @Override
   public E cast(final Object object) {
     return handler().cast(clazz, object);
   }
@@ -57,7 +62,7 @@ abstract class AbstractElementaryType<E> extends TypeSupport<E>{
   }
 
   @Override
-  public final E parse(String string) {
+  public final E parse(final String string) {
     return handler().parse(string);
   }
 

@@ -57,10 +57,10 @@ final class Dispatcher extends AbstractHandler {
   private final RequestConverter requestConverter;
 
   Dispatcher(
-    final HttpFactoryImp http, 
-    Predicate<Domain> isHttpsHost, 
+    final HttpFactoryImp http,
+    final Predicate<Domain> isHttpsHost,
     final IList<Pair<Space,RequestHandler>> handlers,
-    Consumer<Domain> httpsActivator
+    final Consumer<Domain> httpsActivator
   ){
     this.http = http;
     this.isHttpsHost = isHttpsHost;
@@ -81,20 +81,20 @@ final class Dispatcher extends AbstractHandler {
       final HttpServletRequest servletRequest,
       final HttpServletResponse servletResponse
   ) throws IOException, ServletException {
-    
+
     final Opt<Request> request = tryConvert(servletRequest);
     final boolean secure = servletRequest.isSecure();
-    
+
     try{
-    
+
       final Opt<TypedBytes> token = getMatchingToken(request);
-  
+
       final Opt<Pair<Space, RequestHandler>> optSpaceAndHandler;
-      
+
       final Opt<Response> response;
-      
+
       final Opt<String> redirectUrl;
-      
+
       if(token.isPresent()){
         //Token response
         optSpaceAndHandler = Opt.empty();
@@ -133,7 +133,7 @@ final class Dispatcher extends AbstractHandler {
           ;
         }
       }
-      
+
       //Log request:
       if(LOG.isInfoEnabled())LOG.info(
         Stream.of(
@@ -152,13 +152,13 @@ final class Dispatcher extends AbstractHandler {
         .map(o->o.get().toString())
         .collect(joining(" | "))
       );
-      
+
       response
-        .ifPresent(
+        .ifPresentDo(
           r->write(r, servletResponse)
         ).orElseDo(()->{
-          redirectUrl.ifPresent(u->{
-            servletResponse.setHeader("Location", u);          
+          redirectUrl.ifPresentDo(u->{
+            servletResponse.setHeader("Location", u);
             servletResponse.setStatus(HttpStatus.MOVED_PERMANENTLY_301);
             call(servletResponse::flushBuffer);
           }).orElseDo(()->{
@@ -166,8 +166,8 @@ final class Dispatcher extends AbstractHandler {
           });
         })
       ;
-    
-    } catch(Throwable t){
+
+    } catch(final Throwable t){
       final UUID id = UUID.randomUUID();
       LOG.error(format("Handling error {}. Request: {}"), id, errorInfo(servletRequest), t);
       call(()->servletResponse.sendError(HttpStatus.NOT_FOUND_404, id.toString()));
@@ -191,7 +191,7 @@ final class Dispatcher extends AbstractHandler {
     }
   }
 
-  private String errorInfo(HttpServletRequest r) {
+  private String errorInfo(final HttpServletRequest r) {
     return
       "From "+r.getRemoteHost() + " | "+
       (r.isSecure() ? "host: " : "host (plain): ")+r.getHeader("Host") + " | "+
@@ -200,12 +200,12 @@ final class Dispatcher extends AbstractHandler {
     ;
   }
 
-  private Domain stripWww(Domain domain) {
+  private Domain stripWww(final Domain domain) {
     final Path path = domain.asPath();
     return path.first().equals("www") ? Domain.parse(path.tail()) : domain;
   }
 
-  private boolean isWww(Domain domain) {
+  private boolean isWww(final Domain domain) {
     return domain.asPath().first().equals("www") ;
   }
 
@@ -243,10 +243,10 @@ final class Dispatcher extends AbstractHandler {
 
   private void write(final Response handlerResponse, final HttpServletResponse httpResponse) {
     httpResponse.setStatus(handlerResponse.statusCode().code());
-    handlerResponse.entity().ifPresent(e->{
+    handlerResponse.entity().ifPresentDo(e->{
       final DataType dataType = e.dataType();
       httpResponse.setContentType(dataType.toString());
-      e.dataType().charset().ifPresent(
+      e.dataType().charset().ifPresentDo(
         cs->httpResponse.setCharacterEncoding(cs.name())
       );
       final long size = e.content().longSize();

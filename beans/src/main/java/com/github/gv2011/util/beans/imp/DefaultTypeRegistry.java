@@ -7,9 +7,9 @@ import static com.github.gv2011.util.CollectionUtils.toOpt;
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.icol.ICollections.listBuilder;
+import static com.github.gv2011.util.icol.ICollections.nothing;
 import static com.github.gv2011.util.icol.ICollections.setOf;
 import static com.github.gv2011.util.icol.ICollections.toISet;
-import static com.github.gv2011.util.icol.Nothing.nothing;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.ParameterizedType;
@@ -67,7 +67,10 @@ public class DefaultTypeRegistry implements TypeRegistry{
   private SoftIndex<Class<?>, TypeSupport<?>> createTypeMap() {
     return CacheUtils.softIndex(
       c->tryCreateType(c),
-      p->p.getValue().ifPresent(TypeSupport::initialize).orElse(nothing())
+      p->{
+        p.getValue().ifPresentDo(TypeSupport::initialize);
+        return nothing();
+      }
     );
   }
 

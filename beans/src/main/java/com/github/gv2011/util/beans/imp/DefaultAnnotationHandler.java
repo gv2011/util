@@ -12,7 +12,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.function.Function;
 
 import org.slf4j.Logger;
 
@@ -30,6 +29,7 @@ import com.github.gv2011.util.beans.TypeName;
 import com.github.gv2011.util.beans.TypeNameStrategy;
 import com.github.gv2011.util.beans.TypeResolver;
 import com.github.gv2011.util.beans.Validator;
+import com.github.gv2011.util.ex.ThrowingFunction;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.Nothing;
 import com.github.gv2011.util.icol.Opt;
@@ -126,7 +126,7 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
   }
 
   private <A extends Annotation, V> Opt<V> annotationValue(
-    final Method propertyMethod, final Class<A> annotationClass, final Function<A,V> annotationProperty
+    final Method propertyMethod, final Class<A> annotationClass, final ThrowingFunction<A,V> annotationProperty
   ){
       verify(propertyMethod.getParameterCount()==0);
       final Class<?> clazz = propertyMethod.getDeclaringClass();

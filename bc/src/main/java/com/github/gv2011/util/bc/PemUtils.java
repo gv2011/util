@@ -2,7 +2,7 @@ package com.github.gv2011.util.bc;
 
 import static com.github.gv2011.util.ex.Exceptions.callWithCloseable;
 import static com.github.gv2011.util.ex.Exceptions.staticClass;
-import static com.github.gv2011.util.icol.Nothing.nothing;
+import static com.github.gv2011.util.icol.ICollections.nothing;
 import static com.github.gv2011.util.sec.SecUtils.readCertificateChainFromPem;
 
 import java.io.StringReader;

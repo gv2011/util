@@ -41,7 +41,7 @@ public abstract class BeanBuilderSupport<T> implements ExtendedBeanBuilder<T> {
     public T buildUnvalidated() {
       //verify fixed values:
       for(final PropertyImp<T,?> p: beanType().properties().values()) {
-          p.fixedValue().ifPresent(fv->{
+          p.fixedValue().ifPresentDo(fv->{
               final String propName = p.name();
               if(map.containsKey(propName)) {
                 verifyEqual(map.get(propName),fv, (e,a)->
@@ -62,7 +62,7 @@ public abstract class BeanBuilderSupport<T> implements ExtendedBeanBuilder<T> {
       }
       //remove default values:
       for(final Property<?> p: beanType().properties().values()) {
-          p.defaultValue().ifPresent(dv->{
+          p.defaultValue().ifPresentDo(dv->{
               final String propName = p.name();
               final @Nullable Object actual = map.get(propName);
               if(actual!=null) {
@@ -158,7 +158,7 @@ public abstract class BeanBuilderSupport<T> implements ExtendedBeanBuilder<T> {
       public BeanBuilder<T> to(final V value) {
         notNull(value, ()->format("Trying to set {} to null.", property));
         verify(!property.function().isPresent());
-        property.fixedValue().ifPresent(fv->{
+        property.fixedValue().ifPresentDo(fv->{
           verifyEqual(value, fv, (e,a)->
             format(
               "{}: Trying to set property {} to value {}, but it is fixed to value {}.",

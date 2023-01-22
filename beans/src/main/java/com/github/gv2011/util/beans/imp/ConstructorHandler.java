@@ -4,6 +4,7 @@ import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
+import static com.github.gv2011.util.icol.ICollections.single;
 import static com.github.gv2011.util.icol.ICollections.toIList;
 import static com.github.gv2011.util.icol.ICollections.toIMap;
 
@@ -112,12 +113,12 @@ final class ConstructorHandler<T> {
 
   private <V> V getValue(final ISortedMap<String, Object> map, final PropertyImp<T, V> property) {
     final Opt<V> v1 = map.tryGet(property.name())
-      .map(v->Opt.of(property.type().clazz.cast(v)))
+      .<Opt<V>>map(v->single(property.type().clazz.cast(v)))
       .orElseGet(()->property.defaultValue())
     ;
     final V value = v1
       .map(v->{
-        property.fixedValue().ifPresent(f->verifyEqual(v,f));
+        property.fixedValue().ifPresentDo(f->verifyEqual(v,f));
         return v;
       })
       .orElseGet(()->property.fixedValue().orElseThrow(()->new IllegalArgumentException("Missing property.")))

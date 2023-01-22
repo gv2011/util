@@ -1,5 +1,6 @@
 package com.github.gv2011.util.main;
 
+import static com.github.gv2011.util.icol.ICollections.empty;
 import static com.github.gv2011.util.icol.ICollections.listOf;
 import static com.github.gv2011.util.icol.ICollections.mapOf;
 import static com.github.gv2011.util.icol.ICollections.setOf;
@@ -25,7 +26,7 @@ public class ArgsParserImpTest {
 	@Test
 	public void testParse() {
 		final Alternative<StartArgs, String> result = new ArgsParserImp().parse(
-			StartArgs.class, 
+			StartArgs.class,
 			listOf(
 				"--artifactId", "\"la\\\"la\"",
 				"-c", "zip"
@@ -35,7 +36,7 @@ public class ArgsParserImpTest {
 		assertThat(result.getA().artifact().artifactId(), is(TypedString.create(ArtifactId.class, "la\"la")));
 		assertThat(result.getA().artifact().classifier(), is("zip"));
 	}
-	
+
 	@Test
 	public void testGetShortKeys() {
 		assertThat(
@@ -47,17 +48,17 @@ public class ArgsParserImpTest {
 			)
 		);
 	}
-	
+
 	@Test
 	public void testAsMap() {
-		IMap<Character, String> shortKeys = mapOf('a', "anton");
+		final IMap<Character, String> shortKeys = mapOf('a', "anton");
 		final IMap<String, Opt<String>> map = new ArgsParserImp().asMap(listOf("-a", "v1", "--berta", "--c"), shortKeys);
 		assertThat(map.size(), is(3));
 		assertThat(map.get("anton"), is(Opt.of("v1")));
-		assertThat(map.get("berta"), is(Opt.empty()));
-		assertThat(map.get("c"), is(Opt.empty()));
+		assertThat(map.get("berta"), is(empty()));
+		assertThat(map.get("c"), is(empty()));
 	}
-	
+
 	@Test
 	public void testFlattenProperties() {
 		final TypeRegistry reg = BeanUtils.typeRegistry();

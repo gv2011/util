@@ -1,6 +1,7 @@
 package com.github.gv2011.util.json.imp;
 
 import static com.github.gv2011.util.Verify.verify;
+import static com.github.gv2011.util.icol.ICollections.nothing;
 
 import java.util.stream.Stream;
 
@@ -20,8 +21,8 @@ final class JsonNullImp extends AbstractJsongNode implements JsonNull{
   }
 
   @Override
-  public String serialize() {
-    return f.serialize(this);
+  public String serialize(final boolean compact) {
+    return f.serialize(this, compact);
   }
 
   @Override
@@ -63,13 +64,13 @@ final class JsonNullImp extends AbstractJsongNode implements JsonNull{
 
   @Override
   public Nothing value() {
-    return Nothing.INSTANCE;
+    return nothing();
   }
 
   @Override
   public <P2> P2 value(final Class<P2> primitiveClass) {
     verify(primitiveClass.equals(Nothing.class));
-    return primitiveClass.cast(Nothing.INSTANCE);
+    return primitiveClass.cast(nothing());
   }
 
   @Override

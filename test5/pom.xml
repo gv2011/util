@@ -80,6 +80,12 @@
     </dependency>
     <dependency>
       <groupId>com.github.gv2011</groupId>
+      <artifactId>util-h2</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
       <artifactId>util-html</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
@@ -98,6 +104,18 @@
     <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>util-http</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>util-tempfile</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>testutil</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>

@@ -87,8 +87,8 @@ public final class JsonFactoryImp implements JsonFactory{
   }
 
   @Override
-  public JsonWriter jsonWriter(final Writer writer) {
-  	return adapter.newJsonWriter(writer);
+  public JsonWriter jsonWriter(final Writer writer, final boolean compact) {
+  	return adapter.newJsonWriter(writer, compact);
   }
 
   @Override
@@ -144,9 +144,9 @@ public final class JsonFactoryImp implements JsonFactory{
   }
 
   @Override
-public String serialize(final JsonNode e) {
+  public String serialize(final JsonNode e, final boolean compact) {
     final StringWriter out = new StringWriter();
-    final JsonWriter jsonWriter = adapter.newJsonWriter(out);
+    final JsonWriter jsonWriter = adapter.newJsonWriter(out, compact);
     e.write(jsonWriter);
     jsonWriter.flush();
     return out.toString();

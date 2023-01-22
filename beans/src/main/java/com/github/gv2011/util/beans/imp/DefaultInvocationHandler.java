@@ -1,5 +1,7 @@
 package com.github.gv2011.util.beans.imp;
 
+import static com.github.gv2011.util.icol.ICollections.nothing;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
@@ -14,7 +16,7 @@ public class DefaultInvocationHandler<B> extends BeanInvocationHandlerSupport<B,
 
   @Override
   public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
-    return handle(proxy, method, args, Nothing.INSTANCE);
+    return handle(proxy, method, args, nothing());
   }
 
   @Override

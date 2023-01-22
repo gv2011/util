@@ -43,12 +43,12 @@ public class JacksonAdapter implements Adapter{
     }
 
     @Override
-    public JsonWriter newJsonWriter(final Writer out) {
+    public JsonWriter newJsonWriter(final Writer out, final boolean compact) {
         return new JacksonJsonWriter(call(()->jackson.createGenerator(out)));
     }
 
 	@Override
-	public JsonReader newJsonReader(com.github.gv2011.util.json.JsonFactory jf, Reader in) {
+	public JsonReader newJsonReader(final com.github.gv2011.util.json.JsonFactory jf, final Reader in) {
 		throw new UnsupportedOperationException();
 	}
 

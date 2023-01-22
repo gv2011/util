@@ -13,6 +13,9 @@ final class ISortedMapWrapper<K extends Comparable<? super K>,V>
 extends IMapWrapper<K,V,NavigableMap<K,V>>
 implements ISortedMap<K,V>{
 
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  static final ISortedMapWrapper EMPTY = new ISortedMapWrapper(ImmutableSortedMap.of());
+
   ISortedMapWrapper(final NavigableMap<K, V> delegate) {
     super(delegate);
   }

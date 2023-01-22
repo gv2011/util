@@ -36,39 +36,39 @@ import com.github.gv2011.util.sec.Domain;
 import com.github.gv2011.util.sec.SecUtils;
 
 public final class FileHandler implements RequestHandler{
-  
+
   static final String AUTHORISED_USERS = ".authorised-users";
-  
+
   private static final FileExtension ASC = FileExtension.parse("asc");
-  
+
   private static final String PUB_RSA = ".pub.rsa";
 
   private static final String INACTIVE = "inactive-";
 
   private static final Logger LOG = getLogger(FileHandler.class);
-  
+
   private final HttpFactoryImp http;
   private final DataTypeProvider dataTypeProvider;
   private final java.nio.file.Path dir;
   private final DirectoryFormatter directoryFormatter = new DirectoryFormatter();
   private final boolean useIndexFiles;
 
-  public FileHandler(HttpFactoryImp http, DataTypeProvider dataTypeProvider, java.nio.file.Path dir, boolean useIndexFiles) {
+  public FileHandler(final HttpFactoryImp http, final DataTypeProvider dataTypeProvider, final java.nio.file.Path dir, final boolean useIndexFiles) {
     this.http = http;
     this.dataTypeProvider = dataTypeProvider;
     this.dir = dir;
     this.useIndexFiles = useIndexFiles;
   }
-  
+
   @Override
-  public Response handle(Request request) {
+  public Response handle(final Request request) {
     final Domain host = request.host();
     final Path path = pathBuilder()
       .add(host.toString())
       .addAll(request.path())
       .build()
     ;
-    
+
     final boolean authorised;
     if(useAuthorisation(host)){
       final Opt<X509Certificate> cert = request.peerCertificateChain().tryGetFirst();
@@ -78,7 +78,7 @@ public final class FileHandler implements RequestHandler{
       ;
       authorised = userKey.map(authorisedUsers(host)::contains).orElse(false);
       if(!authorised){
-        userKey.ifPresent(c->{
+        userKey.ifPresentDo(c->{
           final String ppal = cert.get().getSubjectX500Principal().getName();
           ByteUtils.newBytes(c.getEncoded())
           .write(getAuthDir(host).resolve(
@@ -89,14 +89,14 @@ public final class FileHandler implements RequestHandler{
     }
     else authorised = true;
     tryRemovePrefix(PUB_RSA, AUTHORISED_USERS); //TODO
-    
+
     return
       (authorised ? resolve(dir, path) : Opt.<java.nio.file.Path>empty())
       .map(filePath->{
         final Response resp;
         if(Files.isDirectory(filePath, NOFOLLOW_LINKS)) {
           if(useIndexFiles){
-            resp = 
+            resp =
               tryGetIndexFile(filePath)
               .map(i->http.createResponse(ByteUtils.readTyped(i)))
               .orElseGet(()->createDirectoryResponse(host, path, filePath))
@@ -116,9 +116,9 @@ public final class FileHandler implements RequestHandler{
     ;
   }
 
-  private TypedBytes readFile(java.nio.file.Path filePath) {
+  private TypedBytes readFile(final java.nio.file.Path filePath) {
     final FileExtension extension = FileUtils.getExtension(filePath);
-    DataType dataType = 
+    DataType dataType =
       localDataTypeOverride(extension)
       .orElseGet(()->dataTypeProvider.dataTypeForExtension(extension))
     ;
@@ -128,52 +128,52 @@ public final class FileHandler implements RequestHandler{
     return ByteUtils.read(filePath).typed(dataType);
   }
 
-  private Opt<DataType> localDataTypeOverride(FileExtension extension) {
+  private Opt<DataType> localDataTypeOverride(final FileExtension extension) {
     return extension.equals(ASC) ? Opt.of(DataTypes.TEXT_PLAIN_UTF_8) : Opt.empty();
   }
 
-  private Opt<java.nio.file.Path> resolve(java.nio.file.Path baseDirectory, Path path) {
-    return 
+  private Opt<java.nio.file.Path> resolve(final java.nio.file.Path baseDirectory, final Path path) {
+    return
       path.stream().anyMatch(pe->pe.startsWith("."))
       ? Opt.empty()
       : FileUtils.resolveSafely(baseDirectory, path);
   }
 
-  private ISet<RSAPublicKey> authorisedUsers(Domain host) {
+  private ISet<RSAPublicKey> authorisedUsers(final Domain host) {
     return readUsers(getAuthDir(host));
   }
 
-  private boolean useAuthorisation(Domain host) {
+  private boolean useAuthorisation(final Domain host) {
     return Files.exists(getAuthDir(host));
   }
 
-  private java.nio.file.Path getAuthDir(Domain host) {
+  private java.nio.file.Path getAuthDir(final Domain host) {
     return dir.resolve(host.toString()).resolve(AUTHORISED_USERS);
   }
 
-  private Opt<java.nio.file.Path> tryGetIndexFile(java.nio.file.Path dir) {
+  private Opt<java.nio.file.Path> tryGetIndexFile(final java.nio.file.Path dir) {
     final java.nio.file.Path indexFile = dir.resolve("index.html");
     return Files.isRegularFile(indexFile, NOFOLLOW_LINKS) ? Opt.of(indexFile) : Opt.empty();
   }
 
-  private Response createDirectoryResponse(Domain host, final Path path, java.nio.file.Path p) {
+  private Response createDirectoryResponse(final Domain host, final Path path, final java.nio.file.Path p) {
     if(listDirectories(host, path)) return http.createResponse(directoryFormatter.format(path, p).asEntity());
     else return http.createResponse();
   }
 
-  private boolean listDirectories(Domain host, Path path) {
+  private boolean listDirectories(final Domain host, final Path path) {
     return useAuthorisation(host);
   }
 
   @Override
-  public boolean accepts(Request request) {
+  public boolean accepts(final Request request) {
     return true;
   }
-  
-  private static ISet<RSAPublicKey> readUsers(java.nio.file.Path authDir) {
+
+  private static ISet<RSAPublicKey> readUsers(final java.nio.file.Path authDir) {
     return callWithCloseable(
-      ()->Files.list(authDir), 
-      (Stream<java.nio.file.Path> s)->{
+      ()->Files.list(authDir),
+      (final Stream<java.nio.file.Path> s)->{
         return s
           .filter(f->f.getFileName().toString().endsWith(PUB_RSA))
           .flatMap(f->{
@@ -183,7 +183,7 @@ public final class FileHandler implements RequestHandler{
                 ? Stream.empty()
                 : Stream.of(key)
               ;
-            } catch (Exception e) {
+            } catch (final Exception e) {
               LOG.error(format("Could not read key from file {}.", f), e);
               return Stream.empty();
             }

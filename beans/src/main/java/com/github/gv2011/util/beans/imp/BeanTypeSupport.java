@@ -102,7 +102,7 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
       )
     ;
     final Opt<Class<?>> implementingClass = annotationHandler.getImplementingClass(clazz);
-    implementingClass.ifPresent(this::verifyHasConstructor);
+    implementingClass.ifPresentDo(this::verifyHasConstructor);
     resultWrapper = createResultWrapper(implementingClass, beanHandler);
     validator = annotationHandler.getValidatorClass(clazz)
       .map(this::createValidatorFromClass)
