@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>util-parent</artifactId>
-  <version>0.11-SNAPSHOT</version>
+  <version>0.11</version>
   <packaging>pom</packaging>
 
   <description>General purpose utilities - parent.</description>
@@ -18,7 +18,7 @@
     <connection>scm:git:git@github.com:gv2011/util.git</connection>
     <developerConnection>scm:git:git@github.com:gv2011/util.git</developerConnection>
     <url>https://github.com/gv2011/util</url>
-    <tag>HEAD</tag>
+    <tag>util-parent-0.11</tag>
   </scm>
 
   <inceptionYear>2016</inceptionYear>
