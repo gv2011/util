@@ -19,7 +19,7 @@ public final class TempFileFactoryImp implements TempFileFactory{
 
   private static final String PREFIX = TempFileFactoryImp.class.getSimpleName()+"-";
 
-  private final Opt<Path> baseDir;
+  final Opt<Path> baseDir;
 
   public TempFileFactoryImp() {
     this(RecursiveServiceLoader.service(LogAdapter.class));
