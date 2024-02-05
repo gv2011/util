@@ -17,7 +17,7 @@ import com.github.gv2011.util.bytes.BytesBuilder;
 import com.github.gv2011.util.email.Email;
 import com.github.gv2011.util.email.MailAccount;
 import com.github.gv2011.util.email.MailProvider;
-import com.sun.mail.imap.IMAPFolder;
+import org.eclipse.angus.mail.imap.IMAPFolder;
 
 import jakarta.mail.Folder;
 import jakarta.mail.Message;
@@ -25,7 +25,7 @@ import jakarta.mail.Session;
 import jakarta.mail.Store;
 
 final class MailListener implements AutoCloseableNt{
-  
+
   private static final Logger LOG = getLogger(MailListener.class);
 
   private final MailProvider mailProvider;
@@ -37,7 +37,7 @@ final class MailListener implements AutoCloseableNt{
   private boolean closed;
 
 
-  MailListener(MailProvider mailProvider, Consumer<Email> mailReceiver, MailAccount mailAccount) {
+  MailListener(final MailProvider mailProvider, final Consumer<Email> mailReceiver, final MailAccount mailAccount) {
     this.mailProvider = mailProvider;
     this.mailReceiver = mailReceiver;
     this.mailAccount = mailAccount;
@@ -49,7 +49,7 @@ final class MailListener implements AutoCloseableNt{
     thread.start();
   }
 
-  
+
   @Override
   public void close() {
     synchronized(lock){
@@ -58,7 +58,7 @@ final class MailListener implements AutoCloseableNt{
     call(store::close);
     if(!Thread.currentThread().equals(thread))call(()->thread.join());
   }
-  
+
   private void listen() {
     try{
       call(()->store.connect(mailAccount.host().toAscii(), mailAccount.user(), mailAccount.password()));
@@ -81,7 +81,7 @@ final class MailListener implements AutoCloseableNt{
             }
             oldCount = count;
           }
-        } catch (Exception e) {
+        } catch (final Exception e) {
           if(!(closed() && e instanceof IllegalStateException)){
             LOG.error("Exception while listening for emails.", e);
             if(!closed())call(()->Thread.sleep(Duration.ofSeconds(10).toMillis()));
@@ -97,8 +97,8 @@ final class MailListener implements AutoCloseableNt{
       else LOG.info("Listener terminated.");
     }
   }
-  
-  private Email convert(Message msg){
+
+  private Email convert(final Message msg){
     final Bytes raw;
     try(final BytesBuilder bb = ByteUtils.newBytesBuilder()){
       call(()->msg.writeTo(bb));

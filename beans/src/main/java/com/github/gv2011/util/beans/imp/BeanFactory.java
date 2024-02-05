@@ -1,8 +1,11 @@
 package com.github.gv2011.util.beans.imp;
 
 import static com.github.gv2011.util.CollectionUtils.atMostOne;
+import static com.github.gv2011.util.CollectionUtils.stream;
 import static com.github.gv2011.util.CollectionUtils.toOpt;
 import static com.github.gv2011.util.ReflectionUtils.getAllInterfaces;
+import static com.github.gv2011.util.ReflectionUtils.inherits;
+import static com.github.gv2011.util.ReflectionUtils.method;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
@@ -11,6 +14,7 @@ import static com.github.gv2011.util.icol.ICollections.toISet;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.function.Function;
@@ -22,6 +26,7 @@ import com.github.gv2011.util.ann.VisibleForTesting;
 import com.github.gv2011.util.beans.AnnotationHandler;
 import com.github.gv2011.util.beans.Bean;
 import com.github.gv2011.util.beans.Elementary;
+import com.github.gv2011.util.beans.KeyBean;
 import com.github.gv2011.util.beans.TypeNameStrategy;
 import com.github.gv2011.util.beans.TypeResolver;
 import com.github.gv2011.util.icol.IMap;
@@ -33,6 +38,9 @@ import com.github.gv2011.util.json.JsonNode;
 public abstract class BeanFactory{
 
   private static final Logger LOG = getLogger(DefaultBeanFactory.class);
+
+  private static final Method KEY_METHOD = method(KeyBean.class, KeyBean::key);
+  static final String KEY_METHOD_NAME = KEY_METHOD.getName();
 
   private final JsonFactory jf;
   private final AnnotationHandler annotationHandler;
@@ -93,6 +101,8 @@ public abstract class BeanFactory{
         notBeanReason = "annotated as abstract";
       else if(!Arrays.stream(clazz.getMethods()).filter(m->isPropertyMethod(clazz, m)).findAny().isPresent())
         notBeanReason = "has no properties";
+      else if(BeanTypeSupport.isKeyBean(clazz))
+        notBeanReason = checkKeyBean(clazz);
       else {
         notBeanReason = "";
       }
@@ -107,9 +117,31 @@ public abstract class BeanFactory{
     return notBeanReason;
   }
 
+
   private String checkElementary(final Class<?> clazz) {
     if(Elementary.class.isAssignableFrom(clazz)) return "is subclass of "+Elementary.class.getSimpleName();
     else return "";
+  }
+
+  private String checkKeyBean(final Class<?> clazz) {
+    final String error;
+    final Type keyType = stream(clazz.getGenericInterfaces())
+      .filter(ParameterizedType.class)
+      .filter(pc->pc.getRawType().equals(KeyBean.class))
+      .findSingle().getActualTypeArguments()[0]
+    ;
+    if(!Class.class.isInstance(keyType)) error = format(
+      "{} parameter {} is not a class.", KeyBean.class.getSimpleName(), keyType)
+    ;
+    else{
+      final Class<?> keyClass = Class.class.cast(keyType);
+      final String isBean = notBeanReason(keyClass);
+      if(!isBean.isEmpty()) error = format(
+        "Key type {} is not a bean (reason: {}).", keyClass.getName(), isBean
+      );
+      else error = "";
+    }
+    return error;
   }
 
 
@@ -255,6 +287,7 @@ public abstract class BeanFactory{
     boolean result;
     if(m.getParameterCount()!=0) result = false;
     else if(isObjectMethod(m)) result = false;
+    else if(inherits(m, KEY_METHOD)) result = false;
     else {
       result = isPropertyMethod2(m);
       if(result){

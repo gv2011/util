@@ -46,13 +46,13 @@ public final class GsonWriterTest extends TestCase {
 
     final StringWriter string3 = new StringWriter();
     final GsonWriter writer3 = new GsonWriter(string3);
-    writer3.writeDecimal(NumUtils.from(123));
+    writer3.writeDecimal(NumUtils.num(123));
     writer3.close();
     assertEquals("123", string3.toString());
 
     final StringWriter string4 = new StringWriter();
     final GsonWriter writer4 = new GsonWriter(string4);
-    writer4.writeDecimal(NumUtils.from(123.4));
+    writer4.writeDecimal(NumUtils.num(123.4));
     writer4.close();
     assertEquals("123.4", string4.toString());
 
@@ -188,15 +188,15 @@ public final class GsonWriterTest extends TestCase {
     final StringWriter stringWriter = new StringWriter();
     final GsonWriter jsonWriter = new GsonWriter(stringWriter);
     jsonWriter.beginArray();
-    jsonWriter.writeDecimal(NumUtils.from(-0.0));
-    jsonWriter.writeDecimal(NumUtils.from(1.0));
-    jsonWriter.writeDecimal(NumUtils.from(Double.MAX_VALUE));
-    jsonWriter.writeDecimal(NumUtils.from(Double.MIN_VALUE));
-    jsonWriter.writeDecimal(NumUtils.from(0.0));
-    jsonWriter.writeDecimal(NumUtils.from(-0.5));
-    jsonWriter.writeDecimal(NumUtils.from(2.2250738585072014E-308));
-    jsonWriter.writeDecimal(NumUtils.from(Math.PI));
-    jsonWriter.writeDecimal(NumUtils.from(Math.E));
+    jsonWriter.writeDecimal(NumUtils.num(-0.0));
+    jsonWriter.writeDecimal(NumUtils.num(1.0));
+    jsonWriter.writeDecimal(NumUtils.num(Double.MAX_VALUE));
+    jsonWriter.writeDecimal(NumUtils.num(Double.MIN_VALUE));
+    jsonWriter.writeDecimal(NumUtils.num(0.0));
+    jsonWriter.writeDecimal(NumUtils.num(-0.5));
+    jsonWriter.writeDecimal(NumUtils.num(2.2250738585072014E-308));
+    jsonWriter.writeDecimal(NumUtils.num(Math.PI));
+    jsonWriter.writeDecimal(NumUtils.num(Math.E));
     jsonWriter.endArray();
     jsonWriter.close();
     assertThat(
@@ -234,14 +234,28 @@ public final class GsonWriterTest extends TestCase {
     );
   }
 
+  public void testLongMAX_VALUE() {
+    final StringWriter stringWriter = new StringWriter();
+    final GsonWriter jsonWriter = new GsonWriter(stringWriter);
+    jsonWriter.beginArray();
+    jsonWriter.writeLong(Long.MAX_VALUE);
+    jsonWriter.endArray();
+    jsonWriter.close();
+    assertThat(
+      stringWriter.toString(),
+      is("[\n  9223372036854775807\n]"
+      )
+    );
+  }
+
   public void testNumbers() {
     final StringWriter stringWriter = new StringWriter();
     final GsonWriter jsonWriter = new GsonWriter(stringWriter);
     jsonWriter.beginArray();
-    jsonWriter.writeDecimal(NumUtils.from(new BigInteger("0")));
-    jsonWriter.writeDecimal(NumUtils.from(new BigInteger("9223372036854775808")));
-    jsonWriter.writeDecimal(NumUtils.from(new BigInteger("-9223372036854775809")));
-    jsonWriter.writeDecimal(NumUtils.from(new BigDecimal("3.141592653589793238462643383")));
+    jsonWriter.writeDecimal(NumUtils.num(new BigInteger("0")));
+    jsonWriter.writeDecimal(NumUtils.num(new BigInteger("9223372036854775808")));
+    jsonWriter.writeDecimal(NumUtils.num(new BigInteger("-9223372036854775809")));
+    jsonWriter.writeDecimal(NumUtils.num(new BigDecimal("3.141592653589793238462643383")));
     jsonWriter.endArray();
     jsonWriter.close();
     assertThat(
@@ -552,20 +566,20 @@ public final class GsonWriterTest extends TestCase {
     jsonWriter.name("b");
     jsonWriter.writeBoolean(false);
     jsonWriter.name("c");
-    jsonWriter.writeDecimal(NumUtils.from(5.0));
+    jsonWriter.writeDecimal(NumUtils.num(5.0));
     jsonWriter.name("e");
     jsonWriter.nullValue();
     jsonWriter.name("f");
     jsonWriter.beginArray();
-    jsonWriter.writeDecimal(NumUtils.from(6.0));
-    jsonWriter.writeDecimal(NumUtils.from(7.1));
+    jsonWriter.writeDecimal(NumUtils.num(6.0));
+    jsonWriter.writeDecimal(NumUtils.num(7.1));
     jsonWriter.endArray();
     jsonWriter.name("g");
     jsonWriter.beginObject();
     jsonWriter.name("h");
-    jsonWriter.writeDecimal(NumUtils.from(8.0));
+    jsonWriter.writeDecimal(NumUtils.num(8.0));
     jsonWriter.name("i");
-    jsonWriter.writeDecimal(NumUtils.from(9.0));
+    jsonWriter.writeDecimal(NumUtils.num(9.0));
     jsonWriter.endObject();
     jsonWriter.endObject();
 
@@ -594,17 +608,17 @@ public final class GsonWriterTest extends TestCase {
     jsonWriter.beginArray();
     jsonWriter.writeBoolean(true);
     jsonWriter.writeBoolean(false);
-    jsonWriter.writeDecimal(NumUtils.from(5.0));
+    jsonWriter.writeDecimal(NumUtils.num(5.0));
     jsonWriter.nullValue();
     jsonWriter.beginObject();
     jsonWriter.name("a");
-    jsonWriter.writeDecimal(NumUtils.from(6.0));
+    jsonWriter.writeDecimal(NumUtils.num(6.0));
     jsonWriter.name("b");
-    jsonWriter.writeDecimal(NumUtils.from(7.0));
+    jsonWriter.writeDecimal(NumUtils.num(7.0));
     jsonWriter.endObject();
     jsonWriter.beginArray();
-    jsonWriter.writeDecimal(NumUtils.from(8.0));
-    jsonWriter.writeDecimal(NumUtils.from(9.0));
+    jsonWriter.writeDecimal(NumUtils.num(8.0));
+    jsonWriter.writeDecimal(NumUtils.num(9.0));
     jsonWriter.endArray();
     jsonWriter.endArray();
 

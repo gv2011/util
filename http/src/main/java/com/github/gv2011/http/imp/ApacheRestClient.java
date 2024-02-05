@@ -42,7 +42,9 @@ public final class ApacheRestClient implements RestClient{
 
   @Override
   public JsonNode read(final URI url){
-    try(CloseableHttpResponse response = hc.execute(new HttpGet(url))){
+    try(@SuppressWarnings("deprecation") //TODO
+      final CloseableHttpResponse response = hc.execute(new HttpGet(url))
+    ){
       final int code = response.getCode();
       verifyEqual(code, HttpStatus.SC_OK);
       LOG.info("{}: {}", code, response.getReasonPhrase());

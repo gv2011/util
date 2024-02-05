@@ -34,11 +34,13 @@ import com.github.gv2011.util.ReflectionUtils;
 import com.github.gv2011.util.XStream;
 import com.github.gv2011.util.ann.Nullable;
 import com.github.gv2011.util.beans.AnnotationHandler;
+import com.github.gv2011.util.beans.Bean;
 import com.github.gv2011.util.beans.BeanBuilder;
 import com.github.gv2011.util.beans.BeanHandler;
 import com.github.gv2011.util.beans.BeanHandlerFactory;
 import com.github.gv2011.util.beans.BeanHashCode;
 import com.github.gv2011.util.beans.BeanType;
+import com.github.gv2011.util.beans.KeyBean;
 import com.github.gv2011.util.beans.Parser;
 import com.github.gv2011.util.beans.Partial;
 import com.github.gv2011.util.beans.Property;
@@ -64,6 +66,7 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   private final JsonFactory jf;
   final AnnotationHandler annotationHandler;
   private final BeanFactory beanFactory;
+  private final boolean isKeyBean;
   private final boolean writeAsJsonString;
   private final Opt<BeanHandler<T>> beanHandler;
   private final Function<String,T> parser;
@@ -88,6 +91,7 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
     this.jf = jf;
     this.annotationHandler = annotationHandler;
     this.beanFactory = beanFactory;
+    this.isKeyBean = isKeyBean(beanClass);
     this.beanHandler = findBeanHandler(beanClass);
     final Opt<Class<? extends Parser<?>>> annotatedParser = annotationHandler.getParser(clazz);
     writeAsJsonString = annotatedParser.isPresent();
@@ -108,6 +112,10 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
       .map(this::createValidatorFromClass)
       .orElseGet(UnaryOperator::identity)
     ;
+  }
+
+  static final boolean isKeyBean(final Class<?> beanClass) {
+    return KeyBean.class.isAssignableFrom(beanClass);
   }
 
   private void verifyHasConstructor(final Class<?> implementingClass) {
@@ -291,6 +299,11 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   public final ISortedMap<String, PropertyImp<T,?>> properties() {
       if(properties==null) initialize();
       return notNull(properties);
+  }
+
+  @Override
+  public final boolean isKeyBean() {
+      return isKeyBean;
   }
 
   protected final Opt<Function<ISortedMap<String, Object>, T>> constructor() {
@@ -524,5 +537,9 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
     return ReflectionUtils.method(clazz, method);
   }
 
+  Bean getKey(final ISortedMap<String, Object> values) {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
 }

@@ -1,6 +1,6 @@
 module com.github.gv2011.util.gcol {
   requires transitive com.github.gv2011.util;
-  requires com.github.gv2011.guava;
+  requires com.google.common;
   requires org.slf4j;
   exports com.github.gv2011.util.gcol;
   provides com.github.gv2011.util.icol.ICollectionFactorySupplier

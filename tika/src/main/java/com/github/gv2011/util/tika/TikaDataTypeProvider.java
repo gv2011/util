@@ -28,6 +28,7 @@ import static com.github.gv2011.util.StringUtils.toLowerCase;
  * #L%
  */
 import static com.github.gv2011.util.ex.Exceptions.call;
+import static com.github.gv2011.util.ex.Exceptions.tryCall;
 import static com.github.gv2011.util.icol.ICollections.emptySet;
 import static com.github.gv2011.util.icol.ICollections.toISet;
 import static com.github.gv2011.util.icol.ICollections.toISortedSet;
@@ -70,14 +71,14 @@ public final class TikaDataTypeProvider implements DataTypeProvider{
         registry.getTypes().parallelStream()
         .flatMap(t->Stream.concat(Stream.of(t),registry.getAliases(t).parallelStream()))
         .distinct()
-        .map(m->TikaDataTypeProvider.convertToDataType(m))
+        .flatMap(m->TikaDataTypeProvider.tryConvertToDataType(m).stream())
       )
       .collect(toISet())
     ;
   }
 
-  private static DataType convertToDataType(final MediaType tikaType){
-    return DataType.parse(tikaType.toString());
+  private static Opt<DataType> tryConvertToDataType(final MediaType tikaType){
+    return tryCall(()->DataType.parse(tikaType.toString()));
   }
 
   private FileExtension fileExtension(final String extension){
@@ -123,7 +124,7 @@ public final class TikaDataTypeProvider implements DataTypeProvider{
   @SuppressWarnings("deprecation")
   @Override
   public DataType dataTypeForExtension(final FileExtension extension) {
-    return convertToDataType(mimeTypes.getMimeType("a."+extension).getType());
+    return tryConvertToDataType(mimeTypes.getMimeType("a."+extension).getType()).get();
   }
 
 }

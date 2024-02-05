@@ -15,7 +15,7 @@ public class NothingTest {
 
 	@Test
 	public void testToString() {
-		assertThat(nothing().toString(), is("NOTHING"));
+		assertThat(nothing().toString(), is("Nothing"));
 	}
 
 }

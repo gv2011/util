@@ -91,7 +91,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.github.gv2011.logback</groupId>
+      <groupId>com.github.gv2011</groupId>
       <artifactId>logback-adapter</artifactId>
       <scope>test</scope>
     </dependency>
@@ -116,6 +116,12 @@
     <dependency>
       <groupId>com.github.gv2011</groupId>
       <artifactId>testutil</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.gv2011</groupId>
+      <artifactId>testutil5</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>

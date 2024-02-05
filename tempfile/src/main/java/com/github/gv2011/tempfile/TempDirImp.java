@@ -12,7 +12,7 @@ final class TempDirImp implements TempDir{
   private final Path dir;
 
   TempDirImp(final Path dir){
-    this.dir = dir;
+    this.dir = dir.toAbsolutePath();
   }
 
   @Override

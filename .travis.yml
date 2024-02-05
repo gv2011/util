@@ -1,4 +1,0 @@
-language: java
-jdk: openjdk12
-install: true
-script: mvn clean install -B

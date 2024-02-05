@@ -56,44 +56,44 @@ import com.github.gv2011.util.time.Poller;
 import com.github.gv2011.util.time.TimeUtils;
 
 public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
-  
+
   private static final Duration WAIT_AFTER_UPDATE_ERROR = Duration.ofDays(1);
 
   private static final Logger LOG = getLogger(AcmeCertHandler.class);
-  
+
   private static final String WELL_KNOWN = ".well-known";
   private static final Path TOKEN_BASE_PATH = pathOf(WELL_KNOWN, "acme-challenge");
-  
+
   private static final int BUCKET_CAPACITY = 50;
   private static final Duration BUCKET_INTERVAL = Duration.ofHours(4);
-  
+
   private final AcmeStore store;
   private final Predicate<Domain> domainIsActive;
   private final Supplier<AcmeAccess> acmeAccess;
   private final Constant<Integer> tokenPort;
   private final boolean useBucket;
- 
+
   private final Poller poller = TimeUtils.poller(Duration.ofSeconds(3), Opt.of(Duration.ofSeconds(60)));
 
   private final Clock clock;
   private final Thread updaterThread;
   private final Object lock = new Object();
-  
+
   private int bucket = BUCKET_CAPACITY / 2;
   private Instant lastBucketFill = Instant.now();
-  
+
   private boolean closed;
 
 
 
 
   public AcmeCertHandler(
-    Clock clock, 
-    AcmeStore store,
-    Predicate<Domain> domainIsActive,
-    Supplier<AcmeAccess> acmeAccess, 
-    final Constant<Integer> tokenPort, 
-    boolean useBucket
+    final Clock clock,
+    final AcmeStore store,
+    final Predicate<Domain> domainIsActive,
+    final Supplier<AcmeAccess> acmeAccess,
+    final Constant<Integer> tokenPort,
+    final boolean useBucket
   ) {
     this.clock = clock;
     this.store = store;
@@ -103,7 +103,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
     this.useBucket = useBucket;
     updaterThread = new Thread(this::update, "acme-updater");
   }
-  
+
   public void start(){
     updaterThread.start();
   }
@@ -114,11 +114,11 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
   }
 
   @Override
-  public Opt<ServerCertificate> getCertificate(Domain host, Consumer<CertificateUpdate> updater) {
+  public Opt<ServerCertificate> getCertificate(final Domain host, final Consumer<CertificateUpdate> updater) {
     return getCertificate(host, updater, true);
   }
-    
-  public Opt<ServerCertificate> getCertificate(Domain host, Consumer<CertificateUpdate> updater, boolean create) {
+
+  public Opt<ServerCertificate> getCertificate(final Domain host, final Consumer<CertificateUpdate> updater, final boolean create) {
     if(!domainIsActive(host)){
       LOG.info("Host {} is not active.", host);
       return Opt.empty();
@@ -129,7 +129,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
         try{
           final Opt<ServerCertificate> result;
           final DomainEntry entry = store.getEntry(host);
-              
+
           if(!entry.certificateChain().isEmpty()) {
             result = Opt.of(BeanUtils.beanBuilder(ServerCertificate.class)
               .set(ServerCertificate::domain).to(host)
@@ -149,7 +149,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
             result = Opt.of(orderCertificate(entry));
           }
           return result;
-        }catch(Throwable t){
+        }catch(final Throwable t){
           LOG.error("Could not get certificate.", t);
           throw t;
         }finally{
@@ -158,8 +158,8 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
       }
     }
   }
-  
-  private boolean domainIsActive(Domain domain){
+
+  private boolean domainIsActive(final Domain domain){
     final boolean active = domainIsActive.test(domain);
     if(!active) LOG.warn("Domain {} is inactive.", domain);
     return active;
@@ -173,7 +173,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
     if(bucket==0) LOG.warn("Bucket is empty.");
     else LOG.info("Bucket: {} left.", bucket);
   }
-  
+
   private void fillBucket(){
     assert Thread.holdsLock(lock);
     final Instant now = Instant.now();
@@ -185,72 +185,72 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
     if(bucket!=before) LOG.info("Bucket increased to: {} (bucket time: {}).", bucket, lastBucketFill);
   }
 
-  private ServerCertificate orderCertificate(DomainEntry entry) {
+  private ServerCertificate orderCertificate(final DomainEntry entry) {
     assert Thread.holdsLock(lock);
     checkTokenCanBeSet(entry.domain());
     try{
       final Account account = openAccount();
       final Order order = call(()->(Order)account.newOrder().domains(entry.domain().toAscii()).create());
       LOG.info("Created new order {}.", order.getLocation());
-      
+
       final Http01Challenge challenge = order.getAuthorizations().stream()
         .filter(a->!a.getStatus().equals(Status.READY))
-        .flatMap(a->Opt.ofNullable(a.findChallenge(Http01Challenge.class)).stream())
+        .flatMap(a->a.findChallenge(Http01Challenge.class).stream())
         .collect(toSingle())
       ;
-      
+
       verify(!challenge.getStatus().equals(Status.READY));
       LOG.info(
-        "Received challenge {} with status {}, token {} and content {}.", 
+        "Received challenge {} with status {}, token {} and content {}.",
         challenge.getLocation(), challenge.getStatus(), challenge.getToken(), challenge.getAuthorization()
       );
-      
+
       try(final AutoCloseableNt token = acmeAccess.get().activate(
-        entry.domain(), 
-        TOKEN_BASE_PATH.addElement(challenge.getToken()), 
+        entry.domain(),
+        TOKEN_BASE_PATH.addElement(challenge.getToken()),
         ByteUtils.asUtf8(challenge.getAuthorization())
       )){
-      
+
         LOG.info("Activated token, triggering.");
         call(challenge::trigger);
-        
+
         waitForSuccess("Challenge", challenge::getStatus, challenge::update);
       }
       LOG.info("Challenge successful.");
-      
-      CSRBuilder csrb = new CSRBuilder();
+
+      final CSRBuilder csrb = new CSRBuilder();
       csrb.addDomains(entry.domain().toAscii());
       call(()->csrb.sign(entry.key().asKeyPair()));
-      
+
       call(()->order.execute(csrb.getEncoded()));
       waitForSuccess("Order", order::getStatus, order::update);
-      
-      Certificate certificate = order.getCertificate();
+
+      final Certificate certificate = order.getCertificate();
       LOG.info("Received certificate chain..");
-      
-      ServerCertificate result = BeanUtils.beanBuilder(ServerCertificate.class)
+
+      final ServerCertificate result = BeanUtils.beanBuilder(ServerCertificate.class)
         .set(ServerCertificate::domain).to(entry.domain())
         .set(ServerCertificate::keyPair).to(entry.key())
         .set(ServerCertificate::certificateChain).to(listFrom(certificate.getCertificateChain()))
         .build()
       ;
-            
+
       store.add(result);
       return result;
-    }catch(Throwable t){
+    }catch(final Throwable t){
       store.setError(entry.domain());
       throw t;
     }
   }
 
-  private void checkTokenCanBeSet(Domain domain) {
+  private void checkTokenCanBeSet(final Domain domain) {
     final UUID random = UUID.randomUUID();
     final Path path = TOKEN_BASE_PATH.addElement(random.toString());
     final URL url = call(()->new URL("http://"+domain.toAscii()+":"+tokenPort.get()+"/"+path.urlEncoded()));
     final String content = random.toString();
     try(final AutoCloseableNt token = acmeAccess.get().activate(
-      domain, 
-      path, 
+      domain,
+      path,
       ByteUtils.asUtf8(content)
     )){
       verifyEqual(
@@ -258,7 +258,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
         content
       );
     }
-    catch(Exception e){
+    catch(final Exception e){
       throw wrap(e, format("Setting token failed for {} at url {}.", domain, url));
     }
     LOG.info("Successfully checked token access for domain {} at url {}.", domain, url);
@@ -267,7 +267,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
   private Account openAccount() {
     final Session session = new Session(store.acmeUrl());
     final KeyPair userKeyPair = store.userKeyPair().asKeyPair();
-  
+
     return store.accountUrl()
       .map(u->{
         final Account acc = session.login(call(u::toURL), userKeyPair).getAccount();
@@ -287,7 +287,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
     ;
   }
 
-  private void waitForSuccess(String name, Supplier<Status> status, ThrowingRunnable update) {
+  private void waitForSuccess(final String name, final Supplier<Status> status, final ThrowingRunnable update) {
     final Opt<Boolean> result = poller.poll(()->{
       update.runThrowing();
       final Status s = status.get();
@@ -300,14 +300,14 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
     });
     verifyEqual(result, Opt.of(true));
   }
-  
+
   private void update(){
     boolean closed = false;
     while(!closed){
       synchronized(lock){
         try{
-          Instant now = clock.instant();
-          Opt<Pair<Instant, DomainEntry>> nextUpdate = store.availableDomains().stream()
+          final Instant now = clock.instant();
+          final Opt<Pair<Instant, DomainEntry>> nextUpdate = store.availableDomains().stream()
             .filter(this::domainIsActive)
             .map(d->store.getEntry(d))
             .filter(e->!e.certificateChain().isEmpty())
@@ -321,7 +321,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
           }
           else{
             final Instant time = nextUpdate.get().getKey();
-            DomainEntry entry = nextUpdate.get().getValue();
+            final DomainEntry entry = nextUpdate.get().getValue();
             if(!clock.hasPassed(time)){
               LOG.info("Next update is {} at {} (in {}).", entry.domain(), time, TimeUtils.approx(Duration.between(now, time)));
               clock.notifyAt(lock, time);
@@ -333,7 +333,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
             }
           }
           closed = this.closed;
-        }catch(Exception e){
+        }catch(final Exception e){
           closed = this.closed;
           LOG.error(format("Error in updater."), e);
           if(!closed){
@@ -344,8 +344,8 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
       }
     }
   }
-  
-  private Instant updateTime(DomainEntry entry){
+
+  private Instant updateTime(final DomainEntry entry){
     final X509Certificate cert = entry.certificateChain().first();
     final Instant expiryDate = cert.getNotAfter().toInstant();
     final Duration validityPeriod = Duration.between(cert.getNotBefore().toInstant(), expiryDate);
@@ -364,7 +364,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
       .orElse(updateTime)
     ;
   }
-  
+
   @Override
   public void close() {
     synchronized(lock){
@@ -373,5 +373,5 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
     }
     closeAll(updaterThread::join, poller);
   }
-  
+
 }

@@ -245,7 +245,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     }
     @Override
     public JsonNumber toJson(final Integer i, final JsonFactory jf) {
-      return jf.primitive(NumUtils.from(i));
+      return jf.primitive(NumUtils.num(i));
     }
     @Override
     public Opt<Integer> defaultValue() {
@@ -269,7 +269,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     }
     @Override
     public JsonNumber toJson(final Long i, final JsonFactory jf) {
-      return jf.primitive(NumUtils.from(i));
+      return jf.primitive(NumUtils.num(i));
     }
     @Override
     public Opt<Long> defaultValue() {
@@ -301,7 +301,7 @@ final class DefaultElementaryTypeHandlerFactory implements ElementaryTypeHandler
     }
     @Override
     public JsonNumber toJson(final BigDecimal dec, final JsonFactory jf) {
-      return jf.primitive(NumUtils.from(dec));
+      return jf.primitive(NumUtils.num(dec));
     }
     @Override
     public Opt<BigDecimal> defaultValue() {

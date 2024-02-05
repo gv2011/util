@@ -11,7 +11,9 @@ import static java.util.stream.Collectors.joining;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 
 import org.slf4j.Logger;
 
@@ -20,6 +22,7 @@ import com.github.gv2011.util.beans.BeanType;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.jdbc.Database;
 import com.github.gv2011.util.jdbc.JdbcUtils;
+import com.github.gv2011.util.table.Table;
 import com.github.gv2011.util.tempfile.TempDir;
 
 public final class H2Database implements Database{
@@ -100,6 +103,23 @@ public final class H2Database implements Database{
     return getTables(getDefaultCatalog(), getDefaultSchema());
   }
 
+  public Table<String> getTableInfo(){
+    return callWithCloseable(this::getConnection, cn->{
+      final DatabaseMetaData metaData = cn.get().getMetaData();
+      try(ResultSet rs = metaData.getTables(getDefaultCatalog(), getDefaultSchema(), null, null)){
+        return JdbcUtils.convertToTable(rs);
+      }
+    });
+  }
+
+  public Table<String> getColumnInfo(){
+    return callWithCloseable(this::getConnection, cn->{
+      final DatabaseMetaData metaData = cn.get().getMetaData();
+      try(ResultSet rs = metaData.getColumns(getDefaultCatalog(), getDefaultSchema(), null, null)){
+        return JdbcUtils.convertToTable(rs);
+      }
+    });
+  }
 
   public ISet<String> getTables(final String catalog, final String schema) {
     return callWithCloseable(()->getConnection(), cn->{

@@ -40,6 +40,14 @@ final class IListBuilder<E> extends AbstractIListBuilder<IList<E>,E,IList.Builde
 
 
   @Override
+  public void insert(final int index, final E element) {
+    synchronized(list){
+      list.add(index, element);
+    }
+  }
+
+
+  @Override
   @SuppressWarnings({ "rawtypes", "unchecked" })
   public IList<E> build() {
     synchronized(list){

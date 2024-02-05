@@ -68,7 +68,7 @@ final class DbSetImp<B> extends AbstractCollection<B> implements DbSet<B>{
   }
 
   private String columnDefinition(final Property<?> p) {
-    return columnName(p)+" VARCHAR";
+    return columnName(p)+" VARCHAR NOT NULL";
   }
 
   private String columnName(final Property<?> p) {
@@ -119,7 +119,7 @@ final class DbSetImp<B> extends AbstractCollection<B> implements DbSet<B>{
         cn,
         "SELECT COUNT(*) FROM "+db.getTableName(beanType)+" "+
         "WHERE "+HASH+"=?",
-        stmt->stmt.setString(1, hashToString(element)),
+        stmt->stmt.setString(1, elementHashToString(element)),
         rs->rs.getLong(1)
       )
       .collect(toSingle())
@@ -198,7 +198,7 @@ final class DbSetImp<B> extends AbstractCollection<B> implements DbSet<B>{
       if(contains(cn, e)) return false;
       else{
         try(PreparedStatement stmt = cn.prepareStatement(sql)){
-          stmt.setString(1, hashToString(e));
+          stmt.setString(1, elementHashToString(e));
           for(int i=0; i<properties.size(); i++){
             stmt.setString(i+2, getPropertyValue(e, properties.get(i)));
           };
@@ -212,8 +212,12 @@ final class DbSetImp<B> extends AbstractCollection<B> implements DbSet<B>{
     });
   }
 
-  private String hashToString(final B e){
-    return beanType.hashAndSize(e).hash().content().toHex();
+  private String elementHashToString(final B e){
+    return hashToString(beanType.hashAndSize(e).hash());
+  }
+
+  private String hashToString(final Hash256 hash){
+    return hash.content().toHex();
   }
 
   private String getPropertyValue(final B e, final Property<?> p) {
@@ -238,7 +242,7 @@ final class DbSetImp<B> extends AbstractCollection<B> implements DbSet<B>{
       ;
       contained = callWithCloseable(db::getConnection, cn->{
         try(PreparedStatement stmt = cn.get().prepareStatement(sql)){
-          stmt.setString(1, hashToString(element));
+          stmt.setString(1, elementHashToString(element));
           final int rows = stmt.executeUpdate();
           LOG.info("{} rows affected with {}.", rows, sql);
           verify(rows, r->r.intValue()==0 || r.intValue()==1);
@@ -249,5 +253,27 @@ final class DbSetImp<B> extends AbstractCollection<B> implements DbSet<B>{
     }
     return contained;
   }
+
+  @Override
+  public Opt<B> tryGet(final Hash256 hash) {
+      final String sql =
+        "SELECT "+columnList+" FROM "+db.getTableName(beanType)+" WHERE "+HASH+"=?"
+      ;
+      return callWithCloseable(db::getConnection, cn->{
+        try(PreparedStatement stmt = cn.get().prepareStatement(sql)){
+          stmt.setString(1, hashToString(hash));
+          try(final ResultSet rs = stmt.executeQuery()){
+            final Opt<B> result;
+            if(!rs.next()) result = Opt.empty();
+            else{
+              result = Opt.of(readFromResultSet(rs));
+              verify(!rs.next());
+            }
+            return result;
+          }
+        }
+      });
+   }
+
 
 }

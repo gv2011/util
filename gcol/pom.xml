@@ -22,8 +22,8 @@
     </dependency>
     
     <dependency>
-      <groupId>com.github.gv2011</groupId>
-      <artifactId>guava-core</artifactId>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
     </dependency>
 
   </dependencies>

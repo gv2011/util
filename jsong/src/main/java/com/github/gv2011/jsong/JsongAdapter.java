@@ -10,7 +10,7 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.util.Iterator;
 
-import com.github.gv2011.gson.stream.JsonReader;
+import com.google.gson.stream.JsonReader;
 import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.XStream;
 import com.github.gv2011.util.ex.ThrowingFunction;
@@ -25,7 +25,7 @@ public final class JsongAdapter implements Adapter{
 
   @Override
   public JsonWriter newJsonWriter(final Writer out, final boolean compact) {
-    final com.github.gv2011.gson.stream.JsonWriter delegate = new com.github.gv2011.gson.stream.JsonWriter(out);
+    final com.google.gson.stream.JsonWriter delegate = new com.google.gson.stream.JsonWriter(out);
     delegate.setIndent(compact ? "" : "  ");
     delegate.setSerializeNulls(false);
     return new JsongWriter(delegate);
@@ -33,7 +33,7 @@ public final class JsongAdapter implements Adapter{
 
   @Override
   public com.github.gv2011.util.json.JsonReader newJsonReader(final JsonFactory jf, final Reader in) {
-    return new JsongReader(jf, new JsonReader(in));
+    return new JsongReader(jf, new com.google.gson.stream.JsonReader(in));
   }
 
   @Override

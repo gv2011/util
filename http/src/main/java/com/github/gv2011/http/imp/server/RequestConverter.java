@@ -132,7 +132,7 @@ final class RequestConverter {
   }
 
   private void checkSelectedServerCertificate(final Domain host, final ExtendedSSLSession session) {
-    verifyEqual(Domain.from(((X509Certificate)session.getLocalCertificates()[0]).getSubjectDN()), host);
+    verifyEqual(Domain.from(((X509Certificate)session.getLocalCertificates()[0]).getSubjectX500Principal()), host);
   }
 
   private IList<X509Certificate> getPeerCertificateChain(final ExtendedSSLSession session) {

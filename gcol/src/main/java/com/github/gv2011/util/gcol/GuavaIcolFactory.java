@@ -1,5 +1,7 @@
 package com.github.gv2011.util.gcol;
 
+import static com.github.gv2011.util.num.NumUtils.doNTimes;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -22,6 +24,7 @@ import com.github.gv2011.util.icol.Nothing;
 import com.github.gv2011.util.icol.Path;
 import com.github.gv2011.util.icol.Single;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -74,6 +77,16 @@ final class GuavaIcolFactory implements ICollectionFactory{
   @Override
   public <T> IList<T> listOf(final T element) {
     return new IListWrapper<>(ImmutableList.of(element));
+  }
+
+  @Override
+  public <E> IList<E> filledList(final E element, final int size) {
+    if(size==0) return emptyList();
+    else{
+      final Builder<Object> b = ImmutableList.builderWithExpectedSize(size);
+      doNTimes(size, ()->b.add(element));
+      return new IListWrapper<>(ImmutableList.of(element));
+    }
   }
 
   @Override

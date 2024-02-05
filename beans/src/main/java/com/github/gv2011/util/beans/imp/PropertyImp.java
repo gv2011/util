@@ -48,6 +48,7 @@ public final class PropertyImp<B,T> implements Property<T> {
     private final Opt<T> defaultValue;
     private final Opt<T> fixedValue;
     private final Opt<Function<B,T>> function;
+    private final boolean isKey;
 
     static <B,T> PropertyImp<B,T> create(
       final BeanTypeSupport<B> owner,
@@ -55,7 +56,7 @@ public final class PropertyImp<B,T> implements Property<T> {
       final TypeSupport<T> type,
       final Opt<T> defaultValue
     ) {
-      return new PropertyImp<>(owner, method, method.getName(), type, defaultValue, Opt.empty(), Opt.empty());
+      return new PropertyImp<>(owner, method, method.getName(), type, defaultValue, Opt.empty(), Opt.empty(), false);
     }
 
     static <B,T> PropertyImp<B,T> createComputed(
@@ -64,7 +65,7 @@ public final class PropertyImp<B,T> implements Property<T> {
         final TypeSupport<T> type,
         final Function<B,T> function
     ) {
-      return new PropertyImp<>(owner, method, method.getName(), type, Opt.empty(), Opt.empty(), Opt.of(function));
+      return new PropertyImp<>(owner, method, method.getName(), type, Opt.empty(), Opt.empty(), Opt.of(function), false);
     }
 
     static <B,T> PropertyImp<B,T> createFixed(
@@ -75,7 +76,7 @@ public final class PropertyImp<B,T> implements Property<T> {
       final T fixedValue
     ) {
       final Opt<T> fixed = Opt.of(fixedValue);
-      return new PropertyImp<>(owner, method, name, type, fixed, fixed, Opt.empty());
+      return new PropertyImp<>(owner, method, name, type, fixed, fixed, Opt.empty(), false);
     }
 
     private PropertyImp(
@@ -85,7 +86,8 @@ public final class PropertyImp<B,T> implements Property<T> {
       final TypeSupport<T> type,
       final Opt<T> defaultValue,
       final Opt<T> fixedValue,
-      final Opt<Function<B,T>> function
+      final Opt<Function<B,T>> function,
+      final boolean isKey
     ) {
       this.method = method;
       this.name = name;
@@ -95,6 +97,7 @@ public final class PropertyImp<B,T> implements Property<T> {
       this.fixedValue = fixedValue;
       this.function = function;
       verify(type.isForeignType() ? function.isPresent() : true);
+      this.isKey = isKey;
     }
 
     @Override
@@ -132,6 +135,11 @@ public final class PropertyImp<B,T> implements Property<T> {
 
     boolean isOptional() {
       return type().isOptional();
+    }
+
+    @Override
+    public boolean isKey() {
+      return isKey;
     }
 
     T getValue(final B bean){

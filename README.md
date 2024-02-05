@@ -1,5 +1,4 @@
 [![Maven Central](https://img.shields.io/maven-central/v/com.github.gv2011/util-parent.svg)](https://repo1.maven.org/maven2/com/github/gv2011/util-parent/)
-[![Build Status](https://app.travis-ci.com/gv2011/util.svg?branch=dev)](https://app.travis-ci.com/gv2011/util)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 # util

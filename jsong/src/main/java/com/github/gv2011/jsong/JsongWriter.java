@@ -7,9 +7,9 @@ import com.github.gv2011.util.num.Decimal;
 
 final class JsongWriter implements JsonWriter {
 
-    private final com.github.gv2011.gson.stream.JsonWriter delegate;
+    private final com.google.gson.stream.JsonWriter delegate;
 
-    JsongWriter(final com.github.gv2011.gson.stream.JsonWriter delegate) {
+    JsongWriter(final com.google.gson.stream.JsonWriter delegate) {
       this.delegate = delegate;
     }
 
@@ -39,7 +39,7 @@ final class JsongWriter implements JsonWriter {
     }
 
     @Override
-    public void writeDecimal(Decimal value) {
+    public void writeDecimal(final Decimal value) {
       call(()->delegate.value(value.toBigDecimal()));
     }
 

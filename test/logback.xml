@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration>
+<configuration debug="false">
+
+  <appender name="console"
+    class="ch.qos.logback.core.ConsoleAppender">
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>info</level>
+    </filter>
+    <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+          <pattern>%d{HH:mm:ss.SSS'Z',GMT} %-5level [%thread] %logger - %msg%n</pattern>
+        </layout>
+    </encoder>
+  </appender>
+
+  <appender name="warn"
+    class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>log/warn.log</file>
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>warn</level>
+    </filter>
+    <rollingPolicy
+      class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <!-- rollover daily -->
+      <fileNamePattern>log/warn-%d{yyyy-MM-dd,GMT}.%i.log</fileNamePattern>
+      <maxFileSize>10MB</maxFileSize>
+      <maxHistory>366</maxHistory>
+      <totalSizeCap>1GB</totalSizeCap>
+    </rollingPolicy>
+    <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+          <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSS'Z',GMT} %-5level [%thread] %logger - %msg%n</pattern>
+        </layout>
+    </encoder>
+  </appender>
+
+  <appender name="info"
+    class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>log/info.log</file>
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>info</level>
+    </filter>
+    <rollingPolicy
+      class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <!-- rollover daily -->
+      <fileNamePattern>log/info-%d{yyyy-MM-dd,GMT}.%i.log</fileNamePattern>
+      <maxFileSize>10MB</maxFileSize>
+      <maxHistory>366</maxHistory>
+      <totalSizeCap>1GB</totalSizeCap>
+    </rollingPolicy>
+    <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+          <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSS'Z',GMT} %-5level [%thread] %logger - %msg%n</pattern>
+        </layout>
+    </encoder>
+  </appender>
+
+  <appender name="debug"
+    class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>log/debug.log</file>
+    <rollingPolicy
+      class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <!-- rollover daily -->
+      <fileNamePattern>log/debug-%d{yyyy-MM-dd,GMT}.%i.log</fileNamePattern>
+      <maxFileSize>10MB</maxFileSize>
+      <maxHistory>366</maxHistory>
+      <totalSizeCap>1GB</totalSizeCap>
+    </rollingPolicy>
+    <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+          <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSS'Z',GMT} %-5level [%thread] %logger - %msg%n</pattern>
+        </layout>
+    </encoder>
+  </appender>
+
+  <root level="debug">
+    <appender-ref ref="console" />
+    <appender-ref ref="warn" />
+    <appender-ref ref="info" />
+    <appender-ref ref="debug" />
+  </root>
+
+</configuration>

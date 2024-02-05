@@ -7,7 +7,6 @@ import static com.github.gv2011.util.ex.Exceptions.call;
 import java.math.BigDecimal;
 import java.util.Iterator;
 
-import com.github.gv2011.gson.stream.JsonReader;
 import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.XStream;
 import com.github.gv2011.util.icol.Nothing;
@@ -22,6 +21,7 @@ import com.github.gv2011.util.json.JsonNumber;
 import com.github.gv2011.util.json.JsonObject;
 import com.github.gv2011.util.json.JsonPrimitive;
 import com.github.gv2011.util.json.JsonString;
+import com.google.gson.stream.JsonReader;
 
 final class JsongReader implements com.github.gv2011.util.json.JsonReader {
 
@@ -30,7 +30,7 @@ final class JsongReader implements com.github.gv2011.util.json.JsonReader {
   private final JsonFactory jf;
   private final JsonReader delegate;
 
-  JsongReader(final JsonFactory jf, JsonReader delegate) {
+  JsongReader(final JsonFactory jf, final JsonReader delegate) {
     this.jf = jf;
     this.delegate = delegate;
   }
@@ -78,20 +78,20 @@ final class JsongReader implements com.github.gv2011.util.json.JsonReader {
   public JsonString readString() {
     return jf.primitive(call(delegate::nextString));
   }
-  
+
   public JsonNumber readNumber() {
     return jf.primitive(new BigDecimal(call(delegate::nextString)));
   }
-  
+
   public JsonBoolean readBoolean() {
     return jf.primitive(call(delegate::nextBoolean));
   }
-  
+
   public JsonNull readNull() {
     call(delegate::nextNull);
     return jf.jsonNull();
   }
-  
+
   @Override
   public JsonNode readNode() {
     return call(() -> {
@@ -148,7 +148,7 @@ final class JsongReader implements com.github.gv2011.util.json.JsonReader {
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
-  public <P> JsonPrimitive<P> readPrimitive(Class<P> clazz) {
+  public <P> JsonPrimitive<P> readPrimitive(final Class<P> clazz) {
     return call(() -> {
       switch (delegate.peek()) {
       case STRING:
@@ -169,7 +169,7 @@ final class JsongReader implements com.github.gv2011.util.json.JsonReader {
     });
   }
 
-  
+
   private final class It implements Iterator<JsonNode> {
     @Override
     public boolean hasNext() {
