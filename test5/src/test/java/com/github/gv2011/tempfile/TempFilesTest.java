@@ -4,6 +4,7 @@ import static com.github.gv2011.util.icol.ICollections.single;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.junit.jupiter.api.Test;
@@ -18,23 +19,16 @@ class TempFilesTest {
   @Test
   void test() {
     assertThat(
-      Paths.get(".").toAbsolutePath().normalize(),
-      is(Paths.get("/data/src/gv2011/util/test5").toAbsolutePath())
-    );
-    assertThat(
       RecursiveServiceLoader.service(LogAdapter.class).tryGetLogConfiguration(),
       is(single(Paths.get("logback.xml").toUri()))
     );
-    assertThat(
-      Paths.get(".").toAbsolutePath().normalize(),
-      is(Paths.get("/data/src/gv2011/util/test5").toAbsolutePath())
-    );
+    final Path expectedTmpDir = Paths.get("log", "tmp").toAbsolutePath();
     assertThat(
       ((TempFileFactoryImp)TempFiles.tempFileFactory()).baseDir.get().toAbsolutePath(),
-      is(Paths.get("log", "tmp").toAbsolutePath())
+      is(expectedTmpDir)
     );
     try(TempDir tempDir = TempFiles.createTempDir()){
-      assertThat(tempDir.path().getParent(), is(Paths.get("log/tmp").toAbsolutePath()));
+      assertThat(tempDir.path().getParent(), is(expectedTmpDir));
     }
   }
 
