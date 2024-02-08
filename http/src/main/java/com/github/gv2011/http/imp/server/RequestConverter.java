@@ -1,5 +1,6 @@
 package com.github.gv2011.http.imp.server;
 
+import static com.github.gv2011.util.CollectionUtils.stream;
 import static com.github.gv2011.util.CollectionUtils.toSingle;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.Verify.verifyEqual;
@@ -9,15 +10,15 @@ import static com.github.gv2011.util.icol.ICollections.asList;
 import static com.github.gv2011.util.icol.ICollections.emptyList;
 import static com.github.gv2011.util.icol.ICollections.toIList;
 import static com.github.gv2011.util.icol.ICollections.toISortedMap;
+import static java.util.function.Predicate.not;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.nio.charset.Charset;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import static java.util.function.Predicate.not;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import javax.net.ssl.ExtendedSSLSession;
 import javax.net.ssl.SNIHostName;
@@ -113,12 +114,20 @@ final class RequestConverter {
       entity = Opt.of(bytes.typed(dataType));
     }
 
+    final ISortedMap<String, IList<String>> headers = stream(request.getHeaderNames().asIterator())
+      .collect(toISortedMap(
+        name -> name,
+        name -> stream(request.getHeaders(name).asIterator()).collect(toIList())
+      ))
+    ;
+
     return BeanUtils.beanBuilder(Request.class)
       .set(Request::host).to(host)
       .set(Request::secure).to(secure)
       .set(Request::peerCertificateChain).to(peerCertificateChain)
       .set(Request::method).to(method)
       .set(Request::path).to(path)
+      .set(Request::headers).to(headers)
       .set(Request::parameters).to(parameters)
       .set(Request::entity).to(entity)
       .build()

@@ -7,6 +7,7 @@ module com.github.gv2011.http{
   requires org.eclipse.jetty.util;
   requires com.ibm.icu;
   requires org.shredzone.acme4j;
+  requires com.google.common;
 
   uses com.github.gv2011.util.html.HtmlFactory;
 
@@ -14,4 +15,5 @@ module com.github.gv2011.http{
 
   provides com.github.gv2011.util.http.HttpFactory with com.github.gv2011.http.imp.HttpFactoryImp;
   provides com.github.gv2011.util.uc.UnicodeProvider with com.github.gv2011.http.imp.IcuUnicodeProvider;
+  provides com.github.gv2011.util.UrlBuilder.Factory with com.github.gv2011.http.imp.UrlBuilderFactory;
 }

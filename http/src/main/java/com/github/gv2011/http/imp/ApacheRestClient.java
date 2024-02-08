@@ -6,13 +6,13 @@ import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.json.JsonUtils.jsonFactory;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.io.IOException;
 import java.net.URI;
 
 import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpStatus;
 import org.slf4j.Logger;
@@ -42,24 +42,34 @@ public final class ApacheRestClient implements RestClient{
 
   @Override
   public JsonNode read(final URI url){
-    try(@SuppressWarnings("deprecation") //TODO
-      final CloseableHttpResponse response = hc.execute(new HttpGet(url))
-    ){
-      final int code = response.getCode();
-      verifyEqual(code, HttpStatus.SC_OK);
-      LOG.info("{}: {}", code, response.getReasonPhrase());
-      for(final Header h: response.getHeaders()) {
-        LOG.debug("{}={}", h.getName(), h.getValue());
+    return request(new HttpGet(url));
+  }
+
+  @Override
+  public JsonNode post(final URI url, final JsonNode body) {
+    final HttpPost request = new HttpPost(url);
+    request.setEntity(new JsonEntity(body));
+    return request(request);
+  }
+
+  private JsonNode request(final ClassicHttpRequest request) {
+    return call(()->hc.execute(
+      request,
+      response->{
+        final int code = response.getCode();
+        LOG.debug("{}: {}", code, response.getReasonPhrase());
+        for(final Header h: response.getHeaders()) {
+          LOG.trace("{}={}", h.getName(), h.getValue());
+        }
+        final String responseBody = StreamUtils.readText(()->response.getEntity().getContent());
+        verifyEqual(code, HttpStatus.SC_OK, (e,a)->code+" "+response.getReasonPhrase()+":\n"+responseBody);
+        try {
+          return jsonFactory.deserialize(responseBody);
+        }catch(final Exception e) {
+          throw new RestClientException(format("Could not parse body as Json. Body: {}", responseBody), e);
+        }
       }
-      final String body = StreamUtils.readText(()->response.getEntity().getContent());
-      try {
-        return jsonFactory.deserialize(body);
-      }catch(final Exception e) {
-        throw new RestClientException(format("Could not parse body as Json. Body: {}", body), e);
-      }
-    } catch (final IOException e1) {
-      throw new RestClientException(e1);
-    }
+    ));
   }
 
 }

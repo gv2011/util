@@ -37,9 +37,9 @@
   </licenses>
 
   <properties>
-    <gsoncore.version>0.11</gsoncore.version>
-    <util-apis.version>0.11</util-apis.version>
-    <logback-adapter.version>1.3.6</logback-adapter.version>
+    <gsoncore.version>0.12</gsoncore.version>
+    <util-apis.version>0.12</util-apis.version>
+    <logback-adapter.version>1.3.7</logback-adapter.version>
   </properties>
 
   <modules>

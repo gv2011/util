@@ -17,6 +17,10 @@
       <artifactId>util-apis</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
       <groupId>jakarta.activation</groupId>
       <artifactId>jakarta.activation-api</artifactId>
     </dependency>
