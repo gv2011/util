@@ -128,8 +128,6 @@ public abstract class BeanBuilderSupport<T> implements ExtendedBeanBuilder<T> {
       return new SetterImp<>(property);
     }
 
-
-
     @Override
     public final <V extends TypedString<V>> Setter<T, String> setTStr(final Function<T, V> method) {
       final PropertyImp<T,V> property = beanType().getProperty(method);
