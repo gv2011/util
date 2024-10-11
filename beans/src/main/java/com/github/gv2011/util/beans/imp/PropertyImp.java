@@ -96,8 +96,15 @@ public final class PropertyImp<B,T> implements Property<T> {
       this.defaultValue = defaultValue;
       this.fixedValue = fixedValue;
       this.function = function;
-      verify(type.isForeignType() ? function.isPresent() : true);
       this.isKey = isKey;
+      verify(
+        type.isForeignType() ? function.isPresent() : true,
+        ()->format(
+          "Property {} of type {}: The value type {} of this property "+
+          "is a foreign type, but no computing function is given.",
+          name, owner, type
+        )
+      );
     }
 
     @Override

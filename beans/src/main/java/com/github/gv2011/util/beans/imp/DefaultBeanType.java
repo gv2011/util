@@ -6,7 +6,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 import org.slf4j.Logger;
 
 import com.github.gv2011.util.beans.AnnotationHandler;
+import com.github.gv2011.util.beans.BeanHandler;
 import com.github.gv2011.util.beans.ExtendedBeanBuilder;
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonFactory;
 
 
@@ -19,9 +21,10 @@ public class DefaultBeanType<T> extends BeanTypeSupport<T>{
     final Class<T> beanClass,
     final JsonFactory jf,
     final AnnotationHandler annotationHandler,
-    final BeanFactory beanFactory
+    final BeanFactory beanFactory,
+    final Opt<BeanHandler<T>> beanHandler
   ) {
-    super(beanClass, jf, annotationHandler, beanFactory);
+    super(beanClass, jf, annotationHandler, beanFactory, beanHandler);
     verify(beanClass.isInterface(), beanClass::toString);
   }
 

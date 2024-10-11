@@ -1,5 +1,7 @@
 package com.github.gv2011.util.gcol;
 
+import static com.github.gv2011.util.icol.ICollections.toISet;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
@@ -8,6 +10,7 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 
 import com.github.gv2011.util.XStream;
+import com.github.gv2011.util.ex.ThrowingFunction;
 import com.github.gv2011.util.icol.ICollections;
 import com.github.gv2011.util.icol.ISet;
 
@@ -90,6 +93,11 @@ class ISetWrapper<E,S extends Set<E>> implements ISet<E>{
       .concat(XStream.parallelStreamOf(other))
       .collect(GuavaIcolFactory.INSTANCE.setCollector())
     ;
+  }
+
+  @Override
+  public final <F> ISet<F> map(final ThrowingFunction<? super E, ? extends F> mapping) {
+    return stream().map(mapping.asFunction()).collect(toISet());
   }
 
   @Override

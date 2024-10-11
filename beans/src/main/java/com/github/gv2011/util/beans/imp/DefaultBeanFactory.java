@@ -8,6 +8,7 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 
 import com.github.gv2011.util.beans.AnnotationHandler;
+import com.github.gv2011.util.beans.BeanHandlerFactory;
 import com.github.gv2011.util.json.JsonFactory;
 
 public final class DefaultBeanFactory extends BeanFactory{
@@ -15,9 +16,9 @@ public final class DefaultBeanFactory extends BeanFactory{
   static final class DefaultBeanFactoryBuilder implements BeanFactoryBuilder{
     @Override
     public BeanFactory build(
-      final JsonFactory jf, final AnnotationHandler annotationHandler, final DefaultTypeRegistry registry
+      final JsonFactory jf, final AnnotationHandler annotationHandler, final DefaultTypeRegistry registry, final BeanHandlerFactory beanHandlerFactory
     ) {
-      return new DefaultBeanFactory(jf, annotationHandler, registry);
+      return new DefaultBeanFactory(jf, annotationHandler, registry, beanHandlerFactory);
     }
   }
 
@@ -27,9 +28,10 @@ public final class DefaultBeanFactory extends BeanFactory{
   public DefaultBeanFactory(
     final JsonFactory jf,
     final AnnotationHandler annotationHandler,
-    final DefaultTypeRegistry registry
+    final DefaultTypeRegistry registry,
+    final BeanHandlerFactory beanHandlerFactory
   ) {
-    super(jf,annotationHandler,registry);
+    super(jf,annotationHandler,registry, beanHandlerFactory);
   }
 
   @Override
@@ -44,7 +46,7 @@ public final class DefaultBeanFactory extends BeanFactory{
     final AnnotationHandler annotationHandler,
     final Function<Type,TypeSupport<?>> registry
   ) {
-    return new DefaultBeanType<>(clazz, jf, annotationHandler, this);
+    return new DefaultBeanType<>(clazz, jf, annotationHandler, this, beanHandlerFactory.createBeanHandler(clazz));
   }
 
 }

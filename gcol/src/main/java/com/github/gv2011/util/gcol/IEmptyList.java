@@ -10,9 +10,10 @@ import java.util.ListIterator;
 import com.github.gv2011.util.icol.AbstractIList;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.ISet;
+import com.github.gv2011.util.icol.ISetList;
 import com.github.gv2011.util.icol.ISortedMap;
 
-final class IEmptyList<E> extends AbstractIList<E>{
+final class IEmptyList<E> extends AbstractIList<E> implements ISetList<E>{
 
   @SuppressWarnings("rawtypes")
   static final IEmptyList INSTANCE = new IEmptyList();
@@ -115,6 +116,12 @@ final class IEmptyList<E> extends AbstractIList<E>{
   @Override
   public IEmptyList<E> reversed() {
     return this;
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public ISet<E> asSet() {
+    return IEmpty.INSTANCE;
   }
 
 }

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2014 Google Inc.
- * Copyright (C) 2016-2021 Vinz (https://github.com/gv2011)
+ * Copyright (C) 2016-2024 Vinz (https://github.com/gv2011)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,45 +21,48 @@ import java.io.StringReader;
 
 import junit.framework.TestCase;
 
+@SuppressWarnings("resource")
 public class JsonReaderPathTest extends TestCase {
   public void testPath() {
-    GsonReader reader = new GsonReader(
-        new StringReader("{\"a\":[2,true,false,null,\"b\",{\"c\":\"d\"},[3]]}"));
-    assertEquals("$", reader.getPath());
-    reader.readObjectStart();
-    assertEquals("$.", reader.getPath());
-    reader.readName();
-    assertEquals("$.a", reader.getPath());
-    reader.readArrayStart();
-    assertEquals("$.a[0]", reader.getPath());
-    reader.nextInt();
-    assertEquals("$.a[1]", reader.getPath());
-    reader.readBooleanRaw();
-    assertEquals("$.a[2]", reader.getPath());
-    reader.readBooleanRaw();
-    assertEquals("$.a[3]", reader.getPath());
-    reader.readNullRaw();
-    assertEquals("$.a[4]", reader.getPath());
-    reader.readStringRaw();
-    assertEquals("$.a[5]", reader.getPath());
-    reader.readObjectStart();
-    assertEquals("$.a[5].", reader.getPath());
-    reader.readName();
-    assertEquals("$.a[5].c", reader.getPath());
-    reader.readStringRaw();
-    assertEquals("$.a[5].c", reader.getPath());
-    reader.readObjectEnd();
-    assertEquals("$.a[6]", reader.getPath());
-    reader.readArrayStart();
-    assertEquals("$.a[6][0]", reader.getPath());
-    reader.nextInt();
-    assertEquals("$.a[6][1]", reader.getPath());
-    reader.readArrayEnd();
-    assertEquals("$.a[7]", reader.getPath());
-    reader.readArrayEnd();
-    assertEquals("$.a", reader.getPath());
-    reader.readObjectEnd();
-    assertEquals("$", reader.getPath());
+    try(GsonReader reader = new GsonReader(
+      new StringReader("{\"a\":[2,true,false,null,\"b\",{\"c\":\"d\"},[3]]}")
+    )){
+      assertEquals("$", reader.getPath());
+      reader.readObjectStart();
+      assertEquals("$.", reader.getPath());
+      reader.readName();
+      assertEquals("$.a", reader.getPath());
+      reader.readArrayStart();
+      assertEquals("$.a[0]", reader.getPath());
+      reader.nextInt();
+      assertEquals("$.a[1]", reader.getPath());
+      reader.readBooleanRaw();
+      assertEquals("$.a[2]", reader.getPath());
+      reader.readBooleanRaw();
+      assertEquals("$.a[3]", reader.getPath());
+      reader.readNullRaw();
+      assertEquals("$.a[4]", reader.getPath());
+      reader.readStringRaw();
+      assertEquals("$.a[5]", reader.getPath());
+      reader.readObjectStart();
+      assertEquals("$.a[5].", reader.getPath());
+      reader.readName();
+      assertEquals("$.a[5].c", reader.getPath());
+      reader.readStringRaw();
+      assertEquals("$.a[5].c", reader.getPath());
+      reader.readObjectEnd();
+      assertEquals("$.a[6]", reader.getPath());
+      reader.readArrayStart();
+      assertEquals("$.a[6][0]", reader.getPath());
+      reader.nextInt();
+      assertEquals("$.a[6][1]", reader.getPath());
+      reader.readArrayEnd();
+      assertEquals("$.a[7]", reader.getPath());
+      reader.readArrayEnd();
+      assertEquals("$.a", reader.getPath());
+      reader.readObjectEnd();
+      assertEquals("$", reader.getPath());
+    }
   }
 
   public void testObjectPath() {

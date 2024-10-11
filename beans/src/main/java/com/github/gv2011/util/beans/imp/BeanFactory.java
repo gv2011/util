@@ -25,6 +25,7 @@ import com.github.gv2011.util.ReflectionUtils;
 import com.github.gv2011.util.ann.VisibleForTesting;
 import com.github.gv2011.util.beans.AnnotationHandler;
 import com.github.gv2011.util.beans.Bean;
+import com.github.gv2011.util.beans.BeanHandlerFactory;
 import com.github.gv2011.util.beans.Elementary;
 import com.github.gv2011.util.beans.KeyBean;
 import com.github.gv2011.util.beans.TypeNameStrategy;
@@ -46,15 +47,18 @@ public abstract class BeanFactory{
   private final AnnotationHandler annotationHandler;
   private final DefaultTypeRegistry registry;
 
+  protected final BeanHandlerFactory beanHandlerFactory;
 
   protected BeanFactory(
     final JsonFactory jf,
     final AnnotationHandler annotationHandler,
-    final DefaultTypeRegistry registry
+    final DefaultTypeRegistry registry,
+    final BeanHandlerFactory beanHandlerFactory
   ) {
     this.jf = jf;
     this.annotationHandler = annotationHandler;
     this.registry = registry;
+    this.beanHandlerFactory = beanHandlerFactory;
   }
 
 
@@ -340,11 +344,10 @@ public abstract class BeanFactory{
     Class<B> clazz, JsonFactory jf, AnnotationHandler annotationHandler, Function<Type,TypeSupport<?>> registry
   );
 
-
   protected <B> ObjectTypeSupport<B> createPolymorphicBean(final Class<B> clazz) {
     final PolymorphicRootType<? super B> rootType = rootTypeForRootClass(tryGetRoot(clazz).get());
     return new PolymorphicBeanType<>(
-      clazz, jf, annotationHandler, this, //same as DefaultBeanType
+      clazz, jf, annotationHandler, this, beanHandlerFactory.createBeanHandler(clazz), //same as DefaultBeanType
       rootType.typePropertyName(), rootType.typeNameStrategy()
     );
   }
@@ -383,7 +386,7 @@ public abstract class BeanFactory{
         c -> c.asSubclass(clazz)
       ))
     ;
-    return new DefaultTypeResolver<>(subTypes);
+    return new DefaultTypeResolver<>(clazz, subTypes, annotationHandler);
   }
 
 
@@ -412,6 +415,11 @@ public abstract class BeanFactory{
     private TypeResolverWrapper(final Class<B> clazz, final TypeResolver<?> delegate) {
       this.clazz = clazz;
       this.delegate = delegate;
+    }
+
+    @Override
+    public Opt<String> typePropertyName() {
+      return delegate.typePropertyName();
     }
 
     @SuppressWarnings("unchecked")

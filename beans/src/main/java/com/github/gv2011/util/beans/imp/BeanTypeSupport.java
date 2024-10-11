@@ -19,6 +19,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
@@ -37,7 +38,6 @@ import com.github.gv2011.util.beans.AnnotationHandler;
 import com.github.gv2011.util.beans.Bean;
 import com.github.gv2011.util.beans.BeanBuilder;
 import com.github.gv2011.util.beans.BeanHandler;
-import com.github.gv2011.util.beans.BeanHandlerFactory;
 import com.github.gv2011.util.beans.BeanHashCode;
 import com.github.gv2011.util.beans.BeanType;
 import com.github.gv2011.util.beans.KeyBean;
@@ -53,7 +53,6 @@ import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
 import com.github.gv2011.util.json.JsonNodeType;
 import com.github.gv2011.util.json.JsonObject;
-import com.github.gv2011.util.serviceloader.RecursiveServiceLoader;
 
 
 public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements BeanType<T> {
@@ -73,6 +72,7 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   private final Constant<ToIntFunction<T>> hashCodeFunction = Constants.cachedConstant(this::createHashCodeFunction);
   protected final UnaryOperator<T> resultWrapper;
   protected final UnaryOperator<T> validator;
+  private final Function<T,String> toStringFunction;
 
   //recursion, init later
   private @Nullable ISortedMap<String, PropertyImp<T,?>> properties;
@@ -85,14 +85,15 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
     final Class<T> beanClass,
     final JsonFactory jf,
     final AnnotationHandler annotationHandler,
-    final BeanFactory beanFactory
+    final BeanFactory beanFactory,
+    final Opt<BeanHandler<T>> beanHandler
   ) {
     super(beanClass);
     this.jf = jf;
     this.annotationHandler = annotationHandler;
     this.beanFactory = beanFactory;
     this.isKeyBean = isKeyBean(beanClass);
-    this.beanHandler = findBeanHandler(beanClass);
+    this.beanHandler = beanHandler;
     final Opt<Class<? extends Parser<?>>> annotatedParser = annotationHandler.getParser(clazz);
     writeAsJsonString = annotatedParser.isPresent();
     parser = beanHandler
@@ -112,6 +113,22 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
       .map(this::createValidatorFromClass)
       .orElseGet(UnaryOperator::identity)
     ;
+    this.toStringFunction = toStringFunction(beanClass).orElseGet(()->this::defaultToString);
+  }
+
+  private static final <T> Optional<Function<T,String>> toStringFunction(final Class<T> beanClass){
+    return Arrays.stream(beanClass.getMethods()).filter(m->isToStringMethod(m, beanClass)).findAny()
+      .map(m->(b->(String)call(()->m.invoke(null, new Object[]{b}))))
+    ;
+  }
+
+  private static final boolean isToStringMethod(final Method m, final Class<?> beanClass){
+    if(m.getName().equals("toString") && Modifier.isStatic(m.getModifiers()) && m.getParameterCount()==1){
+      verifyEqual(m.getReturnType(), String.class);
+      verifyEqual(m.getParameterTypes()[0], beanClass);
+      return true;
+    }
+    else return false;
   }
 
   static final boolean isKeyBean(final Class<?> beanClass) {
@@ -126,14 +143,6 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
       ),
       1L
     );
-  }
-
-  private final Opt<BeanHandler<T>> findBeanHandler(final Class<T> beanClass) {
-    return RecursiveServiceLoader
-      .services(BeanHandlerFactory.class).stream()
-      .flatMap(bhf->bhf.createBeanHandler(beanClass).stream())
-      .toOpt()
-    ;
   }
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -244,7 +253,11 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   }
 
   @Override
-  public String toString(final T bean) {
+  public final String toString(final T bean) {
+    return toStringFunction.apply(bean);
+  }
+
+  private String defaultToString(final T bean) {
     return
       properties.values().stream()
       .filter(not(PropertyImp::computed))

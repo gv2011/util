@@ -4,11 +4,11 @@
   <parent>
     <groupId>com.github.gv2011</groupId>
     <artifactId>parent-gv</artifactId>
-    <version>1.5</version>
+    <version>1.7</version>
   </parent>
 
   <artifactId>util-parent</artifactId>
-  <version>0.12</version>
+  <version>0.14-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <description>General purpose utilities - parent.</description>
@@ -18,7 +18,7 @@
     <connection>scm:git:git@github.com:gv2011/util.git</connection>
     <developerConnection>scm:git:git@github.com:gv2011/util.git</developerConnection>
     <url>https://github.com/gv2011/util</url>
-    <tag>util-parent-0.12</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <inceptionYear>2016</inceptionYear>
@@ -37,9 +37,9 @@
   </licenses>
 
   <properties>
-    <gsoncore.version>0.12</gsoncore.version>
-    <util-apis.version>0.12</util-apis.version>
-    <logback-adapter.version>1.3.7</logback-adapter.version>
+    <gsoncore.version>0.14</gsoncore.version>
+    <util-apis.version>0.14-SNAPSHOT</util-apis.version>
+    <logback-adapter.version>1.4.14</logback-adapter.version>
   </properties>
 
   <modules>

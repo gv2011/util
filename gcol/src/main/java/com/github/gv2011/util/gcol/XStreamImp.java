@@ -257,7 +257,9 @@ final class XStreamImp<T> implements XStream<T> {
 
     @Override
     public <E> XStream<E> filter(final Class<E> clazz) {
-      return wrap(delegate.filter(e->clazz.isInstance(e)).map(e->clazz.cast(e)));
+      return wrap(delegate.filter(e->
+        clazz.isInstance(e)
+        ).map(e->clazz.cast(e)));
     }
 
     @Override

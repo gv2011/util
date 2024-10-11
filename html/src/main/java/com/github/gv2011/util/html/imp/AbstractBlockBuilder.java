@@ -1,7 +1,5 @@
 package com.github.gv2011.util.html.imp;
 
-import static com.github.gv2011.util.ex.Exceptions.notYetImplementedException;
-
 import java.net.URI;
 import java.util.Optional;
 
@@ -10,16 +8,29 @@ import org.w3c.dom.Element;
 import com.github.gv2011.util.html.BlockBuilder;
 import com.github.gv2011.util.html.BlockType;
 import com.github.gv2011.util.html.FormBuilder;
+import com.github.gv2011.util.html.HtmlFactory;
 
 abstract class AbstractBlockBuilder<B extends AbstractBlockBuilder<B>> implements BlockBuilder{
 
   abstract B self();
 
+  private final HtmlFactory factory;
   private final Optional<AbstractBlockBuilder<?>> parent;
   private final StringBuilder text = new StringBuilder();
 
-  AbstractBlockBuilder(final Optional<AbstractBlockBuilder<?>> parent) {
-    this.parent = parent;
+  AbstractBlockBuilder(final AbstractBlockBuilder<?> parent) {
+    factory = parent.factory;
+    this.parent = Optional.of(parent);
+  }
+
+  AbstractBlockBuilder(final HtmlFactory factory) {
+    this.factory = factory;
+    this.parent = Optional.empty();
+  }
+
+  @Override
+  public final HtmlFactory factory() {
+    return factory;
   }
 
   @Override
@@ -31,21 +42,9 @@ abstract class AbstractBlockBuilder<B extends AbstractBlockBuilder<B>> implement
   abstract Element element();
 
   @Override
-  public FormBuilder addForm() {
+  public final FormBuilder addForm() {
     closeText();
     return new FormBuilderImp(this);
-  }
-
-  @Override
-  public final BlockType blockType(final String name) {
-    // TODO Auto-generated method stub
-    throw notYetImplementedException();
-  }
-
-  @Override
-  public final B setBlockType(final BlockType blockType) {
-    // TODO Auto-generated method stub
-    throw notYetImplementedException();
   }
 
   @Override
@@ -55,13 +54,18 @@ abstract class AbstractBlockBuilder<B extends AbstractBlockBuilder<B>> implement
   }
 
   @Override
-  public final BlockBuilderImp addBlock() {
-    closeText();
-    return new BlockBuilderImp(this);
+  public final BlockBuilder addBlock() {
+    return addBlock(BlockTypeImp.div);
   }
-  
+
   @Override
-  public final BlockBuilder addAnchor(String text, URI url) {
+  public final BlockBuilder addBlock(final BlockType blockType) {
+    closeText();
+    return new BlockBuilderImp(this, blockType);
+  }
+
+  @Override
+  public final BlockBuilder addAnchor(final String text, final URI url) {
     closeText();
     final Element anchor = element().getOwnerDocument().createElement("a");
     anchor.setAttribute("href", url.toASCIIString());

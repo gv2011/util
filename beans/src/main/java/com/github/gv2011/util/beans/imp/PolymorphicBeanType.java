@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import org.slf4j.Logger;
 
 import com.github.gv2011.util.beans.AnnotationHandler;
+import com.github.gv2011.util.beans.BeanHandler;
 import com.github.gv2011.util.beans.ExtendedBeanBuilder;
 import com.github.gv2011.util.beans.TypeNameStrategy;
 import com.github.gv2011.util.icol.ISortedMap;
@@ -29,10 +30,11 @@ final class PolymorphicBeanType<T> extends BeanTypeSupport<T> {
     final JsonFactory jf,
     final AnnotationHandler annotationHandler,
     final BeanFactory beanFactory,
+    final Opt<BeanHandler<T>> beanHandler,
     final Opt<String> typePropertyName,
     final TypeNameStrategy typeNameStrategy
   ) {
-    super(beanClass, jf, annotationHandler, beanFactory);
+    super(beanClass, jf, annotationHandler, beanFactory, beanHandler);
     this.typePropertyName = typePropertyName;
     this.typeNameStrategy = typeNameStrategy;
   }

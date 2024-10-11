@@ -3,7 +3,6 @@ package com.github.gv2011.util.beans.imp;
 import static com.github.gv2011.util.CollectionUtils.single;
 import static com.github.gv2011.util.CollectionUtils.stream;
 import static com.github.gv2011.util.CollectionUtils.toOpt;
-
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.icol.ICollections.listBuilder;
@@ -25,6 +24,7 @@ import org.slf4j.Logger;
 import com.github.gv2011.util.ServiceLoaderUtils;
 import com.github.gv2011.util.ann.VisibleForTesting;
 import com.github.gv2011.util.beans.AnnotationHandler;
+import com.github.gv2011.util.beans.BeanHandlerFactory;
 import com.github.gv2011.util.beans.ElementaryTypeHandler;
 import com.github.gv2011.util.beans.ElementaryTypeHandlerFactory;
 import com.github.gv2011.util.beans.Type;
@@ -57,6 +57,7 @@ public class DefaultTypeRegistry implements TypeRegistry{
 
   private static final Logger LOG = getLogger(DefaultTypeRegistry.class);
 
+
   private final JsonFactory jf;
 
   @VisibleForTesting
@@ -83,10 +84,19 @@ public class DefaultTypeRegistry implements TypeRegistry{
     this(ServiceLoaderUtils.loadService(JsonFactory.class));
   }
 
+  public DefaultTypeRegistry(final BeanHandlerFactory beanHandlerFactory) {
+    this(
+      ServiceLoaderUtils.loadService(JsonFactory.class),
+      ServiceLoaderUtils.tryGetService(BeanFactoryBuilder.class).orElseGet(DefaultBeanFactoryBuilder::new),
+      beanHandlerFactory
+    );
+  }
+
   public DefaultTypeRegistry(final JsonFactory jsonFactory) {
       this(
-          jsonFactory,
-          ServiceLoaderUtils.tryGetService(BeanFactoryBuilder.class).orElseGet(DefaultBeanFactoryBuilder::new)
+        jsonFactory,
+        ServiceLoaderUtils.tryGetService(BeanFactoryBuilder.class).orElseGet(DefaultBeanFactoryBuilder::new),
+        ServiceLoaderUtils.tryGetService(BeanHandlerFactory.class).orElseGet(()->new BeanHandlerFactory(){})
       );
     }
 
@@ -94,9 +104,9 @@ public class DefaultTypeRegistry implements TypeRegistry{
       this(ServiceLoaderUtils.loadService(JsonFactory.class));
     }
 
-  public DefaultTypeRegistry(final JsonFactory jsonFactory, final BeanFactoryBuilder bfb) {
+  public DefaultTypeRegistry(final JsonFactory jsonFactory, final BeanFactoryBuilder bfb, final BeanHandlerFactory beanHandlerFactory) {
     jf = jsonFactory;
-    beanFactory = bfb.build(jf, annotationHandler, this);
+    beanFactory = bfb.build(jf, annotationHandler, this, beanHandlerFactory);
     final IList.Builder<ElementaryTypeHandlerFactory> b = listBuilder();
     for(final ElementaryTypeHandlerFactory tf: ServiceLoader.load(ElementaryTypeHandlerFactory.class)) {
       b.add(tf);

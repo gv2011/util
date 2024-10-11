@@ -79,6 +79,7 @@ implements CollectionBuilder<C,E,B> {
     return addAll(elements);
   }
 
+  @Override
   public final int size() {
     return list.size();
   }

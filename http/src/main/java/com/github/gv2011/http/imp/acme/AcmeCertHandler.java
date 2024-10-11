@@ -185,6 +185,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
     if(bucket!=before) LOG.info("Bucket increased to: {} (bucket time: {}).", bucket, lastBucketFill);
   }
 
+  @SuppressWarnings("deprecation") //TODO change polling
   private ServerCertificate orderCertificate(final DomainEntry entry) {
     assert Thread.holdsLock(lock);
     checkTokenCanBeSet(entry.domain());

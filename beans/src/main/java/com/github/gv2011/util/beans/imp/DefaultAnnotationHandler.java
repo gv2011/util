@@ -12,9 +12,11 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 
+import com.github.gv2011.util.beans.AbstractIntermediate;
 import com.github.gv2011.util.beans.AbstractRoot;
 import com.github.gv2011.util.beans.AnnotationHandler;
 import com.github.gv2011.util.beans.Computed;
@@ -26,6 +28,7 @@ import com.github.gv2011.util.beans.FixedValue;
 import com.github.gv2011.util.beans.NoDefaultValue;
 import com.github.gv2011.util.beans.Parser;
 import com.github.gv2011.util.beans.TypeName;
+import com.github.gv2011.util.beans.TypeNameProperty;
 import com.github.gv2011.util.beans.TypeNameStrategy;
 import com.github.gv2011.util.beans.TypeResolver;
 import com.github.gv2011.util.beans.Validator;
@@ -65,6 +68,16 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
   }
 
   @Override
+  public Opt<String> typeNameProperty(final Class<?> clazz) {
+    verify(clazz.getAnnotation(AbstractRoot.class)!=null);
+    return Stream.of(clazz.getMethods())
+      .filter(m->m.getAnnotation(TypeNameProperty.class)!=null)
+      .collect(toOpt())
+      .map(m->m.getName())
+    ;
+  }
+
+  @Override
   public boolean annotatedAsBean(final Class<?> clazz) {
     final boolean result = clazz.getAnnotation(Final.class)!=null;
     if(result) verify(!declaredAsAbstract(clazz));
@@ -73,7 +86,10 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
 
   @Override
   public boolean declaredAsAbstract(final Class<?> clazz) {
-    final boolean result = clazz.getAnnotation(AbstractRoot.class)!=null;
+    final boolean result =
+      clazz.getAnnotation(AbstractRoot.class)!=null ||
+      clazz.getAnnotation(AbstractIntermediate.class)!=null
+    ;
     if(result) verify(!annotatedAsBean(clazz));
     return result;
   }
@@ -95,7 +111,7 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
 
   @Override
   public Opt<String> fixedValue(final Method m) {
-    final Opt<String> fixed = annotationValue(m, FixedValue.class, FixedValue::value);
+    final Opt<String> fixed = annotationValue(m, FixedValue.class, FixedValue::value).flatMap(Opt::ofArray);
     final Opt<String> fixedBoolean = annotationValue(m, FixedBooleanValue.class, a->Boolean.toString(a.value()));
     return fixed.merge(fixedBoolean);
   }

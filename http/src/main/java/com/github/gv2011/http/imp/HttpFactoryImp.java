@@ -58,7 +58,7 @@ import com.github.gv2011.util.sec.Domain;
 import com.github.gv2011.util.time.Clock;
 
 public final class HttpFactoryImp implements HttpFactory{
-  
+
   public static final int DEFAULT_HTTP_PORT = 8080;
   public static final int DEFAULT_HTTPS_PORT = 8443;
 
@@ -74,12 +74,12 @@ public final class HttpFactoryImp implements HttpFactory{
 
   @Override
   public HttpServer createServer(
-    IList<Pair<Space, RequestHandler>> handlers,
-    Predicate<Domain> isHttpsHost,
-    OptionalInt httpPort,
-    OptionalInt httpsPort,
-    OptionalInt tokenPort,
-    AcmeStore acmeStore
+    final IList<Pair<Space, RequestHandler>> handlers,
+    final Predicate<Domain> isHttpsHost,
+    final OptionalInt httpPort,
+    final OptionalInt httpsPort,
+    final OptionalInt tokenPort,
+    final AcmeStore acmeStore
   ) {
     final CachedConstant<HttpServerImp> server = Constants.cachedConstant();
     final Constant<Integer> tokenPortConst = tokenPort.isPresent()
@@ -91,11 +91,11 @@ public final class HttpFactoryImp implements HttpFactory{
     );
     server.set(
       new HttpServerImp(
-        this, 
-        handlers, 
-        httpPort, 
-        Opt.of(certHandler), 
-        isHttpsHost, 
+        this,
+        handlers,
+        httpPort,
+        Opt.of(certHandler),
+        isHttpsHost,
         httpsPort
       )
     );
@@ -105,11 +105,11 @@ public final class HttpFactoryImp implements HttpFactory{
 
   @Override
   public HttpServer createServer(
-    IList<Pair<Space,RequestHandler>> handlers, 
-    OptionalInt httpPort,
-    Opt<CertificateHandler> certHandler,
-    Predicate<Domain> isHttpsHost,
-    OptionalInt httpsPort
+    final IList<Pair<Space,RequestHandler>> handlers,
+    final OptionalInt httpPort,
+    final Opt<CertificateHandler> certHandler,
+    final Predicate<Domain> isHttpsHost,
+    final OptionalInt httpsPort
   ) {
     return new HttpServerImp(this, handlers, httpPort, certHandler, isHttpsHost, httpsPort);
   }
@@ -132,23 +132,23 @@ public final class HttpFactoryImp implements HttpFactory{
   public StatusCode statusNotFound() {
     return StatusCodes.NOT_FOUND;
   }
-  
-  public Path getPath(Request request){
+
+  public Path getPath(final Request request){
     return iCollections().pathFrom(request.path());
   }
 
-  public String encodePath(Path path) {
+  public String encodePath(final Path path) {
     return UrlEncoding.encodePath(path);
   }
 
-  public Path decodePath(String path) {
+  public Path decodePath(final String path) {
     return UrlEncoding.decodePath(StringUtils.removePrefix(path, "/"));
   }
 
   @Override
-  public AcmeStore openAcmeStore(java.nio.file.Path directory) {
+  public AcmeStore openAcmeStore(final java.nio.file.Path directory) {
     return new AcmeFileStore(directory);
   }
 
-  
+
 }

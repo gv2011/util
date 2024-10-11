@@ -1,16 +1,16 @@
 package com.github.gv2011.util.html.imp;
 
-import java.util.Optional;
-
 import org.w3c.dom.Element;
+
+import com.github.gv2011.util.html.BlockType;
 
 class BlockBuilderImp extends AbstractBlockBuilder<BlockBuilderImp>{
 
   private final Element element;
 
-  BlockBuilderImp(final AbstractBlockBuilder<?> parent) {
-    super(Optional.of(parent));
-    element = parent.element().getOwnerDocument().createElement("div");
+  BlockBuilderImp(final AbstractBlockBuilder<?> parent, final BlockType blockType) {
+    super(parent);
+    element = parent.element().getOwnerDocument().createElement(blockType.toString());
     parent.element().appendChild(element);
   }
 

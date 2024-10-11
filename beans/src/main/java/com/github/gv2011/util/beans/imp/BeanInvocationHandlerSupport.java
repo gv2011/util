@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import com.github.gv2011.util.Constant;
 import com.github.gv2011.util.Constants;
@@ -45,7 +46,7 @@ public abstract class BeanInvocationHandlerSupport<B,P>  {
   }
 
   protected String handleToString(final Object proxy, final Method method, final Object[] args, final P x) {
-    return beanType.clazz.getSimpleName()+values;
+    return beanType.toString(beanType.cast(proxy));
   }
 
   protected abstract Object handleOther(
@@ -58,14 +59,20 @@ public abstract class BeanInvocationHandlerSupport<B,P>  {
   }
 
   private Optional<Object> tryGetValue(final Object proxy, final String property) {
+    return tryGetValue(proxy, property, ()->{
+      final PropertyImp<B, ?> prop = beanType.properties().get(property);
+      final Opt<?> defaultValue = prop.defaultValue();
+      if(defaultValue.isPresent()) return defaultValue.get();
+      else return prop.function().get().apply(beanType.cast(proxy));
+    });
+  }
+
+  private Optional<Object> tryGetValue(
+    final Object proxy, final String property, final Supplier<Object> retrievalFunction
+  ) {
     if(beanType.properties().containsKey(property)){
       return Optional.of(
-        values.tryGet(property).orElseGet(()->{
-          final PropertyImp<B, ?> prop = beanType.properties().get(property);
-          final Opt<?> defaultValue = prop.defaultValue();
-          if(defaultValue.isPresent()) return defaultValue.get();
-          else return prop.function().get().apply(beanType.cast(proxy));
-        })
+        values.tryGet(property).orElseGet(retrievalFunction::get)
       );
     }
     else return Optional.empty();

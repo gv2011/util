@@ -18,6 +18,7 @@ import com.github.gv2011.util.icol.IComparableList;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.IMap;
 import com.github.gv2011.util.icol.ISet;
+import com.github.gv2011.util.icol.ISetList;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.ISortedSet;
 import com.github.gv2011.util.icol.Nothing;
@@ -47,7 +48,7 @@ final class GuavaIcolFactory implements ICollectionFactory{
 
   @Override
   @SuppressWarnings("unchecked")
-  public <E> IList<E> emptyList() {
+  public <E> ISetList<E> emptyList() {
     return IEmptyList.INSTANCE;
   }
 
@@ -75,8 +76,8 @@ final class GuavaIcolFactory implements ICollectionFactory{
   }
 
   @Override
-  public <T> IList<T> listOf(final T element) {
-    return new IListWrapper<>(ImmutableList.of(element));
+  public <T> ISetList<T> listOf(final T element) {
+    return new ISetListWrapper<>(ImmutableList.of(element));
   }
 
   @Override
@@ -166,6 +167,11 @@ final class GuavaIcolFactory implements ICollectionFactory{
   }
 
   @Override
+  public <E> ISetList.Builder<E> setListBuilder() {
+    return new ISetListBuilder<>();
+  }
+
+  @Override
   public Path.Builder pathBuilder() {
     return new PathCollector.PathBuilder();
   }
@@ -201,8 +207,18 @@ final class GuavaIcolFactory implements ICollectionFactory{
   }
 
   @Override
+  public <E> Collector<E, ?, ISetList<E>> setListCollector() {
+    return new ISetListCollector<>();
+  }
+
+  @Override
   public <T> Collector<T, ?, ISet<T>> setCollector() {
     return new ISetCollector<>();
+  }
+
+  @Override
+  public <T> Collector<T, ?, ISet<T>> transitiveClosure(final Function<? super T,Stream<? extends T>> dependents) {
+    return new TransitiveClosureCollector<>(dependents);
   }
 
   @Override
