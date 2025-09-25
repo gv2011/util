@@ -66,4 +66,9 @@ abstract class AbstractElementaryType<E> extends TypeSupport<E>{
     return handler().parse(string);
   }
 
+  @Override
+  protected final Opt<BeanTypeSupport<E>> asBeanType(){
+    return Opt.empty();
+  }
+
 }

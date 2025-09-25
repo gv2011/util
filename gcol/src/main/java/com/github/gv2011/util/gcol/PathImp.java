@@ -30,11 +30,11 @@ import java.util.Collection;
  */
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 import com.github.gv2011.util.Comparison;
 import com.github.gv2011.util.icol.ICollections;
 import com.github.gv2011.util.icol.IList;
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.icol.Path;
 
 final class PathImp extends IListWrapper<String> implements Path{
@@ -53,10 +53,10 @@ final class PathImp extends IListWrapper<String> implements Path{
   }
 
   @Override
-  public Optional<Path> parent() {
+  public Opt<Path> parent() {
     return isEmpty()
-      ? Optional.empty()
-      : Optional.of(size()==1
+      ? Opt.empty()
+      : Opt.of(size()==1
         ? EMPTY
         : new PathImp(delegate.subList(0, delegate.size()-1))
       )
@@ -95,5 +95,5 @@ final class PathImp extends IListWrapper<String> implements Path{
     }
   }
 
-  
+
 }

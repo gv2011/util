@@ -143,5 +143,8 @@ final class CollectionType<C,K,E> extends TypeSupport<C>{
     return false;
   }
 
-
+  @Override
+  protected final Opt<BeanTypeSupport<C>> asBeanType(){
+    return Opt.empty();
+  }
 }

@@ -217,7 +217,7 @@ final class GuavaIcolFactory implements ICollectionFactory{
   }
 
   @Override
-  public <T> Collector<T, ?, ISet<T>> transitiveClosure(final Function<? super T,Stream<? extends T>> dependents) {
+  public <T> Collector<T, ?, ISet<T>> transitiveClosure(final Function<T,Stream<T>> dependents) {
     return new TransitiveClosureCollector<>(dependents);
   }
 

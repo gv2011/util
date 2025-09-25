@@ -1,7 +1,7 @@
 package com.github.gv2011.util.streams;
 
 import java.io.OutputStream;
-import java.net.URL;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Random;
@@ -31,7 +31,7 @@ public class StreamEventsTest extends AbstractTest{
   @Test
   public void testProcessWeb() throws Exception {
     StreamEvents.process(
-      new URL("https://docs.aws.amazon.com/aws-sdk-php/v3/guide/getting-started/basic-usage.html")::openStream,
+      new URI("https://docs.aws.amazon.com/aws-sdk-php/v3/guide/getting-started/basic-usage.html").toURL()::openStream,
       this::event
     );
     finished.await();

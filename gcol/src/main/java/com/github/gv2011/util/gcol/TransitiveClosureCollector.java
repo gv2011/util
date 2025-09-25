@@ -22,9 +22,9 @@ implements Collector<T, Set<T>, ISet<T>>{
     new ISetBuilder<Characteristics>().add(Characteristics.CONCURRENT).add(Characteristics.UNORDERED).build()
   ;
 
-  private final Function<? super T,Stream<? extends T>> dependents;
+  private final Function<T,Stream<T>> dependents;
 
-  TransitiveClosureCollector(final Function<? super T,Stream<? extends T>> dependents) {
+  TransitiveClosureCollector(final Function<T,Stream<T>> dependents) {
     this.dependents = dependents;
   }
 

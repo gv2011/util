@@ -14,6 +14,7 @@ import static com.github.gv2011.util.icol.ICollections.toISet;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -289,7 +290,7 @@ public abstract class BeanFactory{
 
   public final boolean isPropertyMethod(final Class<?> owner, final Method m) {
     boolean result;
-    if(m.getParameterCount()!=0) result = false;
+    if(m.getParameterCount()!=0 || Modifier.isStatic(m.getModifiers())) result = false;
     else if(isObjectMethod(m)) result = false;
     else if(inherits(m, KEY_METHOD)) result = false;
     else {

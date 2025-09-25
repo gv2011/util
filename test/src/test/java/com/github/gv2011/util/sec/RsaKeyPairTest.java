@@ -14,7 +14,7 @@ public class RsaKeyPairTest extends AbstractTest{
 
   @Test
   public void testParse() {
-    final RsaKeyPair kp = RsaKeyPair.parse(getResourceBytes("rsaprivcrt.pkcs8"));
+    final RsaKeyPair kp = RsaKeyPair.parsePkcs8(getResourceBytes("rsaprivcrt.pkcs8"));
     assertThat(
       kp.getPrivate().getModulus(),
       is(new BigInteger(
@@ -116,7 +116,7 @@ public class RsaKeyPairTest extends AbstractTest{
   @Test
   public void testEncode() {
     final Bytes encoded = getResourceBytes("rsaprivcrt.pkcs8");
-    final RsaKeyPair kp = RsaKeyPair.parse(encoded);
+    final RsaKeyPair kp = RsaKeyPair.parsePkcs8(encoded);
     assertThat(kp.getPrivate().getFormat(), is("PKCS#8"));
     assertThat(kp.encode(), is(encoded));
   }

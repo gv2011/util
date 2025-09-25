@@ -2,14 +2,17 @@ package com.github.gv2011.util.beans.imp;
 
 
 import static com.github.gv2011.util.CollectionUtils.pair;
+import static com.github.gv2011.util.CollectionUtils.toOpt;
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
+import static com.github.gv2011.util.ex.Exceptions.notYetImplemented;
 import static com.github.gv2011.util.ex.Exceptions.wrap;
 import static com.github.gv2011.util.icol.ICollections.toIMap;
 import static com.github.gv2011.util.icol.ICollections.toISortedMap;
+import static com.github.gv2011.util.icol.ICollections.upcast;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.joining;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -21,6 +24,7 @@ import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.TreeSet;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.function.UnaryOperator;
@@ -44,6 +48,7 @@ import com.github.gv2011.util.beans.KeyBean;
 import com.github.gv2011.util.beans.Parser;
 import com.github.gv2011.util.beans.Partial;
 import com.github.gv2011.util.beans.Property;
+import com.github.gv2011.util.beans.Ref;
 import com.github.gv2011.util.beans.Validator;
 import com.github.gv2011.util.icol.IEntry;
 import com.github.gv2011.util.icol.IMap;
@@ -73,13 +78,17 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   protected final UnaryOperator<T> resultWrapper;
   protected final UnaryOperator<T> validator;
   private final Function<T,String> toStringFunction;
+  private final IMap<Method,BiFunction<T, Object[],Object>> defaultMethods;
 
   //recursion, init later
-  private @Nullable ISortedMap<String, PropertyImp<T,?>> properties;
+  private volatile @Nullable ISortedMap<String, PropertyImp<T,?>> properties;
   //recursion, init later
-  private @Nullable Opt<T> defaultValue;
+  private volatile @Nullable Opt<T> defaultValue;
   //recursion, init later
-  protected @Nullable Opt<Function<ISortedMap<String, Object>, T>> constructor;
+  protected volatile @Nullable Opt<Function<ISortedMap<String, Object>, T>> constructor;
+  //recursion, init later
+  private volatile @Nullable Opt<PropertyImp<T, ?>> keyProperty;
+
 
   protected BeanTypeSupport(
     final Class<T> beanClass,
@@ -93,6 +102,7 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
     this.annotationHandler = annotationHandler;
     this.beanFactory = beanFactory;
     this.isKeyBean = isKeyBean(beanClass);
+
     this.beanHandler = beanHandler;
     final Opt<Class<? extends Parser<?>>> annotatedParser = annotationHandler.getParser(clazz);
     writeAsJsonString = annotatedParser.isPresent();
@@ -114,6 +124,7 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
       .orElseGet(UnaryOperator::identity)
     ;
     this.toStringFunction = toStringFunction(beanClass).orElseGet(()->this::defaultToString);
+    defaultMethods = ReflectionUtils.getDefaultMethodInvokers(beanClass);
   }
 
   private static final <T> Optional<Function<T,String>> toStringFunction(final Class<T> beanClass){
@@ -202,6 +213,7 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
       properties = createProperties();
       checkProperties(properties);
       LOG.debug("{}: initialized properties: {}.", this, properties.keySet());
+      keyProperty  = properties.values().stream().filter(p->p.isKey()).collect(toOpt());
       constructor = new ConstructorHandler<>(clazz, annotationHandler, properties)
         .tryCreateConstructor(annotationHandler.getImplementingClass(clazz))
       ;
@@ -315,6 +327,12 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   }
 
   @Override
+  public final Opt<Property<?>> keyProperty() {
+    if(properties==null) initialize();
+    return upcast(notNull(keyProperty));
+  }
+
+  @Override
   public final boolean isKeyBean() {
       return isKeyBean;
   }
@@ -370,7 +388,13 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
       final Opt<V> defaultValue = annotatedDefaultValue
         .or(()->type.isInitialized() ? type.getDefault() : Opt.empty())
       ;
-      return PropertyImp.create(this, m, type, defaultValue);
+      return PropertyImp.create(
+        this,
+        m,
+        type,
+        defaultValue,
+        annotationHandler.annotatedAsKey(m)
+      );
     }
   }
 
@@ -525,6 +549,11 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
     }
   }
 
+  @Override
+  public final Opt<Ref<?,T>> ref(final T bean) {
+    //return keyProperty.map(p->new DefaultRef(get(bean, p), ()->bean));
+    return notYetImplemented();
+  }
 
   private static <B> Partial<B> createEmptyPartial() {
       return new Partial<>() {
@@ -551,8 +580,17 @@ public abstract class BeanTypeSupport<T> extends ObjectTypeSupport<T> implements
   }
 
   Bean getKey(final ISortedMap<String, Object> values) {
-    // TODO Auto-generated method stub
-    return null;
+    return notYetImplemented();
+  }
+
+
+  protected final Object invokeDefault(final T proxy, final Method method, final Object[] args) {
+    return defaultMethods.get(method).apply(proxy, args);
+  }
+
+  @Override
+  protected final Opt<BeanTypeSupport<T>> asBeanType(){
+    return Opt.of(this);
   }
 
 }

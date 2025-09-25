@@ -14,6 +14,7 @@ import static com.github.gv2011.util.icol.ICollections.toISet;
 import static java.util.Comparator.comparing;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
@@ -247,7 +248,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
   private void checkTokenCanBeSet(final Domain domain) {
     final UUID random = UUID.randomUUID();
     final Path path = TOKEN_BASE_PATH.addElement(random.toString());
-    final URL url = call(()->new URL("http://"+domain.toAscii()+":"+tokenPort.get()+"/"+path.urlEncoded()));
+    final URL url = call(()->new URI("http://"+domain.toAscii()+":"+tokenPort.get()+"/"+path.urlEncoded()).toURL());
     final String content = random.toString();
     try(final AutoCloseableNt token = acmeAccess.get().activate(
       domain,

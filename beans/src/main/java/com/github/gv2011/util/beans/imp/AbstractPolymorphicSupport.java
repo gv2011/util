@@ -27,6 +27,7 @@ package com.github.gv2011.util.beans.imp;
  */
 import com.github.gv2011.util.beans.Type;
 import com.github.gv2011.util.beans.TypeResolver;
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
 
@@ -73,5 +74,9 @@ abstract class AbstractPolymorphicSupport<B> extends ObjectTypeSupport<B>{
     return true;
   }
 
+  @Override
+  protected final Opt<BeanTypeSupport<B>> asBeanType(){
+    return Opt.empty();
+  }
 
 }

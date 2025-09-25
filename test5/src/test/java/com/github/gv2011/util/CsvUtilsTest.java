@@ -68,21 +68,24 @@ class CsvUtilsTest {
 
   @Test
   void testCsvParser() throws IOException {
-    try(CSVParser p =
-      new CSVParser(
+    try(CSVParser p = CSVParser
+      .builder()
+      .setReader(
         ByteUtils.asUtf8(
             "wertstellung;buchungstext;amount\r\n"+
             "2022-02-12;text;12.99"
-        ).content().reader(),
-        ( CSVFormat.Builder
+        ).content().reader()
+      )
+      .setFormat(
+          CSVFormat.Builder
           .create(CSVFormat.RFC4180)
           .setDelimiter(';')
           .setQuote('"')
           .setRecordSeparator("\r\n")
           .setHeader().setSkipHeaderRecord(true)
-          .build()
-        )
+          .get()
       )
+      .get()
     ){
       final Iterator<CSVRecord> it = p.iterator();
       while(it.hasNext()) it.next();

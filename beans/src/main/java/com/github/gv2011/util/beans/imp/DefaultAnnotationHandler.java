@@ -25,6 +25,7 @@ import com.github.gv2011.util.beans.DefaultValue;
 import com.github.gv2011.util.beans.Final;
 import com.github.gv2011.util.beans.FixedBooleanValue;
 import com.github.gv2011.util.beans.FixedValue;
+import com.github.gv2011.util.beans.Key;
 import com.github.gv2011.util.beans.NoDefaultValue;
 import com.github.gv2011.util.beans.Parser;
 import com.github.gv2011.util.beans.TypeName;
@@ -122,7 +123,10 @@ final class DefaultAnnotationHandler implements AnnotationHandler{
     return m.isAnnotationPresent(Computed.class);
   }
 
-
+  @Override
+  public boolean annotatedAsKey(final Method m) {
+    return m.isAnnotationPresent(Key.class);
+  }
 
   @Override
   public ISet<Class<?>> subClasses(final Class<?> clazz) {

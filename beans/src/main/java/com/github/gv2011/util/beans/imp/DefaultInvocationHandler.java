@@ -16,7 +16,7 @@ public class DefaultInvocationHandler<B> extends BeanInvocationHandlerSupport<B,
 
   @Override
   public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
-    return handle(proxy, method, args, nothing());
+    return handle(beanType.cast(proxy), method, args, nothing());
   }
 
   @Override

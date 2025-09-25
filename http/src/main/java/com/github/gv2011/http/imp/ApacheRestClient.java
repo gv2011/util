@@ -18,7 +18,9 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.slf4j.Logger;
 
 import com.github.gv2011.util.StreamUtils;
+import static com.github.gv2011.util.http.HttpFactory.*;
 import com.github.gv2011.util.http.RestClient;
+import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.json.JsonFactory;
 import com.github.gv2011.util.json.JsonNode;
 
@@ -46,11 +48,13 @@ public final class ApacheRestClient implements RestClient{
   }
 
   @Override
-  public JsonNode post(final URI url, final JsonNode body) {
+  public JsonNode post(final URI url, final JsonNode body, final Opt<String> authToken) {
     final HttpPost request = new HttpPost(url);
+    authToken.ifPresentDo(t->request.setHeader(AUTHORIZATION, format(BEARER_PATTERN, t)));
     request.setEntity(new JsonEntity(body));
     return request(request);
   }
+
 
   private JsonNode request(final ClassicHttpRequest request) {
     return call(()->hc.execute(

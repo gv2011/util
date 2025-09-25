@@ -1,6 +1,5 @@
 package com.github.gv2011.util.beans.imp;
 
-import static com.github.gv2011.util.Verify.verify;
 import static com.github.gv2011.util.ex.Exceptions.bug;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
@@ -8,37 +7,12 @@ import static com.github.gv2011.util.ex.Exceptions.format;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-/*-
- * #%L
- * util-beans
- * %%
- * Copyright (C) 2017 - 2018 Vinz (https://github.com/gv2011)
- * %%
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * #L%
- */
 import java.util.Optional;
 import java.util.function.Function;
 
 import com.github.gv2011.util.beans.Property;
-import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.icol.ISortedMap;
+import com.github.gv2011.util.icol.Opt;
 
 public final class PropertyImp<B,T> implements Property<T> {
 
@@ -54,9 +28,10 @@ public final class PropertyImp<B,T> implements Property<T> {
       final BeanTypeSupport<B> owner,
       final Method method,
       final TypeSupport<T> type,
-      final Opt<T> defaultValue
+      final Opt<T> defaultValue,
+      final boolean isKey
     ) {
-      return new PropertyImp<>(owner, method, method.getName(), type, defaultValue, Opt.empty(), Opt.empty(), false);
+      return new PropertyImp<>(owner, method, method.getName(), type, defaultValue, Opt.empty(), Opt.empty(), isKey);
     }
 
     static <B,T> PropertyImp<B,T> createComputed(
@@ -97,14 +72,14 @@ public final class PropertyImp<B,T> implements Property<T> {
       this.fixedValue = fixedValue;
       this.function = function;
       this.isKey = isKey;
-      verify(
-        type.isForeignType() ? function.isPresent() : true,
-        ()->format(
-          "Property {} of type {}: The value type {} of this property "+
-          "is a foreign type, but no computing function is given.",
-          name, owner, type
-        )
-      );
+//      verify(
+//        type.isForeignType() ? function.isPresent() : true,
+//        ()->format(
+//          "Property {} of type {}: The value type {} of this property "+
+//          "is a foreign type, but no computing function is given.",
+//          name, owner, type
+//        )
+//      );
     }
 
     @Override

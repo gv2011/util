@@ -97,4 +97,6 @@ public abstract class TypeSupport<T> implements Type<T> {
     }
 
     protected abstract boolean hasStringForm();
+
+    protected abstract Opt<BeanTypeSupport<T>> asBeanType();
 }

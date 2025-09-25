@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.gv2011.util.Comparison;
 import com.github.gv2011.util.XStream;
 import com.github.gv2011.util.icol.Opt;
 
@@ -143,7 +144,7 @@ final class XStreamImp<T> implements XStream<T> {
 
     @Override
     public XStream<T> sorted() {
-      return wrap(delegate.sorted());
+      return wrap(delegate.sorted(Comparison.objectComparator()));
     }
 
     @Override
@@ -257,9 +258,11 @@ final class XStreamImp<T> implements XStream<T> {
 
     @Override
     public <E> XStream<E> filter(final Class<E> clazz) {
-      return wrap(delegate.filter(e->
-        clazz.isInstance(e)
-        ).map(e->clazz.cast(e)));
+      return wrap(
+        delegate
+        .filter(e->clazz.isInstance(e))
+        .map(e->clazz.cast(e))
+      );
     }
 
     @Override

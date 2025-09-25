@@ -61,7 +61,7 @@ public final class AcmeFileStore implements AcmeStore{
   @Override
   public RsaKeyPair userKeyPair() {
     final Path keyFile = dir.resolve("userKey.rsa");
-    if(Files.exists(keyFile)) return RsaKeyPair.parse(ByteUtils.read(keyFile));
+    if(Files.exists(keyFile)) return RsaKeyPair.parsePkcs8(ByteUtils.read(keyFile));
     else{
       final RsaKeyPair key = RsaKeyPair.create();
       key.encode().write(keyFile, true);
@@ -90,7 +90,7 @@ public final class AcmeFileStore implements AcmeStore{
       key.encode().write(keyFile, true);
     }
     else{
-      key = RsaKeyPair.parse(ByteUtils.read(keyFile));
+      key = RsaKeyPair.parsePkcs8(ByteUtils.read(keyFile));
     }
     String certFilePattern = host+CRT_PATTERN;
     final IList<X509Certificate> chain = SecUtils.readCertificateChain(dir, certFilePattern);

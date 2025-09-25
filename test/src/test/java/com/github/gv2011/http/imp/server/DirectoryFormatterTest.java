@@ -13,17 +13,18 @@ import org.slf4j.Logger;
 import com.github.gv2011.util.html.HtmlDocument;
 
 public final class DirectoryFormatterTest {
-  
+
   private static final Logger LOG = getLogger(DirectoryFormatterTest.class);
-  
+
   @Test
   public void test(){
     final HtmlDocument doc = new DirectoryFormatter().format(
-      pathOf("host","dir-1",""), 
+      pathOf("host","dir-1",""),
       Stream.of(pair(false,"Süß"), pair(false,"with/Slash"), pair(true,"dir-2"))
     );
-    String expected = 
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
+    final String expected =
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
+      "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
       + "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
       + "<head><title>dir-1</title></head>\n"
       + "<body>\n"

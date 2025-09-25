@@ -97,10 +97,10 @@ public abstract class BeanBuilderSupport<T> implements ExtendedBeanBuilder<T> {
 
     @Override
     public BeanBuilder<T> setAll(final T bean) {
-        for(final PropertyImp<T,?> p: beanType().properties().values()) {
-            copy(p, bean);
-        }
-        return this;
+      for(final PropertyImp<T,?> p: beanType().properties().values()) {
+        if(!p.computed()) copy(p, bean);
+      }
+      return this;
     }
 
     @Override

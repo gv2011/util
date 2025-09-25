@@ -17,7 +17,7 @@ import com.github.gv2011.util.icol.Opt;
 
 public abstract class BeanInvocationHandlerSupport<B,P>  {
 
-  private final BeanTypeSupport<B> beanType;
+  protected final BeanTypeSupport<B> beanType;
   final ISortedMap<String, Object> values;
   private final Constant<Bean> key;
 
@@ -29,13 +29,14 @@ public abstract class BeanInvocationHandlerSupport<B,P>  {
     key = Constants.cachedConstant(()->beanType.getKey(values));
   }
 
-  protected final Object handle(final Object proxy, final Method method, final Object[] args, final P x) throws Throwable {
+  protected final Object handle(final B proxy, final Method method, final Object[] args, final P x) throws Throwable {
     Object result;
     final String name = method.getName();
     if(method.getParameterCount()==0) {
       if(name.equals("hashCode")) result = getHashCode(proxy);
       else if(name.equals("toString")) result = handleToString(proxy, method, args, x);
       else if(beanType.isKeyBean() && name.equals(BeanFactory.KEY_METHOD_NAME)) result = key.get();
+      else if(method.isDefault()) result = handleDefault(proxy, method, args);
       else result = tryGetValue(proxy, name).orElseGet(()->handleOther(proxy, method, args, x));
     }
     else if(name.equals("equals") && method.getParameterCount()==1){
@@ -48,6 +49,10 @@ public abstract class BeanInvocationHandlerSupport<B,P>  {
   protected String handleToString(final Object proxy, final Method method, final Object[] args, final P x) {
     return beanType.toString(beanType.cast(proxy));
   }
+
+  private final Object handleDefault(final B proxy, final Method method, final Object[] args){
+    return beanType.invokeDefault(proxy, method, args);
+  };
 
   protected abstract Object handleOther(
      final Object proxy, final Method method, final Object[] args, P x
