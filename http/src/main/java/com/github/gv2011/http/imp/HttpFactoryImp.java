@@ -68,8 +68,8 @@ public final class HttpFactoryImp implements HttpFactory{
   }
 
   @Override
-  public HttpServer createServer(final IList<Pair<Space,RequestHandler>> handlers) {
-    return createServer(handlers, OptionalInt.empty(), Opt.empty(), h->false, OptionalInt.empty());
+  public HttpServer createServer(final IList<Pair<Space,RequestHandler>> handlers, final OptionalInt httpPort) {
+    return createServer(handlers, httpPort, Opt.empty(), h->false, OptionalInt.empty());
   }
 
   @Override

@@ -1,5 +1,7 @@
 package com.github.gv2011.util.json.imp;
 
+import static com.github.gv2011.util.icol.ICollections.sortedMapOf;
+
 import java.io.Reader;
 
 /*-
@@ -41,6 +43,7 @@ import com.github.gv2011.util.icol.ICollectionFactory;
 import com.github.gv2011.util.icol.ICollections;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.ISet;
+import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.json.Adapter;
 import com.github.gv2011.util.json.JsonBoolean;
 import com.github.gv2011.util.json.JsonFactory;
@@ -109,7 +112,15 @@ public final class JsonFactoryImp implements JsonFactory{
     return new JsonObjectCollector<>(this, keyMapper, valueMapper);
   }
 
+  @Override
+  public JsonObject toJsonObject(String key, JsonNode value) {
+    return toJsonObject(sortedMapOf(key, value));
+  }
 
+  @Override
+  public JsonObject toJsonObject(final ISortedMap<String,JsonNode> entries) {
+    return new JsonObjectImp(this, entries);
+  }
 
   @Override
   public Collector<Entry<String, JsonNode>, ?, JsonObject> toJsonObject() {
