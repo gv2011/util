@@ -10,7 +10,8 @@
   <artifactId>util-parent</artifactId>
   <version>0.14.3-SNAPSHOT</version>
   <packaging>pom</packaging>
-
+  
+  <name>gv2011-util</name>
   <description>General purpose utilities - parent.</description>
   <url>https://github.com/gv2011/util</url>
 
