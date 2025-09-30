@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>util-bc</artifactId>
+  <name>util-bc</name>
 
   <dependencies>
 

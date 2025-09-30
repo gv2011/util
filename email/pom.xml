@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>util-email</artifactId>
+  <name>util-email</name>
   <inceptionYear>2021</inceptionYear>
 
   <dependencies>

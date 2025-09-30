@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>util-context</artifactId>
+  <name>util-context</name>
 
   <dependencies>
     <dependency>

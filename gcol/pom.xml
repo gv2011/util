@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>util-gcol</artifactId>
+  <name>util-gcol</name>
 
   <dependencies>
 

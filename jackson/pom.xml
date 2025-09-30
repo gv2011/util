@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>util-jackson</artifactId>
+  <name>util-jackson</name>
   <inceptionYear>2018</inceptionYear>
 
   <dependencies>

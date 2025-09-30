@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>util-test</artifactId>
+  <name>util-test</name>
 
   <description>Common test module for all other modules</description>
 

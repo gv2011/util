@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>util-tika</artifactId>
+  <name>util-tika</name>
 
   <dependencies>
 

@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>util-tempfile</artifactId>
+  <name>util-tempfile</name>
   <inceptionYear>2023</inceptionYear>
 
   <dependencies>

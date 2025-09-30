@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>util-csv</artifactId>
+  <name>util-csv</name>
   <inceptionYear>2022</inceptionYear>
 
   <dependencies>

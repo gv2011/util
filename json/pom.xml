@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>util-json</artifactId>
+  <name>util-json</name>
   <inceptionYear>2017</inceptionYear>
 
   <dependencies>

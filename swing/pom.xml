@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>util-swing</artifactId>
+  <name>util-swing</name>
   <inceptionYear>2018</inceptionYear>
 
   <dependencies>

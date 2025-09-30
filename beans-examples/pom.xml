@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>util-beans-examples</artifactId>
+  <name>util-beans-examples</name>
   <inceptionYear>2020</inceptionYear>
 
   <dependencies>

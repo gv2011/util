@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>util-beans</artifactId>
+  <name>util-beans</name>
   <inceptionYear>2017</inceptionYear>
 
   <dependencies>

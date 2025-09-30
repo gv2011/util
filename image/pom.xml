@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>util-image</artifactId>
+  <name>util-image</name>
   <inceptionYear>2019</inceptionYear>
 
   <dependencies>

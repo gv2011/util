@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>util-http</artifactId>
+  <name>util-http</name>
   <inceptionYear>2017</inceptionYear>
 
   <dependencies>

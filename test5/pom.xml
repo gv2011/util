@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>util-test5</artifactId>
+  <name>util-test5</name>
 
   <description>Common Jupiter test module for all other modules</description>
 

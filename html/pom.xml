@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>util-html</artifactId>
+  <name>util-html</name>
   <inceptionYear>2021</inceptionYear>
 
   <dependencies>

@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>jsong</artifactId>
+  <name>jsong</name>
   <inceptionYear>2017</inceptionYear>
 
   <dependencies>

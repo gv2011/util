@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>testutil</artifactId>
+  <name>testutil</name>
 
   <description>General purpose test utilities.</description>
 
