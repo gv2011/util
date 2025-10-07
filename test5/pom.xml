@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.github.gv2011</groupId>
     <artifactId>util-parent</artifactId>
-    <version>0.25.1</version>
+    <version>0.25.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>util-test5</artifactId>
@@ -31,7 +31,7 @@
     <connection>scm:git:git@github.com:gv2011/util.git</connection>
     <developerConnection>scm:git:git@github.com:gv2011/testutil.git</developerConnection>
     <url>https://github.com/gv2011/testutil</url>
-    <tag>util-parent-0.25.1</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <dependencies>
