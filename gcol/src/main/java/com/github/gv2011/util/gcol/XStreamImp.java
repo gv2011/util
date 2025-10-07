@@ -277,7 +277,13 @@ final class XStreamImp<T> implements XStream<T> {
       return wrap(Stream.concat(delegate, other));
     }
 
+    @Override
+    public XStream<T> takeWhile(Predicate<? super T> predicate) {
+      return wrap(delegate.takeWhile(predicate));
+    }
+
+    @Override
+    public XStream<T> dropWhile(Predicate<? super T> predicate) {
+      return wrap(delegate.dropWhile(predicate));
+    }
   }
-
-
-
