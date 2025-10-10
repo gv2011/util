@@ -39,7 +39,7 @@
 
   <properties>
     <gsoncore.version>0.15.1</gsoncore.version>
-    <util-apis.version>0.17.1-SNAPSHOT</util-apis.version>
+    <util-apis.version>0.17.1</util-apis.version>
     <logback-adapter.version>1.5.18.2</logback-adapter.version>
   </properties>
 
