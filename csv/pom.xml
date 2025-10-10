@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.github.gv2011</groupId>
     <artifactId>util-parent</artifactId>
-    <version>0.25.2-SNAPSHOT</version>
+    <version>0.25.2</version>
   </parent>
 
   <artifactId>util-csv</artifactId>
