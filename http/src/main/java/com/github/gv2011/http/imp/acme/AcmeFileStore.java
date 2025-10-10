@@ -8,7 +8,6 @@ import static com.github.gv2011.util.icol.ICollections.toISet;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.cert.X509Certificate;
 import java.time.Instant;
 
 import com.github.gv2011.util.BeanUtils;
@@ -16,26 +15,26 @@ import com.github.gv2011.util.FileUtils;
 import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.http.AcmeStore;
 import com.github.gv2011.util.http.DomainEntry;
-import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.Opt;
+import com.github.gv2011.util.sec.CertificateChain;
 import com.github.gv2011.util.sec.Domain;
 import com.github.gv2011.util.sec.RsaKeyPair;
 import com.github.gv2011.util.sec.SecUtils;
 import com.github.gv2011.util.sec.ServerCertificate;
 
 public final class AcmeFileStore implements AcmeStore{
-  
+
   private static final URI ACME_STAGING_URL = URI.create("acme://letsencrypt.org/staging");
   private static final String CRT_PATTERN = ".{}.crt";
   private static final String RSA_EXT = ".rsa";
   private static final String LAST_ERROR_TXT = "lastError.txt";
-  
+
   private final Path dir;
   private final Path acmeUrlFile;
   private final Path accountFile;
   private final Path domainsDir;
-  
+
   public AcmeFileStore(Path dir) {
     this.dir = dir;
     acmeUrlFile = dir.resolve("acme-url.txt");
@@ -51,8 +50,8 @@ public final class AcmeFileStore implements AcmeStore{
   public URI acmeUrl() {
     return URI.create(ByteUtils.read(acmeUrlFile).utf8ToString().trim());
   }
-  
-  
+
+
   @Override
   public boolean production() {
     return !acmeUrl().equals(ACME_STAGING_URL);
@@ -73,7 +72,7 @@ public final class AcmeFileStore implements AcmeStore{
   public Opt<URI> accountUrl() {
     return Files.exists(accountFile) ? Opt.of(URI.create(ByteUtils.read(accountFile).utf8ToString().trim())) : Opt.empty();
   }
-  
+
   @Override
   public void setAccountUrl(URI url) {
     FileUtils.writeText(url.toString(), accountFile);
@@ -93,26 +92,26 @@ public final class AcmeFileStore implements AcmeStore{
       key = RsaKeyPair.parsePkcs8(ByteUtils.read(keyFile));
     }
     String certFilePattern = host+CRT_PATTERN;
-    final IList<X509Certificate> chain = SecUtils.readCertificateChain(dir, certFilePattern);
-    
+    final CertificateChain chain = SecUtils.readCertificateChain(dir, certFilePattern);
+
     Path errFile = dir.resolve(LAST_ERROR_TXT);
-    Opt<Instant> lastError = Files.exists(errFile) 
+    Opt<Instant> lastError = Files.exists(errFile)
       ? Opt.of(Instant.parse(ByteUtils.read(errFile).utf8ToString().trim()))
       : Opt.empty()
     ;
-    
+
     return BeanUtils.beanBuilder(DomainEntry.class)
       .set(DomainEntry::domain).to(host)
       .set(DomainEntry::key).to(key)
-      .set(DomainEntry::certificateChain).to(chain)
+      .set(DomainEntry::certificateChain).to(Opt.of(chain))
       .set(DomainEntry::lastError).to(lastError)
       .build()
     ;
   }
-  
+
   @Override
   public void setError(Domain domain) {
-    FileUtils.writeText(Instant.now().toString(), domainsDir.resolve(domain.toAscii()).resolve(LAST_ERROR_TXT));    
+    FileUtils.writeText(Instant.now().toString(), domainsDir.resolve(domain.toAscii()).resolve(LAST_ERROR_TXT));
   }
 
 

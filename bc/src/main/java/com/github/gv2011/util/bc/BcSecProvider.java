@@ -4,23 +4,32 @@ import static com.github.gv2011.util.CollectionUtils.pair;
 import static com.github.gv2011.util.Verify.notNull;
 import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.bytes.ByteUtils.parseBase64;
+import static com.github.gv2011.util.ex.Exceptions.call;
+import static com.github.gv2011.util.ex.Exceptions.callWithCloseable;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.ex.Exceptions.notYetImplemented;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.math.BigInteger;
+import java.io.OutputStreamWriter;
+import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateCrtKey;
+import java.security.spec.RSAPrivateCrtKeySpec;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.crypto.params.RSAKeyParameters;
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters;
 import org.bouncycastle.crypto.util.OpenSSHPrivateKeyUtil;
 import org.bouncycastle.crypto.util.OpenSSHPublicKeyUtil;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 
 import com.github.gv2011.util.BeanUtils;
 import com.github.gv2011.util.Pair;
 import com.github.gv2011.util.Verify;
+import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.bytes.Bytes;
+import com.github.gv2011.util.bytes.BytesBuilder;
 import com.github.gv2011.util.bytes.TypedBytes;
 import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.sec.CertificateBuilder;
@@ -28,7 +37,6 @@ import com.github.gv2011.util.sec.Domain;
 import com.github.gv2011.util.sec.OpenSshPublicKey;
 import com.github.gv2011.util.sec.RsaKeyPair;
 import com.github.gv2011.util.sec.SecProvider;
-import com.github.gv2011.util.sec.SecUtils;
 import com.github.gv2011.util.sec.SimpleKeyStore;
 import com.github.gv2011.util.sec.UnixSha512CryptHash;
 
@@ -104,30 +112,24 @@ public final class BcSecProvider implements SecProvider{
       OpenSSHPrivateKeyUtil.parsePrivateKeyBlob(idRsaUnpacked.toByteArray())
     ;
     Verify.verify(rsaPrivate.isPrivate());
-    return RsaKeyPair.create(new RSAPrivateCrtKey(){
-      @Override
-      public BigInteger getPrivateExponent() {return rsaPrivate.getExponent();}
-      @Override
-      public String getAlgorithm()           {return SecUtils.RSA;}
-      @Override
-      public String getFormat()              {return null;}
-      @Override
-      public byte[] getEncoded()             {return null;}
-      @Override
-      public BigInteger getModulus()         {return rsaPrivate.getModulus();}
-      @Override
-      public BigInteger getPublicExponent()  {return rsaPrivate.getPublicExponent();}
-      @Override
-      public BigInteger getPrimeP()          {return rsaPrivate.getP();}
-      @Override
-      public BigInteger getPrimeQ()          {return rsaPrivate.getQ();}
-      @Override
-      public BigInteger getPrimeExponentP()  {return rsaPrivate.getDP();}
-      @Override
-      public BigInteger getPrimeExponentQ()  {return rsaPrivate.getDQ();}
-      @Override
-      public BigInteger getCrtCoefficient()  {return rsaPrivate.getQInv();}
-    });
+    return RsaKeyPair.create(createFromSpec(asRSAPrivateCrtKeySpec(rsaPrivate)));
+  }
+
+  public RSAPrivateCrtKey createFromSpec(RSAPrivateCrtKeySpec spec){
+    return (RSAPrivateCrtKey) call(()->KeyFactory.getInstance("RSA").generatePrivate(spec));
+  }
+
+  public RSAPrivateCrtKeySpec asRSAPrivateCrtKeySpec(RSAPrivateCrtKeyParameters bcKey){
+    return new RSAPrivateCrtKeySpec(
+      bcKey.getModulus(),
+      bcKey.getPublicExponent(),
+      bcKey.getExponent(),
+      bcKey.getP(),
+      bcKey.getQ(),
+      bcKey.getDP(),
+      bcKey.getDQ(),
+      bcKey.getQInv()
+    );
   }
 
   @Override
@@ -138,6 +140,15 @@ public final class BcSecProvider implements SecProvider{
   @Override
   public UnixSha512CryptHash unixSha512Crypt(Bytes password) {
     return new UnixSha512CryptHashImp(password);
+  }
+
+  @Override
+  public Bytes convertToPem(Bytes x509CertificateDer) {
+    final BytesBuilder bb = ByteUtils.newBytesBuilder();
+    callWithCloseable(()->new JcaPEMWriter(new OutputStreamWriter(bb, UTF_8)), pemWriter->{
+      pemWriter.writeObject(new X509CertificateHolder(x509CertificateDer.toByteArray()));
+    });
+    return bb.build();
   }
 
 }

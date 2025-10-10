@@ -2,17 +2,20 @@ package com.github.gv2011.http.imp;
 
 import static com.github.gv2011.util.icol.ICollections.iCollections;
 
+import java.security.cert.X509Certificate;
 import java.util.OptionalInt;
 import java.util.function.Predicate;
 
 import com.github.gv2011.http.imp.acme.AcmeCertHandler;
 import com.github.gv2011.http.imp.acme.AcmeFileStore;
 import com.github.gv2011.http.imp.server.HttpServerImp;
+import com.github.gv2011.http.imp.server.SelfSignedCertificateHandler;
 import com.github.gv2011.util.BeanUtils;
 import com.github.gv2011.util.CachedConstant;
 import com.github.gv2011.util.Constant;
 import com.github.gv2011.util.Constants;
 import com.github.gv2011.util.Pair;
+import com.github.gv2011.util.Store;
 import com.github.gv2011.util.StringUtils;
 import com.github.gv2011.util.UrlEncoding;
 import com.github.gv2011.util.bytes.TypedBytes;
@@ -55,6 +58,7 @@ import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.icol.Path;
 import com.github.gv2011.util.sec.Domain;
+import com.github.gv2011.util.sec.RsaKeyPair;
 import com.github.gv2011.util.time.Clock;
 
 public final class HttpFactoryImp implements HttpFactory{
@@ -148,6 +152,18 @@ public final class HttpFactoryImp implements HttpFactory{
   @Override
   public AcmeStore openAcmeStore(final java.nio.file.Path directory) {
     return new AcmeFileStore(directory);
+  }
+
+  @Override
+  public CertificateHandler createSelfSignedCertificateHandler(final Domain domain) {
+    return new SelfSignedCertificateHandler(domain);
+  }
+
+  @Override
+  public CertificateHandler createSelfSignedCertificateHandler(
+    Domain domain, Store<RsaKeyPair> keyStore, Store<X509Certificate> certStore
+  ) {
+    return new SelfSignedCertificateHandler(domain, keyStore, certStore);
   }
 
 

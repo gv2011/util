@@ -10,7 +10,6 @@ import java.security.cert.X509Certificate;
 import org.junit.Test;
 
 import com.github.gv2011.testutil.AbstractTest;
-import com.github.gv2011.util.icol.IList;
 
 public class SecUtilsTest extends AbstractTest{
 
@@ -18,16 +17,16 @@ public class SecUtilsTest extends AbstractTest{
   public void testCreateJKSKeyStore() {
     final RsaKeyPair privKey = RsaKeyPair.parsePkcs8(getResourceBytes("rsaprivcrt.pkcs8"));
     final X509Certificate cert = SecUtils.readCertificate(getResourceBytes("cert.der"));
-    SecUtils.createJKSKeyStoreBytes(privKey, listOf(cert));
+    SecUtils.createJKSKeyStoreBytes(privKey, SecUtils.createCertificateChain(listOf(cert)));
   }
 
   @Test
   public void testReadCertificateFromPem() {
-    final IList<X509Certificate> chain = SecUtils.readCertificateChainFromPem(CERT_1+CERT_2);
-    assertThat(chain, hasSize(2));
-    assertThat(chain.get(0).getSubjectX500Principal().getName("CANONICAL"), is("cn=topten.letero.com"));
+    final CertificateChain chain = SecUtils.readCertificateChainFromPem(CERT_1+CERT_2);
+    assertThat(chain.certificates(), hasSize(2));
+    assertThat(chain.leafCertificate().getSubjectX500Principal().getName("CANONICAL"), is("cn=topten.letero.com"));
     assertThat(
-      chain.get(1).getSubjectX500Principal().getName("CANONICAL"),
+      chain.certificates().get(1).getSubjectX500Principal().getName("CANONICAL"),
       is("cn=let's encrypt authority x3,o=let's encrypt,c=us")
     );
   }

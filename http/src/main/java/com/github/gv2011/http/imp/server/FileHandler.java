@@ -32,6 +32,7 @@ import com.github.gv2011.util.http.Response;
 import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.icol.Path;
+import com.github.gv2011.util.sec.CertificateChain;
 import com.github.gv2011.util.sec.Domain;
 import com.github.gv2011.util.sec.SecUtils;
 
@@ -71,7 +72,7 @@ public final class FileHandler implements RequestHandler{
 
     final boolean authorised;
     if(useAuthorisation(host)){
-      final Opt<X509Certificate> cert = request.peerCertificateChain().tryGetFirst();
+      final Opt<X509Certificate> cert = request.peerCertificateChain().map(CertificateChain::leafCertificate);
       final Opt<RSAPublicKey> userKey = cert
         .map(X509Certificate::getPublicKey)
         .tryCast(RSAPublicKey.class)

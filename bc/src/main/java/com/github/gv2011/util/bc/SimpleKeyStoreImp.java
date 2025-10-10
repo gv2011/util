@@ -21,8 +21,8 @@ import com.github.gv2011.util.bytes.ByteUtils;
 import com.github.gv2011.util.bytes.DataType;
 import com.github.gv2011.util.bytes.DataTypes;
 import com.github.gv2011.util.bytes.TypedBytes;
-import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.sec.CertificateBuilder;
+import com.github.gv2011.util.sec.CertificateChain;
 import com.github.gv2011.util.sec.Domain;
 import com.github.gv2011.util.sec.RsaKeyPair;
 import com.github.gv2011.util.sec.SecProvider;
@@ -30,7 +30,7 @@ import com.github.gv2011.util.sec.SecUtils;
 import com.github.gv2011.util.sec.SimpleKeyStore;
 
 final class SimpleKeyStoreImp implements SimpleKeyStore {
-  
+
   private static final DataType DATA_TYPE = DataTypes.APPLICATION_OCTET_STREAM;
   private static final String CERT_ALIAS = "cert";
 
@@ -41,12 +41,12 @@ final class SimpleKeyStoreImp implements SimpleKeyStore {
   SimpleKeyStoreImp(Domain domain) {
     this.domain = domain;
     RsaKeyPair privateKey = RsaKeyPair.create();
-    
+
     CertificateBuilder cb = SecProvider.instance().createCertificateBuilder();
     cb.setDomains(pair(domain, emptySortedSet()));
     final X509Certificate cert = cb.build(RsaKeyPair.create());
-    
-    IList<X509Certificate> certificatChain = listOf(cert);
+
+    CertificateChain certificatChain = SecUtils.createCertificateChain(listOf(cert));
     final KeyStore keystore = SecUtils.createJKSKeyStore(privateKey, certificatChain);
     try{
       final ByteArrayOutputStream bos = new ByteArrayOutputStream();

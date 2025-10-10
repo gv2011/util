@@ -51,6 +51,7 @@ import com.github.gv2011.util.icol.ISet;
 import com.github.gv2011.util.icol.Opt;
 import com.github.gv2011.util.icol.Path;
 import com.github.gv2011.util.sec.Domain;
+import com.github.gv2011.util.sec.SecUtils;
 import com.github.gv2011.util.sec.ServerCertificate;
 import com.github.gv2011.util.time.Clock;
 import com.github.gv2011.util.time.Poller;
@@ -84,8 +85,6 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
   private Instant lastBucketFill = Instant.now();
 
   private boolean closed;
-
-
 
 
   public AcmeCertHandler(
@@ -135,7 +134,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
             result = Opt.of(BeanUtils.beanBuilder(ServerCertificate.class)
               .set(ServerCertificate::domain).to(host)
               .set(ServerCertificate::keyPair).to(entry.key())
-              .set(ServerCertificate::certificateChain).to(entry.certificateChain())
+              .set(ServerCertificate::certificateChain).to(entry.certificateChain().get())
               .build()
             );
             LOG.info("Certificate for {} exists.", host);
@@ -207,7 +206,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
         challenge.getLocation(), challenge.getStatus(), challenge.getToken(), challenge.getAuthorization()
       );
 
-      try(final AutoCloseableNt token = acmeAccess.get().activate(
+      try(final AutoCloseableNt _ = acmeAccess.get().activate(
         entry.domain(),
         TOKEN_BASE_PATH.addElement(challenge.getToken()),
         ByteUtils.asUtf8(challenge.getAuthorization())
@@ -233,7 +232,8 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
       final ServerCertificate result = BeanUtils.beanBuilder(ServerCertificate.class)
         .set(ServerCertificate::domain).to(entry.domain())
         .set(ServerCertificate::keyPair).to(entry.key())
-        .set(ServerCertificate::certificateChain).to(listFrom(certificate.getCertificateChain()))
+        .set(ServerCertificate::certificateChain)
+        .to(SecUtils.createCertificateChain(listFrom(certificate.getCertificateChain())))
         .build()
       ;
 
@@ -250,7 +250,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
     final Path path = TOKEN_BASE_PATH.addElement(random.toString());
     final URL url = call(()->new URI("http://"+domain.toAscii()+":"+tokenPort.get()+"/"+path.urlEncoded()).toURL());
     final String content = random.toString();
-    try(final AutoCloseableNt token = acmeAccess.get().activate(
+    try(final AutoCloseableNt _ = acmeAccess.get().activate(
       domain,
       path,
       ByteUtils.asUtf8(content)
@@ -348,7 +348,7 @@ public class AcmeCertHandler implements CertificateHandler, AutoCloseableNt{
   }
 
   private Instant updateTime(final DomainEntry entry){
-    final X509Certificate cert = entry.certificateChain().first();
+    final X509Certificate cert = entry.certificateChain().get().leafCertificate();
     final Instant expiryDate = cert.getNotAfter().toInstant();
     final Duration validityPeriod = Duration.between(cert.getNotBefore().toInstant(), expiryDate);
     verify(!validityPeriod.isNegative() && !validityPeriod.isZero());

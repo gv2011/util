@@ -18,11 +18,11 @@ public class HttpFactoryImpTest {
 
   @Test
   public void testCreateServer() {
-    try(HttpServer s = new HttpFactoryImp().createServer(
+    try(HttpServer _ = new HttpFactoryImp().createServer(
         emptyList(),
         HttpFactory.SERVER_SELECTS_PORT,
         empty(),
-        h->false,
+        _->false,
         OptionalInt.empty()
     )){
       LOG.info("Started.");

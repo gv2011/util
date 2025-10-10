@@ -9,7 +9,6 @@ import static com.github.gv2011.util.icol.ICollections.iCollections;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
 import org.junit.Test;
@@ -17,6 +16,7 @@ import org.junit.Test;
 import com.github.gv2011.testutil.AbstractTest;
 import com.github.gv2011.util.bytes.Bytes;
 import com.github.gv2011.util.icol.IList;
+import com.github.gv2011.util.sec.CertificateChain;
 import com.github.gv2011.util.sec.RsaKeyPair;
 import com.github.gv2011.util.sec.SecUtils;
 
@@ -33,8 +33,8 @@ public class PemUtilsTest extends AbstractTest{
   public void testCreateJKSKeyStore() throws Exception {
     final String keyPem = getResourceAsString("key");
     final String certChainPem = getResourceAsString("chain.crt");
-    final IList<X509Certificate> chainIn = SecUtils.readCertificateChainFromPem(certChainPem);
-    assertThat(chainIn, hasSize(2));
+    final CertificateChain chainIn = SecUtils.readCertificateChainFromPem(certChainPem);
+    assertThat(chainIn.certificates(), hasSize(2));
     final Bytes ks = PemUtils.createJKSKeyStore(keyPem, certChainPem);
     final KeyStore keyStore = SecUtils.readKeyStore(ks::openStream);
     final Enumeration<String> e = keyStore.aliases();

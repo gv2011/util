@@ -98,7 +98,7 @@ public class HttpServerImp implements HttpServer, AcmeAccess{
       verify(httpsPort.isEmpty());
       httpsConnector = Opt.empty();
       sslContextFactory = Opt.empty();
-      dispatcher = new Dispatcher(http, d->false, handlers, d->bug());
+      dispatcher = new Dispatcher(http, _->false, handlers, _->bug());
     }
 
     final HttpConfiguration config = new HttpConfiguration();

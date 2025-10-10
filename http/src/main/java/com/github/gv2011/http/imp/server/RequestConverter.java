@@ -7,7 +7,6 @@ import static com.github.gv2011.util.Verify.verifyEqual;
 import static com.github.gv2011.util.ex.Exceptions.call;
 import static com.github.gv2011.util.ex.Exceptions.format;
 import static com.github.gv2011.util.icol.ICollections.asList;
-import static com.github.gv2011.util.icol.ICollections.emptyList;
 import static com.github.gv2011.util.icol.ICollections.toIList;
 import static com.github.gv2011.util.icol.ICollections.toISortedMap;
 import static java.util.function.Predicate.not;
@@ -40,7 +39,9 @@ import com.github.gv2011.util.http.Request;
 import com.github.gv2011.util.icol.IList;
 import com.github.gv2011.util.icol.ISortedMap;
 import com.github.gv2011.util.icol.Opt;
+import com.github.gv2011.util.sec.CertificateChain;
 import com.github.gv2011.util.sec.Domain;
+import com.github.gv2011.util.sec.SecUtils;
 import com.github.gv2011.util.tstr.TypedString;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -66,7 +67,7 @@ final class RequestConverter {
     ;
 
     final boolean secure = request.isSecure();
-    final IList<X509Certificate> peerCertificateChain;
+    final Opt<CertificateChain> peerCertificateChain;
     if(secure){
       final ExtendedSSLSession session =
         Opt.ofNullable(request.getAttribute("org.eclipse.jetty.servlet.request.ssl_session"))
@@ -80,7 +81,7 @@ final class RequestConverter {
       verifyEqual(Domain.from(session.getLocalPrincipal()), host);
     }
     else{
-      peerCertificateChain = emptyList();
+      peerCertificateChain = Opt.empty();
     }
 
     final Method method = TypedString.create(Method.class, request.getMethod());
@@ -144,16 +145,17 @@ final class RequestConverter {
     verifyEqual(Domain.from(((X509Certificate)session.getLocalCertificates()[0]).getSubjectX500Principal()), host);
   }
 
-  private IList<X509Certificate> getPeerCertificateChain(final ExtendedSSLSession session) {
+  private Opt<CertificateChain> getPeerCertificateChain(final ExtendedSSLSession session) {
     try{
-      return Arrays.stream(session.getPeerCertificates()).map(c->(X509Certificate)c).collect(toIList());
+      final IList<X509Certificate> certs = Arrays.stream(session.getPeerCertificates()).map(c->(X509Certificate)c).collect(toIList());
+      return certs.isEmpty() ? Opt.empty() : Opt.of(SecUtils.createCertificateChain(certs));
     }
     catch (final SSLPeerUnverifiedException e) {
-      return emptyList();
+      return Opt.empty();
     }
     catch(final RuntimeException e){
       LOG.error("Could not obtain peer certificate chain.", e);
-      return emptyList();
+      return Opt.empty();
     }
   }
 
